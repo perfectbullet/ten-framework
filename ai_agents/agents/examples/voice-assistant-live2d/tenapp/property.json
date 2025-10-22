@@ -26,12 +26,14 @@
             {
               "type": "extension",
               "name": "stt",
-              "addon": "deepgram_asr_python",
+              "addon": "aliyun_asr_bigmodel_python",
               "extension_group": "stt",
               "property": {
                 "params": {
-                  "api_key": "${env:DEEPGRAM_API_KEY}",
-                  "language": "en-US"
+                  "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
+                  "language_hints": [
+                      "zh"
+                  ]
                 }
               }
             },
@@ -41,30 +43,30 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "https://api.openai.com/v1",
-                "api_key": "${env:OPENAI_API_KEY}",
+                "base_url": "http://192.168.8.231:11434/v1",
+                "api_key": "ollama",
                 "frequency_penalty": 0.9,
-                "model": "${env:OPENAI_MODEL}",
+                "model": "qwen2.5:32b",
                 "max_tokens": 512,
                 "prompt": "",
-                "proxy_url": "${env:OPENAI_PROXY_URL|}",
-                "greeting": "TEN Agent connected. How can I help you today?",
+                "proxy_url": "",
+                "greeting": "TEN Agent已连接。今天有什么可以帮您的？",
                 "max_memory_length": 10
               }
             },
             {
               "type": "extension",
               "name": "tts",
-              "addon": "elevenlabs_tts2_python",
+              "addon": "cosy_tts_python",
               "extension_group": "tts",
               "property": {
                 "dump": false,
                 "dump_path": "./",
                 "params": {
-                  "key": "${env:ELEVENLABS_TTS_KEY}",
-                  "model_id": "eleven_multilingual_v2",
-                  "voice_id": "FGY2WhTYpPnrIDTdsKH5",
-                  "output_format": "pcm_16000"
+                  "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
+                  "model": "cosyvoice-v1",
+                  "sample_rate": 16000,
+                  "voice": "longlaotie"
                 }
               }
             },
@@ -74,7 +76,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "TEN Agent connected. How can I help you today?"
+                "greeting": "TEN Agent已连接。今天有什么可以帮您的？"
               }
             },
             {
