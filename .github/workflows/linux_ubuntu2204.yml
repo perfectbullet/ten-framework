@@ -160,7 +160,7 @@ jobs:
           if [ "${{ matrix.arch }}" = "x86" ]; then
             EXTRA_ARGS="is_clang=false ten_enable_ten_rust=false ten_enable_ten_manager=false ten_manager_enable_tests=false ten_enable_go_binding=false ten_enable_python_binding=false ten_enable_nodejs_binding=false ten_manager_enable_frontend=false ten_enable_integration_tests_prebuilt=false"
           else
-            EXTRA_ARGS="is_clang=${{ matrix.compiler == 'gcc' && 'false' || 'true' }} ten_rust_force_release=true log_level=1 enable_serialized_actions=true ten_enable_serialized_rust_action=true ten_rust_enable_gen_cargo_config=false ten_enable_cargo_clean=true ten_enable_go_lint=true ten_enable_rust_incremental_build=false ten_manager_enable_frontend=false ten_enable_integration_tests_prebuilt=false ten_enable_ffmpeg_extensions=true"
+            EXTRA_ARGS="is_clang=${{ matrix.compiler == 'gcc' && 'false' || 'true' }} ten_rust_force_release=true log_level=1 enable_serialized_actions=true ten_rust_enable_gen_cargo_config=false ten_enable_cargo_clean=true ten_enable_go_lint=true ten_enable_rust_incremental_build=false ten_manager_enable_frontend=false ten_enable_integration_tests_prebuilt=false ten_enable_ffmpeg_extensions=true"
           fi
 
           echo $EXTRA_ARGS
@@ -182,7 +182,9 @@ jobs:
             "system/ten_runtime"
             "system/ten_runtime_go"
             "system/ten_runtime_python"
+            "system/ten_runtime_nodejs"
             "addon_loader/python_addon_loader"
+            "addon_loader/nodejs_addon_loader"
           )
 
           for item in "${ARRAY[@]}"; do
@@ -221,7 +223,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Package assets
-        if: matrix.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
+        if: matrix.arch == 'x64' && (github.event_name == 'release' || (github.ref != '' && startsWith(github.ref, 'refs/tags/')))
         continue-on-error: true
         run: |
           cd out/linux/${{ matrix.arch }}
@@ -274,13 +276,13 @@ jobs:
 
       - name: Publish to release assets
         uses: softprops/action-gh-release@v2
-        if: matrix.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
+        if: matrix.arch == 'x64' && (github.event_name == 'release' || (github.ref != '' && startsWith(github.ref, 'refs/tags/')))
         with:
           files: |
             out/linux/${{ matrix.arch }}/ten_packages-linux-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.arch }}.zip
 
       - name: Clean up
-        if: matrix.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
+        if: matrix.arch == 'x64' && (github.event_name == 'release' || (github.ref != '' && startsWith(github.ref, 'refs/tags/')))
         continue-on-error: true
         run: |
           rm -rf out/linux/${{ matrix.arch }}/ten_packages-linux-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.arch }}.zip
@@ -288,7 +290,7 @@ jobs:
           df -h .
 
       - name: Publish release to TEN cloud store
-        if: ${{ matrix.arch == 'x64' && startsWith(github.ref, 'refs/tags/') && matrix.compiler == 'gcc' && matrix.build_type == 'release' && matrix.arch == 'x64' }}
+        if: ${{ matrix.arch == 'x64' && (github.event_name == 'release' || (github.ref != '' && startsWith(github.ref, 'refs/tags/'))) && matrix.compiler == 'gcc' && matrix.build_type == 'release' && matrix.arch == 'x64' }}
         continue-on-error: true
         run: |
           TMAN_BIN=$(pwd)/out/linux/${{ matrix.arch }}/ten_manager/bin/tman
@@ -368,7 +370,7 @@ jobs:
         shell: bash
 
       - name: Clean up
-        if: ${{ matrix.arch == 'x64' && startsWith(github.ref, 'refs/tags/') && matrix.compiler == 'gcc' && matrix.build_type == 'release' && matrix.arch == 'x64' }}
+        if: ${{ matrix.arch == 'x64' && (github.event_name == 'release' || (github.ref != '' && startsWith(github.ref, 'refs/tags/'))) && matrix.compiler == 'gcc' && matrix.build_type == 'release' && matrix.arch == 'x64' }}
         continue-on-error: true
         run: |
           cd out/linux/${{ matrix.arch }}
