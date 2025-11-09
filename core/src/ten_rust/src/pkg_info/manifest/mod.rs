@@ -98,7 +98,8 @@ impl LocaleContent {
 
         // If content is None, try to load from import_uri
         if let Some(import_uri) = &self.import_uri {
-            let real_path = get_real_path_from_import_uri(import_uri, self.base_dir.as_deref())?;
+            let real_path =
+                get_real_path_from_import_uri(import_uri, self.base_dir.as_deref(), None)?;
 
             // Load content from URI
             load_content_from_uri(&real_path).await.with_context(|| {
@@ -388,45 +389,76 @@ impl Manifest {
         }
 
         // Resolve description field
+        // Only attempt to resolve if base_dir is set or content already exists
         if let Some(description) = &self.description {
             let mut resolved_locales = Map::new();
             for (locale, locale_content) in &description.locales {
-                let content = locale_content.get_content().await?;
-                let mut locale_obj = Map::new();
-                locale_obj.insert("content".to_string(), Value::String(content));
-                resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                if let Ok(content) = locale_content.get_content().await {
+                    let mut locale_obj = Map::new();
+                    locale_obj.insert("content".to_string(), Value::String(content));
+                    resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                } else {
+                    // If we can't get content (e.g., base_dir is None with relative import_uri),
+                    // preserve the original LocaleContent structure
+                    if let Ok(value) = serde_json::to_value(locale_content) {
+                        resolved_locales.insert(locale.clone(), value);
+                    }
+                }
             }
-            let mut description_obj = Map::new();
-            description_obj.insert("locales".to_string(), Value::Object(resolved_locales));
-            serialized_fields.insert("description".to_string(), Value::Object(description_obj));
+            if !resolved_locales.is_empty() {
+                let mut description_obj = Map::new();
+                description_obj.insert("locales".to_string(), Value::Object(resolved_locales));
+                serialized_fields.insert("description".to_string(), Value::Object(description_obj));
+            }
         }
 
         // Resolve display_name field
+        // Only attempt to resolve if base_dir is set or content already exists
         if let Some(display_name) = &self.display_name {
             let mut resolved_locales = Map::new();
             for (locale, locale_content) in &display_name.locales {
-                let content = locale_content.get_content().await?;
-                let mut locale_obj = Map::new();
-                locale_obj.insert("content".to_string(), Value::String(content));
-                resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                if let Ok(content) = locale_content.get_content().await {
+                    let mut locale_obj = Map::new();
+                    locale_obj.insert("content".to_string(), Value::String(content));
+                    resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                } else {
+                    // If we can't get content (e.g., base_dir is None with relative import_uri),
+                    // preserve the original LocaleContent structure
+                    if let Ok(value) = serde_json::to_value(locale_content) {
+                        resolved_locales.insert(locale.clone(), value);
+                    }
+                }
             }
-            let mut display_name_obj = Map::new();
-            display_name_obj.insert("locales".to_string(), Value::Object(resolved_locales));
-            serialized_fields.insert("display_name".to_string(), Value::Object(display_name_obj));
+            if !resolved_locales.is_empty() {
+                let mut display_name_obj = Map::new();
+                display_name_obj.insert("locales".to_string(), Value::Object(resolved_locales));
+                serialized_fields
+                    .insert("display_name".to_string(), Value::Object(display_name_obj));
+            }
         }
 
         // Resolve readme field
+        // Only attempt to resolve if base_dir is set or content already exists
         if let Some(readme) = &self.readme {
             let mut resolved_locales = Map::new();
             for (locale, locale_content) in &readme.locales {
-                let content = locale_content.get_content().await?;
-                let mut locale_obj = Map::new();
-                locale_obj.insert("content".to_string(), Value::String(content));
-                resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                if let Ok(content) = locale_content.get_content().await {
+                    let mut locale_obj = Map::new();
+                    locale_obj.insert("content".to_string(), Value::String(content));
+                    resolved_locales.insert(locale.clone(), Value::Object(locale_obj));
+                } else {
+                    // If we can't get content (e.g., base_dir is None with relative import_uri),
+                    // preserve the original LocaleContent structure
+                    if let Ok(value) = serde_json::to_value(locale_content) {
+                        resolved_locales.insert(locale.clone(), value);
+                    }
+                }
             }
-            let mut readme_obj = Map::new();
-            readme_obj.insert("locales".to_string(), Value::Object(resolved_locales));
-            serialized_fields.insert("readme".to_string(), Value::Object(readme_obj));
+            if !resolved_locales.is_empty() {
+                let mut readme_obj = Map::new();
+                readme_obj.insert("locales".to_string(), Value::Object(resolved_locales));
+                serialized_fields.insert("readme".to_string(), Value::Object(readme_obj));
+            }
         }
 
         serde_json::to_string_pretty(&serialized_fields)
@@ -772,7 +804,10 @@ impl Manifest {
         dependencies
     }
 
-    pub async fn get_flattened_api(&self) -> Result<Option<ManifestApi>> {
+    pub async fn get_flattened_api(
+        &self,
+        app_base_dir: Option<&str>,
+    ) -> Result<Option<ManifestApi>> {
         // If the api contains no interfaces, return api directly.
         if let Some(api) = &self.api {
             if api.interface.is_none() || api.interface.as_ref().unwrap().is_empty() {
@@ -786,7 +821,7 @@ impl Manifest {
                 drop(read_guard);
 
                 let mut write_guard = self.flattened_api.write().await;
-                flatten_manifest_api(&self.api, &mut write_guard).await?;
+                flatten_manifest_api(&self.api, &mut write_guard, app_base_dir).await?;
 
                 let flattened = write_guard.as_ref().map(|api| api.clone());
                 drop(write_guard);

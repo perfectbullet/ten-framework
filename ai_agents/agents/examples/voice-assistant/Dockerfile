@@ -1,4 +1,4 @@
-FROM ghcr.io/ten-framework/ten_agent_build:0.7.3 AS builder
+FROM ghcr.io/ten-framework/ten_agent_build:0.7.9 AS builder
 
 ARG USE_AGENT=agents/examples/voice-assistant
 
@@ -45,9 +45,9 @@ RUN chmod +x /app/agents/scripts/*.sh
 RUN cd /app/${USE_AGENT} && task install
 RUN cd /app/${USE_AGENT} &&  task release
 
-# Build frontend in builder stage (npm install already done by task install)
+# Build frontend in builder stage (bun already done by task install)
 WORKDIR /app/playground
-RUN NEXT_PUBLIC_EDIT_GRAPH_MODE=false npm run build
+RUN NEXT_PUBLIC_EDIT_GRAPH_MODE=false bun run build
 WORKDIR /app
 
 FROM ubuntu:22.04
@@ -77,6 +77,7 @@ RUN apt-get clean && apt-get update && apt-get install -y --no-install-recommend
   jq vim \
   ca-certificates \
   curl \
+  unzip \
   && apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
@@ -85,6 +86,11 @@ ENV UV_INDEX_URL https://pypi.tuna.tsinghua.edu.cn/simple
 # Install Node.js 20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
   && apt-get install -y nodejs
+
+# Install Bun using the official install script
+RUN curl -fsSL https://bun.com/install | bash
+# Add Bun to the PATH (if not already added by the install script)
+ENV PATH="/root/.bun/bin:$PATH"
 
 # Install Task
 RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
