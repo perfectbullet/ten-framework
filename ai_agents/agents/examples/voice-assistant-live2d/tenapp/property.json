@@ -43,14 +43,14 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "http://192.168.8.231:11434/v1",
-                "api_key": "ollama",
+                "base_url": "https://api.deepseek.com/v1",
+                "api_key": "${env:DEEPGRAM_API_KEY}",
                 "frequency_penalty": 0.9,
-                "model": "qwen2.5:32b",
+                "model": "deepseek-chat",
                 "max_tokens": 512,
                 "prompt": "",
-                "proxy_url": "",
-                "greeting": "TEN Agent已连接。今天有什么可以帮您的？",
+                "proxy_url": "${env:OPENAI_PROXY_URL|}",
+                "greeting": "TEN Agent connected. How can I help you today?",
                 "max_memory_length": 10
               }
             },
