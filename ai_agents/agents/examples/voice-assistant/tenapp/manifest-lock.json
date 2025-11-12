@@ -4,8 +4,8 @@
     {
       "type": "system",
       "name": "ten_runtime_go",
-      "version": "0.11.25",
-      "hash": "a927432535a874a46ec9040fcbe46a290b536f11ebae7126939f615ec248ce67",
+      "version": "0.11.27",
+      "hash": "3cb246f95ec5e22b2c1a44ed6c09d75af07755030172fa6abc97f35822405c77",
       "dependencies": [
         {
           "type": "system",
@@ -44,8 +44,8 @@
     {
       "type": "system",
       "name": "ten_ai_base",
-      "version": "0.7.18",
-      "hash": "b4b6881741d8735187d928edbbac607546f0b0e7c3e830a7682195ebc59e2d47",
+      "version": "0.7.22",
+      "hash": "27e5467c5dc841757f5a6f52e70b0d2c09903be84ade73b404b45c6cac9888f8",
       "dependencies": [
         {
           "type": "system",
@@ -171,8 +171,8 @@
     {
       "type": "extension",
       "name": "bytedance_llm_based_asr",
-      "version": "0.2.4",
-      "hash": "94a78f8c205a8b1d8c6462e445de579656be1096762852d4c1571d306f1893c7",
+      "version": "0.2.5",
+      "hash": "5d8b7f8c57055648b5ac52e1928c4290fcf84a563f75da118eba4a9dd3549554",
       "dependencies": [
         {
           "type": "system",
@@ -541,8 +541,8 @@
     {
       "type": "extension",
       "name": "groq_tts_python",
-      "version": "0.3.0",
-      "hash": "35e0146e34a33c482b08fea45d65dd612bd7a03a67dfc7bb36ef3f2b3c4a0ce2",
+      "version": "0.4.0",
+      "hash": "bfa2cb7eac38162963915b9813e9578e3d169819c6deb58240ba54069dafa9e3",
       "dependencies": [
         {
           "type": "system",
@@ -558,8 +558,8 @@
     {
       "type": "extension",
       "name": "humeai_tts_python",
-      "version": "0.3.2",
-      "hash": "28d8d75b373e92e2e2cdc0adb9fba7ae482421db3ae3c85a487d2f9350796c88",
+      "version": "0.4.0",
+      "hash": "c52103c5beeb317df0e61c2de41eb3a5163e6e899bcc94079f760a1687bb309d",
       "dependencies": [
         {
           "type": "system",
@@ -605,8 +605,8 @@
     {
       "type": "extension",
       "name": "openai_tts2_python",
-      "version": "0.3.0",
-      "hash": "cb448a30a7f8d90ed0d100d4eaa01e6b0d366fa5bb6a6e98d0422c97232cd7cf",
+      "version": "0.4.0",
+      "hash": "6052d0c6208000f4d0a88eafa9dde7969ceb7c1f5640733be0efd75af58d0073",
       "dependencies": [
         {
           "type": "system",
@@ -622,8 +622,8 @@
     {
       "type": "extension",
       "name": "polly_tts",
-      "version": "0.3.0",
-      "hash": "cb09c700e7b2941a68215a9c95ddab2ca8fb426e32ee62c51190d2108f4c7108",
+      "version": "0.4.0",
+      "hash": "7f3c6f4a6734905a1dd9d88055f441f994c17e44b199a95c905d3105d9afbf64",
       "dependencies": [
         {
           "type": "system",
@@ -639,8 +639,8 @@
     {
       "type": "extension",
       "name": "rime_http_tts",
-      "version": "0.3.0",
-      "hash": "3bd36e724c54aa7ca1a5ffde810ba831590635eab3127616f5f593a849f7b154",
+      "version": "0.4.0",
+      "hash": "1ad64630d6f3dc356ff00a2551818766057f231ded7087fdbb59477a34e85901",
       "dependencies": [
         {
           "type": "system",
@@ -733,8 +733,8 @@
     {
       "type": "system",
       "name": "ten_runtime_python",
-      "version": "0.11.25",
-      "hash": "93e9e381e2d5562b9543807fe9b948c090236b7cee8edbb5e07c9d2db6f2e97d",
+      "version": "0.11.27",
+      "hash": "409c90d00363ff575f7e7d3c6285047c609748490ffb5da52910efc983941c91",
       "dependencies": [
         {
           "type": "system",
@@ -755,8 +755,8 @@
     {
       "type": "system",
       "name": "ten_runtime",
-      "version": "0.11.25",
-      "hash": "eab45b60fadb1d8e9bbff559a0cdda36506c4199c3ed21690a87768bd689be46",
+      "version": "0.11.27",
+      "hash": "96129244e41310723b93f2eeef06c41d51eb8086d60a703d3665495af3880050",
       "supports": [
         {
           "os": "linux",
@@ -779,8 +779,8 @@
     {
       "type": "addon_loader",
       "name": "python_addon_loader",
-      "version": "0.11.25",
-      "hash": "7e3547e491a745de7a513bdc64bc7de92c9b2754a52144d06dbaa27fd44c7cae",
+      "version": "0.11.27",
+      "hash": "a15c56876f5303b0c47d4019a51e9586f449d38a1cf52b5848746174c1bc5838",
       "dependencies": [
         {
           "type": "system",
