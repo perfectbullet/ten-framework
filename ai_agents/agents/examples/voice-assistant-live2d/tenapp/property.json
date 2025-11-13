@@ -2,7 +2,7 @@
   "ten": {
     "predefined_graphs": [
       {
-        "name": "voice_assistant",
+        "name": "voice_assistant_live2d",
         "auto_start": true,
         "graph": {
           "nodes": [
@@ -43,14 +43,14 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "https://api.deepseek.com/v1",
-                "api_key": "${env:DEEPGRAM_API_KEY}",
+                "base_url": "http://192.168.8.231:11434/v1",
+                "api_key": "ollama",
                 "frequency_penalty": 0.9,
-                "model": "deepseek-chat",
+                "model": "qwen2.5:32b",
                 "max_tokens": 512,
                 "prompt": "",
-                "proxy_url": "${env:OPENAI_PROXY_URL|}",
-                "greeting": "TEN Agent connected. How can I help you today?",
+                "proxy_url": "",
+                "greeting": "你好！我是语音助手、聊天数字人龙小夏。",
                 "max_memory_length": 10
               }
             },
@@ -66,7 +66,7 @@
                   "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
                   "model": "cosyvoice-v1",
                   "sample_rate": 16000,
-                  "voice": "longlaotie"
+                  "voice": "longxiaoxia"
                 }
               }
             },
@@ -76,7 +76,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "TEN Agent已连接。今天有什么可以帮您的？"
+                "greeting": "你好！我是语音助手、聊天数字人龙小夏。"
               }
             },
             {

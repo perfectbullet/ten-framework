@@ -432,7 +432,7 @@ export default function Home() {
       stopPing();
     }
     const interval = setInterval(() => {
-      apiPing("test-channel");
+      apiPing("ten_agent_test");
     }, 3000);
     setPingInterval(interval);
   };
@@ -467,7 +467,7 @@ export default function Home() {
           setIsConnecting(true);
           // Stop the agent service first
           try {
-            await apiStopService("test-channel");
+            await apiStopService("ten_agent_test");
             console.log("Agent stopped");
           } catch (error) {
             console.error("Failed to stop agent:", error);
@@ -488,7 +488,7 @@ export default function Home() {
             body: JSON.stringify({
               request_id: Math.random().toString(36).substring(2, 15),
               uid: Math.floor(Math.random() * 100000),
-              channel_name: "test-channel",
+              channel_name: "ten_agent_test",
             }),
           });
 
