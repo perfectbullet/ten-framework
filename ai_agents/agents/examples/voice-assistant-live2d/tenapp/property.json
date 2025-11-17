@@ -32,7 +32,7 @@
                 "params": {
                   "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
                   "language_hints": [
-                      "zh"
+                    "zh"
                   ]
                 }
               }
@@ -43,14 +43,14 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "http://192.168.8.231:11434/v1",
-                "api_key": "ollama",
+                "base_url": "https://api.deepseek.com/v1",
+                "api_key": "${env:DEEPSEEK_API_KEY}",
                 "frequency_penalty": 0.9,
-                "model": "qwen2.5:32b",
+                "model": "deepseek-chat",
                 "max_tokens": 512,
                 "prompt": "",
-                "proxy_url": "",
-                "greeting": "你好！我是语音助手、聊天数字人龙小夏。",
+                "proxy_url": "${env:OPENAI_PROXY_URL|}",
+                "greeting": "Hello there, nice to meet you! I’m your anime assistant—what’s your name?",
                 "max_memory_length": 10
               }
             },
@@ -60,14 +60,14 @@
               "addon": "cosy_tts_python",
               "extension_group": "tts",
               "property": {
-                "dump": false,
-                "dump_path": "./",
                 "params": {
-                  "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
+                  "api_key": "${env:COSY_TTS_KEY|}",
                   "model": "cosyvoice-v1",
                   "sample_rate": 16000,
                   "voice": "longxiaoxia"
-                }
+                },
+                "dump": false,
+                "dump_path": "./"
               }
             },
             {
@@ -76,7 +76,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "你好！我是语音助手、聊天数字人龙小夏。"
+                "greeting": "Hello there, nice to meet you! I’m your anime assistant—what’s your name?FUNK hahaha"
               }
             },
             {
