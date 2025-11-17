@@ -69,7 +69,7 @@ tasks:
   run:
     desc: run everything
     deps:
-      - task: run-gd-server
+#      - task: run-gd-server
       - task: run-frontend
       - task: run-api-server
 
