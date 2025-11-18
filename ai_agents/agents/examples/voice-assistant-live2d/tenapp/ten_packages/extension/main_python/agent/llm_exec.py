@@ -37,26 +37,38 @@ class LLMExec:
 
     def __init__(self, ten_env: AsyncTenEnv):
         self.ten_env = ten_env
-        self.input_queue = AsyncQueue()
+        self.input_queue = AsyncQueue()# 用户输入队列
         self.stopped = False
+        # ========== 回调函数 ==========
         self.on_response: Optional[
             Callable[[AsyncTenEnv, str, str, bool], Awaitable[None]]
         ] = None
+        # 推理回调
         self.on_reasoning_response: Optional[
             Callable[[AsyncTenEnv, str, str, bool], Awaitable[None]]
         ] = None
+        # 正常响应回调
         self.on_tool_call: Optional[
             Callable[[AsyncTenEnv, LLMToolMetadata], Awaitable[None]]
         ] = None
         self.current_task: Optional[asyncio.Task] = None
         self.loop = asyncio.get_event_loop()
+        # 启动输入队列处理
         self.loop.create_task(self._process_input_queue())
+        # ========== 工具注册表 ==========
         self.available_tools: list[LLMToolMetadata] = []
         self.tool_registry: dict[str, str] = {}
         self.available_tools_lock = (
             asyncio.Lock()
         )  # Lock to ensure thread-safe access
+        # ========== 对话上下文 ==========
         self.contexts: list[LLMMessage] = []
+        # 示例结构:
+        # [
+        #   {"role": "user", "content": "今天天气怎么样?"},
+        #   {"role": "assistant", "content": "今天北京晴天"},
+        #   {"role": "user", "content": "那明天呢?"}
+        # ]
         self.current_request_id: Optional[str] = None
         self.current_text = None
 
@@ -101,15 +113,25 @@ class LLMExec:
         """
         Process the input queue for commands and data.
         This method runs in a loop, processing items from the queue.
+        处理用户输入队列
+
+        工作流程:
+        1. 从队列取出用户文本
+        2. 包装成 LLMMessageContent
+        3. 发送到 LLM
+        4. 等待流式响应
         """
         while not self.stopped:
             try:
-                text = await self.input_queue.get()
+                text = await self.input_queue.get()     # 阻塞等待
                 new_message = LLMMessageContent(role="user", content=text)
+
+                # 创建任务并等待
                 self.current_task = self.loop.create_task(
                     self._send_to_llm(self.ten_env, new_message)
                 )
                 await self.current_task
+
             except asyncio.CancelledError:
                 self.ten_env.log_info("LLMExec processing cancelled.")
                 text = self.current_text
@@ -151,22 +173,40 @@ class LLMExec:
     async def _send_to_llm(
         self, ten_env: AsyncTenEnv, new_message: LLMMessage
     ) -> None:
+        """
+        发送消息到 LLM 并处理流式响应
+        步骤:
+        1. 合并上下文 + 新消息
+        2. 构造 LLMRequest (包含工具列表)
+        3. 调用 LLM Extension
+        4. 流式处理响应
+        """
+        # Step 1: 合并上下文
         messages = self.contexts.copy()
         messages.append(new_message)
+        # Step 2: 构造请求
         request_id = str(uuid.uuid4())
         self.current_request_id = request_id
         llm_input = LLMRequest(
             request_id=request_id,
             messages=messages,
-            streaming=True,
+            streaming=True,  # 关键: 启用流式输出
             parameters={"temperature": 0.7},
-            tools=self.available_tools,
+            tools=self.available_tools, # 传递工具列表
         )
         input_json = llm_input.model_dump()
+        # Step 3: 发送命令
+        ten_env.log_info(
+            f"_send_to_llm: input_json {input_json}"
+        )
         response = _send_cmd_ex(ten_env, "chat_completion", "llm", input_json)
+        ten_env.log_info(
+            f"_send_to_llm: response {response}"
+        )
 
+        # Step 4: 处理流式响应
         # Queue the new message to the context
-        await self._queue_context(ten_env, new_message)
+        await self._queue_context(ten_env, new_message)     # 保存到上下文
 
         async for cmd_result, _ in response:
             if cmd_result and cmd_result.is_final() is False:
@@ -179,17 +219,29 @@ class LLMExec:
                     await self._handle_llm_response(completion)
 
     async def _handle_llm_response(self, llm_output: LLMResponse | None):
+        """
+        处理 LLM 响应 - 使用 Python 3.10+ 的模式匹配
+        支持的响应类型:
+        1. MessageDelta: 流式文本增量
+        2. MessageDone: 文本完成
+        3. ReasoningDelta/Done: 推理过程 (如 o1 模型)
+        4. ToolCall: 工具调用请求
+        """
         self.ten_env.log_info(f"_handle_llm_response: {llm_output}")
 
         match llm_output:
+            # ========== 流式文本 ==========
             case LLMResponseMessageDelta():
-                delta = llm_output.delta
-                text = llm_output.content
+                delta = llm_output.delta    # 增量文本
+                text = llm_output.content   # 累积文本
                 self.current_text = text
                 if delta and self.on_response:
+                    # 触发回调 → 转换为 LLMResponseEvent
                     await self.on_response(self.ten_env, delta, text, False)
+                # 更新上下文
                 if text:
                     await self._write_context(self.ten_env, "assistant", text)
+            # ========== 文本完成 ==========
             case LLMResponseMessageDone():
                 text = llm_output.content
                 self.current_text = None
@@ -202,12 +254,14 @@ class LLMExec:
                     await self.on_reasoning_response(
                         self.ten_env, delta, text, False
                     )
+            # ========== 推理过程 ==========
             case LLMResponseReasoningDone():
                 text = llm_output.content
                 if self.on_reasoning_response and text:
                     await self.on_reasoning_response(
                         self.ten_env, "", text, True
                     )
+            # ========== 工具调用 ==========
             case LLMResponseToolCall():
                 self.ten_env.log_info(
                     f"_handle_llm_response: invoking tool call {llm_output.name}"

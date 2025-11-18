@@ -57,7 +57,15 @@ async def _send_cmd_ex(
     Note: extension using this approach will contain logics that are meaningful for this graph only,
     as it will assume the target extension already exists in the graph.
     For generate purpose extension, it should try to prevent using this method.
+    功能说明:
+    创建命令对象: 使用 Cmd.create(cmd_name) 创建命令
+    设置目标: 通过 Loc 设置命令的目标扩展 (dest)
+    设置负载: 如果提供了 payload,将其转换为 JSON 并设置到命令属性中
+    流式接收: 使用 ten_env.send_cmd_ex(cmd) 发送命令,并通过异步迭代接收多个响应
+    过滤返回: 只在 cmd_result 存在时才 yield 结果
     """
+
+    # Cmd 类，用于包装底层的 C/C++ 命令对象
     cmd = Cmd.create(cmd_name)
     loc = Loc("", "", dest)
     cmd.set_dests([loc])
