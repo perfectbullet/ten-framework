@@ -3,7 +3,9 @@
 // This file is part of TEN Framework, an open source project.
 // Licensed under the Apache License, Version 2.0, with certain conditions.
 // Refer to the "LICENSE" file in the root directory for more information.
-//
+
+// #pragma once 的意思是：让这个头文件在每次编译时只被包含（include）一次，防止重复包含导致的编译错误。
+// 它是一种头文件保护机制，常用于 C/C++ 项目
 #pragma once
 
 #include "ten_runtime/ten_config.h"
@@ -23,6 +25,7 @@ TEN_RUNTIME_PRIVATE_API bool ten_py_cmd_init_for_module(PyObject *module);
 TEN_RUNTIME_PRIVATE_API ten_py_cmd_t *ten_py_cmd_wrap(ten_shared_ptr_t *cmd);
 
 TEN_RUNTIME_PRIVATE_API void ten_py_cmd_invalidate(ten_py_cmd_t *self);
+
 
 TEN_RUNTIME_PRIVATE_API PyObject *ten_py_cmd_create(PyTypeObject *type,
                                                     PyObject *args,

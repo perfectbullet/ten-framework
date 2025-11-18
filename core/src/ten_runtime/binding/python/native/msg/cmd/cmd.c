@@ -49,17 +49,24 @@ static ten_py_cmd_t *ten_py_cmd_init(ten_py_cmd_t *py_cmd, const char *name) {
   return py_cmd;
 }
 
+//Python 构造函数桥接
+// 对应 Python
+// 代码: # 在 Python 端
+// cmd = Cmd("chat_completion")
+// # ↓ 调用此 C 函数
 PyObject *ten_py_cmd_create(PyTypeObject *type, PyObject *args,
                             TEN_UNUSED PyObject *kw) {
   const char *name = NULL;
+  // 📥 解析 Python 参数: Cmd("command_name")
   if (!PyArg_ParseTuple(args, "s", &name)) {
     return ten_py_raise_py_value_error_exception("Failed to parse arguments.");
   }
-
+  // 🔧 两阶段创建
   ten_py_cmd_t *py_cmd = ten_py_cmd_create_internal(type);
   return (PyObject *)ten_py_cmd_init(py_cmd, name);
 }
 
+// C 到 Python 的包装
 ten_py_cmd_t *ten_py_cmd_wrap(ten_shared_ptr_t *cmd) {
   TEN_ASSERT(cmd, "Invalid argument.");
   TEN_ASSERT(ten_msg_check_integrity(cmd), "Invalid argument.");
@@ -74,6 +81,7 @@ void ten_py_cmd_invalidate(ten_py_cmd_t *self) {
   Py_DECREF(self);
 }
 
+// 消息克隆
 PyObject *ten_py_cmd_clone(PyObject *self, TEN_UNUSED PyObject *args) {
   ten_py_cmd_t *py_cmd = (ten_py_cmd_t *)self;
   TEN_ASSERT(py_cmd, "Invalid argument.");
