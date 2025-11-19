@@ -88,9 +88,6 @@
       "path": "../../../ten_packages/extension/bytedance_tts_duplex"
     },
     {
-      "path": "../../../ten_packages/extension/cartesia_tts"
-    },
-    {
       "path": "../../../ten_packages/extension/cosy_tts_python"
     },
     {
@@ -140,6 +137,9 @@
     },
     {
       "path": "../../../ten_packages/extension/weatherapi_tool_python"
+    },
+    {
+      "path": "../../../ten_packages/extension/ten_vad_python"
     }
   ],
   "scripts": {

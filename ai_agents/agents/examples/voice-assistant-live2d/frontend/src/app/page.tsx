@@ -500,7 +500,7 @@ const characterOptions: CharacterProfile[] = [
     headline: "Your Charming Clever Companion",
     description:
       "Kei is a friendly guide who lights up every conversation. Connect with her for thoughtful answers, gentle encouragement, and a dash of anime sparkle whenever you need it.",
-    quote: "Hi! I’m Kei. Let me know how I can make your day easier.",
+    quote: "我是[禅境]的数字助手[小美]",
     voiceType: "female",
     mouthConfig: {
       type: "open",
@@ -529,7 +529,7 @@ const characterOptions: CharacterProfile[] = [
     },
     connectionGreeting: "My name is Kei.",
     agentGreeting:
-      "My name is Kei, nice to meet you! I’m your anime assistant. What’s your name?",
+      "",
   },
   {
     id: "mao",
