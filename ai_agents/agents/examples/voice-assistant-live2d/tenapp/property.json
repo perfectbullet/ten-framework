@@ -50,7 +50,7 @@
                 "max_tokens": 512,
                 "prompt": "",
                 "proxy_url": "${env:OPENAI_PROXY_URL|}",
-                "greeting": "Hello there, nice to meet you! I’m your anime assistant—what’s your name?",
+                "greeting": "嗨～您好呀！我是[小美]，[禅境科技]的数字小助手，随时听您吩咐！",
                 "max_memory_length": 10
               }
             },
@@ -100,6 +100,11 @@
               "name": "streamid_adapter",
               "addon": "streamid_adapter",
               "property": {}
+            },
+            {
+              "type": "extension",
+              "name": "vad",
+              "addon": "ten_vad_python"
             }
           ],
           "connections": [
@@ -124,6 +129,17 @@
                   "source": [
                     {
                       "extension": "weatherapi_tool_python"
+                    }
+                  ]
+                },
+                {
+                  "names": [
+                    "start_of_sentence",
+                    "end_of_sentence"
+                  ],
+                  "source": [
+                    {
+                      "extension": "vad"
                     }
                   ]
                 }
@@ -178,6 +194,9 @@
                   "dest": [
                     {
                       "extension": "stt"
+                    },
+                    {
+                      "extension": "vad"
                     }
                   ]
                 }
