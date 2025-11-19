@@ -112,7 +112,7 @@ def test_basic_retrieval():
     # 配置客户端
     client = RAGFlowRetrievalClient(
         base_url="http://192.168.8.231:9380/v1/api/",  # 修改为您的实际URL
-        api_token="ragflow-ZjN2M5MTY2NWJjMzExZjA5Yjg0OTNlMz"  # 修改为您的实际Token
+        api_token="ragflow-ZjN2M5MTY2NWJjMzExZjA5Yjg0OTNlMz"  # 修改为您的实际Token，这个token是ragflow的token
     )
 
     # 执行检索
