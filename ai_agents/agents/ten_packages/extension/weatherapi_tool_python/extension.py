@@ -24,6 +24,9 @@ from ten_ai_base.types import (
 )
 from ten_ai_base.llm_tool import AsyncLLMToolBaseExtension
 
+from .weather_sync_with_pinyin import fetch_weather
+
+
 CMD_TOOL_REGISTER = "tool_register"
 CMD_TOOL_CALL = "tool_call"
 CMD_PROPERTY_NAME = "name"
@@ -46,44 +49,6 @@ CURRENT_TOOL_PARAMETERS = {
     },
     "required": ["location"],
 }
-
-# for free key, only 7 days before, see more in https://www.weatherapi.com/pricing.aspx
-HISTORY_TOOL_NAME = "get_past_weather"
-HISTORY_TOOL_DESCRIPTION = (
-    "Determine weather within past 7 days in user's location."
-)
-HISTORY_TOOL_PARAMETERS = {
-    "type": "object",
-    "properties": {
-        "location": {
-            "type": "string",
-            "description": "The city and state (use only English) e.g. San Francisco, CA",
-        },
-        "datetime": {
-            "type": "string",
-            "description": "The datetime user is referring in date format e.g. 2024-10-09",
-        },
-    },
-    "required": ["location", "datetime"],
-}
-
-# for free key, only 3 days after, see more in https://www.weatherapi.com/pricing.aspx
-FORECAST_TOOL_NAME = "get_future_weather"
-FORECAST_TOOL_DESCRIPTION = (
-    "Determine weather in next 3 days in user's location."
-)
-FORECAST_TOOL_PARAMETERS = {
-    "type": "object",
-    "properties": {
-        "location": {
-            "type": "string",
-            "description": "The city and state (use only English) e.g. San Francisco, CA",
-        }
-    },
-    "required": ["location"],
-}
-
-PROPERTY_API_KEY = "api_key"  # Required
 
 
 @dataclass
@@ -150,36 +115,6 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
                     ),
                 ],
             ),
-            LLMToolMetadata(
-                name=HISTORY_TOOL_NAME,
-                description=HISTORY_TOOL_DESCRIPTION,
-                parameters=[
-                    LLMToolMetadataParameter(
-                        name="location",
-                        type="string",
-                        description="The city and state (use only English) e.g. San Francisco, CA",
-                        required=True,
-                    ),
-                    LLMToolMetadataParameter(
-                        name="datetime",
-                        type="string",
-                        description="The datetime user is referring in date format e.g. 2024-10-09",
-                        required=True,
-                    ),
-                ],
-            ),
-            LLMToolMetadata(
-                name=FORECAST_TOOL_NAME,
-                description=FORECAST_TOOL_DESCRIPTION,
-                parameters=[
-                    LLMToolMetadataParameter(
-                        name="location",
-                        type="string",
-                        description="The city and state (use only English) e.g. San Francisco, CA",
-                        required=True,
-                    ),
-                ],
-            ),
         ]
 
     async def run_tool(
@@ -192,19 +127,9 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
                 type="llmresult",
                 content=json.dumps(result),
             )
-        elif name == HISTORY_TOOL_NAME:
-            result = await self._get_past_weather(args)
-            # result = LLMCompletionContentItemText(text="I see something")
-            return LLMToolResultLLMResult(
+        return LLMToolResultLLMResult(
                 type="llmresult",
-                content=json.dumps(result),
-            )
-        elif name == FORECAST_TOOL_NAME:
-            result = await self._get_future_weather(args)
-            # result = LLMCompletionContentItemText(text="I see something")
-            return LLMToolResultLLMResult(
-                type="llmresult",
-                content=json.dumps(result),
+                content=json.dumps({}),
             )
 
     async def _get_current_weather(self, args: dict) -> Any:
@@ -213,59 +138,8 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
 
         try:
             location = args["location"]
-            url = f"http://api.weatherapi.com/v1/current.json?key={self.config.api_key}&q={location}&aqi=no"
-
-            async with self.session.get(url) as response:
-                result = await response.json()
-                return {
-                    "location": result.get("location", {}).get("name", ""),
-                    "temperature": result.get("current", {}).get("temp_c", ""),
-                    "humidity": result.get("current", {}).get("humidity", ""),
-                    "wind_speed": result.get("current", {}).get("wind_kph", ""),
-                }
+            weather = fetch_weather(location)
+            return weather
         except Exception as e:
             self.ten_env.log_error(f"Failed to get current weather: {e}")
             return None
-
-    async def _get_past_weather(self, args: dict) -> Any:
-        if "location" not in args or "datetime" not in args:
-            raise ValueError("Failed to get property")
-
-        location = args["location"]
-        datetime = args["datetime"]
-        url = f"http://api.weatherapi.com/v1/history.json?key={self.config.api_key}&q={location}&dt={datetime}"
-
-        async with self.session.get(url) as response:
-            result = await response.json()
-
-            # Remove all hourly data
-            if (
-                "forecast" in result
-                and "forecastday" in result["forecast"]
-                and result["forecast"]["forecastday"]
-            ):
-                result["forecast"]["forecastday"][0].pop("hour", None)
-
-            return result
-
-    async def _get_future_weather(self, args: dict) -> Any:
-        if "location" not in args:
-            raise ValueError("Failed to get property")
-
-        location = args["location"]
-        url = f"http://api.weatherapi.com/v1/forecast.json?key={self.config.api_key}&q={location}&days=3&aqi=no&alerts=no"
-
-        async with self.session.get(url) as response:
-            result = await response.json()
-
-            # Log the result
-            self.ten_env.log_info(f"get result {result}")
-
-            # Remove all hourly data
-            for d in result.get("forecast", {}).get("forecastday", []):
-                d.pop("hour", None)
-
-            # Remove current weather data
-            result.pop("current", None)
-
-            return result
