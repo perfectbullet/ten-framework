@@ -1,12 +1,13 @@
 """
 天气查询工具（同步版本 + 中文拼音支持）
 Author: perfectbullet
-Date: 2025-11-19 11:27:43 UTC
+Date: 2025-11-19 11:43:44 UTC
 """
 
 import httpx
 from pypinyin import lazy_pinyin
 import re
+import os
 
 # ---------------------------------------------------------------------------
 # Weather helpers
@@ -105,22 +106,28 @@ def convert_city_to_pinyin(city: str) -> str:
     return pinyin
 
 
-def fetch_weather(city: str, api_key: str) -> dict[str, str]:
+def fetch_weather(city: str) -> dict[str, str]:
     """
     调用 OpenWeather API 并返回简化的天气信息字典（同步版本）
     
     Args:
         city: 城市名称（支持中文和拼音）
-        api_key: OpenWeather API Key
         
     Returns:
         包含天气信息的字典
         
     Raises:
+        ValueError: 如果未设置 OPENWEATHER_API_KEY 环境变量
         httpx.HTTPStatusError: 如果响应状态码非 2xx
     """
-    os.environ.setdefault('DASHSCOPE_API_KEY', 'sk-8d2c6b34857f4dfc84bb797bffe265ab')
-
+    # 从环境变量获取 API Key
+    api_key = os.environ.get('OPENWEATHER_API_KEY')
+    if not api_key:
+        raise ValueError(
+            "未设置 OPENWEATHER_API_KEY 环境变量。\n"
+            "请运行: export OPENWEATHER_API_KEY='your-api-key'"
+        )
+    
     # 保存原始城市名（用于显示）
     original_city = city
     
@@ -176,9 +183,18 @@ def main():
     
     print("🌤️  天气查询工具（支持中文/拼音）")
     print(f"👤 用户: perfectbullet")
-    print(f"📅 日期: 2025-11-19 11:27:43 UTC\n")
+    print(f"📅 日期: 2025-11-19 11:43:44 UTC\n")
     
-    api_key = "8d78f7c5c23210915f3d1a6863cb5175"
+    # 检查环境变量
+    api_key = os.environ.get('OPENWEATHER_API_KEY')
+    if not api_key:
+        print("❌ 错误: 未设置 OPENWEATHER_API_KEY 环境变量")
+        print("\n请设置环境变量:")
+        print("  Windows: set OPENWEATHER_API_KEY=your-api-key")
+        print("  Linux/Mac: export OPENWEATHER_API_KEY=your-api-key")
+        return
+    
+    print(f"✅ API Key 已配置: {api_key[:10]}...{api_key[-4:]}\n")
     
     # 测试中文城市名
     print("="*70)
@@ -189,7 +205,7 @@ def main():
     
     for city in chinese_cities:
         try:
-            weather = fetch_weather(city=city, api_key=api_key)
+            weather = fetch_weather(city=city)
             print(f"\n✅ {weather['summary']}")
         except httpx.HTTPStatusError as e:
             print(f"\n❌ {city}: HTTP 错误 {e.response.status_code}")
@@ -206,7 +222,7 @@ def main():
     
     for city in pinyin_cities:
         try:
-            weather = fetch_weather(city=city, api_key=api_key)
+            weather = fetch_weather(city=city)
             print(f"\n✅ {weather['summary']}")
         except Exception as e:
             print(f"\n❌ {city}: {e}")
@@ -220,7 +236,7 @@ def main():
     
     for city in mixed_cities:
         try:
-            weather = fetch_weather(city=city, api_key=api_key)
+            weather = fetch_weather(city=city)
             print(f"\n✅ {weather['summary']}")
         except Exception as e:
             print(f"\n❌ {city}: {e}")
@@ -234,7 +250,7 @@ def main():
     
     for city in special_cities:
         try:
-            weather = fetch_weather(city=city, api_key=api_key)
+            weather = fetch_weather(city=city)
             print(f"\n✅ {weather['summary']}")
         except Exception as e:
             print(f"\n❌ {city}: {e}")
