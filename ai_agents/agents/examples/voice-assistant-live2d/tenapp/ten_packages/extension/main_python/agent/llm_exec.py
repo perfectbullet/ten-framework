@@ -28,6 +28,8 @@ from ..helper import _send_cmd, _send_cmd_ex
 from ten_runtime import AsyncTenEnv, Loc, StatusCode
 import uuid
 
+from .Retrieval_RAGFlow_Client import RAGFlowRetrievalClient
+
 
 class LLMExec:
     """
@@ -181,6 +183,22 @@ class LLMExec:
         3. 调用 LLM Extension
         4. 流式处理响应
         """
+
+        # ===== 新增:RAG 检索 =====
+        ten_env.log_info(
+            f"_send_to_llm: new_message {new_message}"
+        )
+        if new_message.role == "user":
+            retrieved_docs = await self._retrieve_relevant_docs(new_message.content)
+            if retrieved_docs:
+                # 将检索结果注入消息
+                enriched_content = self._enrich_with_context(
+                    new_message.content,
+                    retrieved_docs
+                )
+                new_message.content = enriched_content
+        # ===== RAG 检索结束 =====
+
         # Step 1: 合并上下文
         messages = self.contexts.copy()
         messages.append(new_message)
@@ -330,3 +348,61 @@ class LLMExec:
                         # )
                 else:
                     self.ten_env.log_error("Tool call failed")
+
+    async def _retrieve_relevant_docs(self, query: str) -> list[str]:
+        """
+        使用 ChromaDB 检索相关文档
+        """
+        try:
+            # 配置客户端
+            client = RAGFlowRetrievalClient(
+                base_url="http://192.168.8.231:9380/v1/api/",  # 修改为您的实际URL
+                api_token="ragflow-ZjN2M5MTY2NWJjMzExZjA5Yjg0OTNlMz"  # 修改为您的实际Token
+            )
+            # 执行检索
+            result = client.retrieval(
+                kb_id=["02a723a85bc411f09b8493e33f5c065d"],  # 修改为实际的知识库ID, 目前这个id是测试的默认知识库id
+                question=query
+            )
+            # 检查响应状态
+            if result.get("code") != 0:
+                print(f"❌ 错误: {result.get('message', '未知错误')}")
+                print(f"错误代码: {result.get('code', 'N/A')}")
+                return []
+            docs = []
+            # 解析数据
+            data = result.get("data", {})
+            chunks = data.get("chunks", [])
+            if chunks:
+                print("\n" + "-" * 80)
+                print("🔍 Top 检索片段:")
+                for idx, chunk in enumerate(chunks[:5], 1):  # 显示前5个
+                    print(f"\n【片段 {idx}】")
+                    print(f"├─ 文档名: {chunk.get('docnm_kwd', 'N/A')}")
+                    print(f"├─ 片段ID: {chunk.get('chunk_id', 'N/A')}")
+                    print(f"├─ 综合相似度: {chunk.get('similarity', 0):.4f}")
+                    print(f"├─ 向量相似度: {chunk.get('vector_similarity', 0):.4f}")
+                    print(f"├─ 关键词相似度: {chunk.get('term_similarity', 0):.4f}")
+                    # 显示内容(优先使用带权重的内容)
+                    content = chunk.get('content_with_weight') or chunk.get('content_ltks', '')
+                    if content:
+                        docs.append(content)
+                        # 截取前200字符并清理格式
+                        display_content = content.replace('\n', ' ').strip()[:200]
+                        print(f"└─ 内容预览:")
+                        print(f"   {display_content}...")
+                    else:
+                        print(f"└─ 内容预览: (无内容)")
+            return docs
+        except Exception as e:
+            self.ten_env.log_error(f"ChromaDB retrieval failed: {e}")
+        return []
+
+    def _enrich_with_context(self, query: str, docs: list[str]) -> str:
+        """将检索结果格式化为提示词"""
+        context = "\n\n".join([f"[文档 {i + 1}]\n{doc}" for i, doc in enumerate(docs)])
+        return f"""参考以下文档回答问题:
+
+{context}
+
+用户问题: {query}"""
