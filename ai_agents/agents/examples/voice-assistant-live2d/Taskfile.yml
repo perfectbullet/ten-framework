@@ -1,6 +1,6 @@
 version: "3"
 
-dotenv: ["../../../.env"]
+dotenv: [ "../../../.env" ]
 
 tasks:
   # install scripts
@@ -19,7 +19,7 @@ tasks:
 
   install-tenapp-python-deps:
     desc: install tenapp python dependencies
-    deps: [install-tenapp]
+    deps: [ install-tenapp ]
     internal: true
     dir: ./tenapp
     cmds:
@@ -39,7 +39,6 @@ tasks:
       - task: install-tenapp-python-deps
       - task: install-frontend
       - task: build-api-server
-
 
   # run scripts
   run-tenapp:
@@ -69,10 +68,10 @@ tasks:
   run:
     desc: run everything
     deps:
-#      - task: run-gd-server
-      - task: run-frontend
+      - task: run-tenapp
+      #      - task: run-gd-server
       - task: run-api-server
-
+      - task: run-frontend
 
   # release scripts
   release:
