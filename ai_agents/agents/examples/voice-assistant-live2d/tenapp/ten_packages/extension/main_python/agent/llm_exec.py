@@ -351,7 +351,7 @@ class LLMExec:
 
     async def _retrieve_relevant_docs(self, query: str) -> list[str]:
         """
-        使用 ChromaDB 检索相关文档
+        使用 RAGFlow 的接口检索相关文档
         """
         try:
             # 配置客户端
@@ -374,25 +374,11 @@ class LLMExec:
             data = result.get("data", {})
             chunks = data.get("chunks", [])
             if chunks:
-                print("\n" + "-" * 80)
-                print("🔍 Top 检索片段:")
-                for idx, chunk in enumerate(chunks[:5], 1):  # 显示前5个
-                    print(f"\n【片段 {idx}】")
-                    print(f"├─ 文档名: {chunk.get('docnm_kwd', 'N/A')}")
-                    print(f"├─ 片段ID: {chunk.get('chunk_id', 'N/A')}")
-                    print(f"├─ 综合相似度: {chunk.get('similarity', 0):.4f}")
-                    print(f"├─ 向量相似度: {chunk.get('vector_similarity', 0):.4f}")
-                    print(f"├─ 关键词相似度: {chunk.get('term_similarity', 0):.4f}")
+                for idx, chunk in enumerate(chunks, 1):  # 显示前5个
                     # 显示内容(优先使用带权重的内容)
                     content = chunk.get('content_with_weight') or chunk.get('content_ltks', '')
                     if content:
                         docs.append(content)
-                        # 截取前200字符并清理格式
-                        display_content = content.replace('\n', ' ').strip()[:200]
-                        print(f"└─ 内容预览:")
-                        print(f"   {display_content}...")
-                    else:
-                        print(f"└─ 内容预览: (无内容)")
             return docs
         except Exception as e:
             self.ten_env.log_error(f"ChromaDB retrieval failed: {e}")
