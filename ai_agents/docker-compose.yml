@@ -43,13 +43,10 @@ services:
       # Nginx 配置文件（本地挂载，方便调试）
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      
       # SSL 证书
       - ./nginx/ssl:/etc/nginx/ssl:ro
-      
       # 日志文件（本地挂载，方便查看）
       - ./nginx/logs:/var/log/nginx
-      
       # 可选：静态文件缓存目录
       - ./nginx/cache:/var/cache/nginx
     depends_on:
@@ -62,18 +59,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
-  # ten_graph_designer:
-  #   image: ghcr.io/ten-framework/ten_graph_designer:4cc33b8
-  #   container_name: ten_graph_designer
-  #   restart: always
-  #   ports:
-  #     - "3001:3000"
-  #   networks:
-  #     - ten_agent_network
-  #   environment:
-  #     - TEN_DEV_SERVER_URL=http://ten_agent_dev:49483
-
 networks:
   ten_agent_network:
     driver: bridge
