@@ -24,3 +24,5 @@ build
 __pycache__
 .release
 /voice-assistant/.env
+/voice-assistant-live2d/tenapp/ten_packages/extension/main_python/agent/chroma_db/
+/voice-assistant-live2d/tenapp/ten_packages/extension/main_python/agent/data/
