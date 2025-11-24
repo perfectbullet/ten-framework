@@ -81,13 +81,11 @@ class RAGFlowRetrievalClient:
                 json=payload,
                 timeout=30
             )
-
             # 打印请求信息
             print(f"📤 Request URL: {url}")
             print(f"📤 Request Headers: {json.dumps(self.headers, indent=2)}")
             print(f"📤 Request Payload: {json.dumps(payload, indent=2, ensure_ascii=False)}")
             print(f"\n📥 Response Status: {response.status_code}")
-
             # 解析响应
             result = response.json()
             print(f"📥 Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
