@@ -353,6 +353,10 @@ class LLMExec:
         """
         使用 RAGFlow 的接口检索相关文档
         """
+        if '天气' in query:
+            return []  # 如果是天气相关问题，跳过检索
+        if '你好' in query:
+            return []
         try:
             # 配置客户端
             client = RAGFlowRetrievalClient(

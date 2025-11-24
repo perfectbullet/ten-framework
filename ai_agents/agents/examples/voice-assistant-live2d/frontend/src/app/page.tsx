@@ -497,9 +497,9 @@ const characterOptions: CharacterProfile[] = [
     name: "Kei",
     path: buildRemoteModelAssetPath("kei_vowels_pro", "kei_vowels_pro.model3.json"),
     preview: buildRemoteModelAssetPath("kei_vowels_pro", "preview.svg"),
-    headline: "Your Charming Clever Companion",
+    headline: "[禅境]的数字助手",
     description:
-      "Kei is a friendly guide who lights up every conversation. Connect with her for thoughtful answers, gentle encouragement, and a dash of anime sparkle whenever you need it.",
+      "数字助手是一位友善的向导，总能让每段对话都充满活力。无论何时你需要，都可以和她交流 —— 她会给出周到的解答、温柔的鼓励，还会带着一丝动漫般的灵动气息。",
     quote: "我是[禅境]的数字助手[小美]",
     voiceType: "female",
     mouthConfig: {
@@ -527,7 +527,7 @@ const characterOptions: CharacterProfile[] = [
         opacity: 0.22,
       },
     },
-    connectionGreeting: "My name is Kei.",
+    connectionGreeting: "Hello, 我是小美",
     agentGreeting:
       "",
   },
