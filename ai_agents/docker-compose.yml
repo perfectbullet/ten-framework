@@ -1,32 +1,32 @@
 services:
-  ten_agent_dev:
-    image: ghcr.io/ten-framework/ten_agent_build:0.7.9
-    container_name: ten_agent_dev
-    platform: linux/amd64
-    tty: true
-    stdin_open: true
-    restart: always
-    ports:
-      # 内部端口，不再直接暴露到宿主机
-      - "${GRAPH_DESIGNER_SERVER_PORT}:${GRAPH_DESIGNER_SERVER_PORT}"
-      - "${SERVER_PORT}:${SERVER_PORT}"
-    expose:
-      - "3000"
-      - "8080"
-      - "9000"
-      - "9001"
-      - "49483"
-    volumes:
-      - ./:/app
-      - ${LOG_PATH}:${LOG_PATH}
-      - ../.vscode/:/app/.vscode
-      - ../tools/pylint/.pylintrc:/tools/pylint/.pylintrc
-      - ../tools/upgrade:/tools/upgrade
-    working_dir: /app
-    env_file:
-      - .env
-    networks:
-      - ten_agent_network
+#  ten_agent_dev:
+#    image: ghcr.io/ten-framework/ten_agent_build:0.7.9
+#    container_name: ten_agent_dev
+#    platform: linux/amd64
+#    tty: true
+#    stdin_open: true
+#    restart: always
+#    ports:
+#      # 内部端口，不再直接暴露到宿主机
+#      - "${GRAPH_DESIGNER_SERVER_PORT}:${GRAPH_DESIGNER_SERVER_PORT}"
+#      - "${SERVER_PORT}:${SERVER_PORT}"
+#    expose:
+#      - "3000"
+#      - "8080"
+#      - "9000"
+#      - "9001"
+#      - "49483"
+#    volumes:
+#      - ./:/app
+#      - ${LOG_PATH}:${LOG_PATH}
+#      - ../.vscode/:/app/.vscode
+#      - ../tools/pylint/.pylintrc:/tools/pylint/.pylintrc
+#      - ../tools/upgrade:/tools/upgrade
+#    working_dir: /app
+#    env_file:
+#      - .env
+#    networks:
+#      - ten_agent_network
 
   nginx:
     image: nginx:1.25-alpine
@@ -34,11 +34,11 @@ services:
     restart: always
     ports:
       - "80:80"           # HTTP（用于重定向到 HTTPS）
-      - "3000:3000"       # HTTPS Frontend
-      - "8080:8080"       # HTTP Agent Server
-      - "9000:9000"       # HTTP RTC Port 1
-      - "9001:9001"       # HTTP RTC Port 2
-      - "49483:49483"     # HTTP Graph Designer
+      - "3001:3000"       # HTTPS Frontend
+      - "8082:8080"       # HTTP Agent Server
+      - "9010:9000"       # HTTP RTC Port 1
+      - "9011:9001"       # HTTP RTC Port 2
+      - "49485:49483"     # HTTP Graph Designer
     volumes:
       # Nginx 配置文件（本地挂载，方便调试）
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -49,8 +49,8 @@ services:
       - ./nginx/logs:/var/log/nginx
       # 可选：静态文件缓存目录
       - ./nginx/cache:/var/cache/nginx
-    depends_on:
-      - ten_agent_dev
+#    depends_on:
+#      - ten_agent_dev
     networks:
       - ten_agent_network
     healthcheck:
