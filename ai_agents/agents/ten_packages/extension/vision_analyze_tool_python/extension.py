@@ -5,6 +5,7 @@
 #
 import json
 import uuid
+from datetime import datetime
 from ten_ai_base.struct import (
     EventType,
     LLMMessage,
@@ -20,10 +21,12 @@ from ten_runtime import (
     Cmd,
     Data,
 )
+from pathlib import Path
 from PIL import Image
 from io import BytesIO
 from base64 import b64encode
-
+import requests
+import base64
 from ten_ai_base.types import (
     LLMToolMetadata,
     LLMToolMetadataParameter,
@@ -126,6 +129,79 @@ def resize_image_keep_aspect(image, max_size=512):
     return resized_image
 
 
+def call_qwen25vl(prompt: str, image_path: str = None):
+    """
+    调用 qwen2.5vl:32b 模型
+    :param prompt: 文本提示（如问答、指令）
+    :param image_path: 本地图像路径（可选，支持 JPG/PNG）
+    :return: 模型响应结果
+    """
+    # Ollama API 地址（默认本地）
+    url = "http://192.168.8.231:11434/api/generate"
+
+    # 构建请求数据（核心：多模态输入需用 "images" 字段传 Base64 图像）
+    data = {
+        "model": "qwen2.5vl:32b",
+        "prompt": prompt,
+        "stream": False,  # 关闭流式输出，直接获取完整响应
+        "options": {
+            "temperature": 0.3,  # 温度参数（越低越稳定）
+            "top_p": 0.9  # 采样参数
+        }
+    }
+
+    # 若传入图像，转换为 Base64 编码（Ollama 要求图像用 Base64 传输）
+    if image_path and Path(image_path).exists():
+        with open(image_path, "rb") as f:
+            image_base64 = base64.b64encode(f.read()).decode("utf-8")
+        data["images"] = [image_base64]  # 支持多图输入，传入列表即可
+
+    # 发送 POST 请求调用模型
+    response = requests.post(url, json=data, timeout=60)  # 32B 模型响应较慢，超时设为 60s
+    response.raise_for_status()  # 抛出 HTTP 错误（如服务未启动）
+
+    # 解析响应结果
+    return response.json()["response"]
+
+
+
+def base64_to_jpeg(image_base64: str, save_path: str = "output.jpg"):
+    """
+    从 JSON 文件中提取 base64 格式的 image_url，解码并保存为 JPEG 图片
+
+    Args:
+        image_base64: image_base64
+        save_path: 输出 JPEG 图片路径（默认 output.jpg）
+    """
+    try:
+        # 2. 提取 image_url 字段（容错：处理字段不存在的情况）
+        if not image_base64:
+            raise KeyError("JSON 中未找到 'image_url' 字段")
+
+        # 3. 去除 Base64 前缀（如 "data:image/jpeg;base64,"）
+        # 兼容带前缀和不带前缀的两种格式
+        if "base64," in image_base64:
+            image_base64 = image_base64.split("base64,")[-1]
+
+        # 4. Base64 解码（处理可能的空格/换行符）
+        image_base64 = image_base64.strip().replace("\n", "").replace(" ", "")
+        try:
+            image_bytes = base64.b64decode(image_base64, validate=True)  # validate=True 校验 Base64 合法性
+        except base64.binascii.Error as e:
+            raise ValueError(f"Base64 编码无效：{str(e)}")
+
+        # 5. 保存为 JPEG 图片
+        with open(save_path, "wb") as f:
+            f.write(image_bytes)
+
+        print(f"图片保存成功！路径：{save_path}")
+        return save_path
+
+    except Exception as e:
+        print(f"处理失败：{str(e)}")
+        return None
+
+
 class VisionAnalyzeToolExtension(AsyncLLMToolBaseExtension):
     image_data = None
     image_width = 0
@@ -157,13 +233,13 @@ class VisionAnalyzeToolExtension(AsyncLLMToolBaseExtension):
         ten_env.log_debug("on_data name {}".format(data_name))
 
     async def on_audio_frame(
-        self, ten_env: AsyncTenEnv, audio_frame: AudioFrame
+            self, ten_env: AsyncTenEnv, audio_frame: AudioFrame
     ) -> None:
         audio_frame_name = audio_frame.get_name()
         ten_env.log_debug("on_audio_frame name {}".format(audio_frame_name))
 
     async def on_video_frame(
-        self, ten_env: AsyncTenEnv, video_frame: VideoFrame
+            self, ten_env: AsyncTenEnv, video_frame: VideoFrame
     ) -> None:
         video_frame_name = video_frame.get_name()
         ten_env.log_debug("on_video_frame name {}".format(video_frame_name))
@@ -189,7 +265,7 @@ class VisionAnalyzeToolExtension(AsyncLLMToolBaseExtension):
         ]
 
     async def run_tool(
-        self, ten_env: AsyncTenEnv, name: str, args: dict
+            self, ten_env: AsyncTenEnv, name: str, args: dict
     ) -> LLMToolResult | None:
         if name == "get_vision_chat_completion":
             if self.image_data is None:
@@ -237,47 +313,63 @@ class VisionAnalyzeToolExtension(AsyncLLMToolBaseExtension):
             # [cmd_result, _] = await ten_env.send_cmd(cmd)
             # result, _ = cmd_result.get_property_to_json("response")
 
+
+            # 生成格式：年-月-日_时-分-秒（如：2025-11-24_15-30-45）
+            current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            file_name = f"output_{current_time}.jpg"
+            base64_to_jpeg(base64_image, file_name)
+
             request_id = str(uuid.uuid4())
-            messages: list[LLMMessage] = []
-            messages.append(
-                LLMMessageContent(
-                    role="user",
-                    content=[
-                        {"type": "text", "text": query},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": base64_image},
-                        },
-                    ],
-                )
-            )
-            llm_input = LLMRequest(
-                request_id=request_id,
-                messages=messages,
-                model="gpt-4o",
-                streaming=True,
-                parameters={"temperature": 0.7},
-                tools=[],
-            )
-            input_json = llm_input.model_dump()
-            cmd = Cmd.create("chat_completion")
-            cmd.set_property_from_json(None, json.dumps(input_json))
-            response = ten_env.send_cmd_ex(cmd)
+            # messages: list[LLMMessage] = []
+            # messages.append(
+            #     LLMMessageContent(
+            #         role="user",
+            #         content=[
+            #             {"type": "text", "text": query},
+            #             {
+            #                 "type": "image_url",
+            #                 "image_url": {"url": base64_image},
+            #             },
+            #         ],
+            #     )
+            # )
+            # llm_input = LLMRequest(
+            #     request_id=request_id,
+            #     messages=messages,
+            #     model="qwen2.5vl:32b",
+            #     streaming=False,
+            #     parameters={"temperature": 0.7},
+            #     tools=[],
+            # )
+            # input_json = llm_input.model_dump()
+            # cmd = Cmd.create("chat_completion")
+            # cmd.set_property_from_json(None, json.dumps(input_json))
+            # response = ten_env.send_cmd_ex(cmd)
+            #
+            # # response = _send_cmd_ex(ten_env, "chat_completion", "llm", input_json)
+            #
+            # result = ""
+            #
+            # async for cmd_result, _ in response:
+            #     if cmd_result and cmd_result.is_final() is False:
+            #         if cmd_result.get_status_code() == StatusCode.OK:
+            #             response_json, _ = cmd_result.get_property_to_json(None)
+            #             ten_env.log_info(f"tool: response_json {response_json}")
+            #             completion = parse_llm_response(response_json)
+            #             if completion.type == EventType.MESSAGE_CONTENT_DONE:
+            #                 result = completion.content
+            #                 break
+            # ten_env.log_info(f"Processing vision result is: {result}")
 
-            # response = _send_cmd_ex(ten_env, "chat_completion", "llm", input_json)
 
-            result = ""
-
-            async for cmd_result, _ in response:
-                if cmd_result and cmd_result.is_final() is False:
-                    if cmd_result.get_status_code() == StatusCode.OK:
-                        response_json, _ = cmd_result.get_property_to_json(None)
-                        ten_env.log_info(f"tool: response_json {response_json}")
-                        completion = parse_llm_response(response_json)
-                        if completion.type == EventType.MESSAGE_CONTENT_DONE:
-                            result = completion.content
-                            break
-
+            content = call_qwen25vl('简单描述图片主要内容', file_name)
+            ten_env.log_info(f"Processing vision content is: {content}")
+            result = {
+                "response_id": request_id,
+                "role": "assistant",
+                "content": content,
+                "type": "message_content_delta"
+            }
             return LLMToolResultLLMResult(
                 type="llmresult",
                 content=json.dumps(result),
