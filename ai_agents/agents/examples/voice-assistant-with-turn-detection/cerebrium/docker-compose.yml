@@ -1,14 +1,19 @@
-version: '3.8'
+name: turn-detection
 
 services:
   turn-detection:
     build:
       context: .
       dockerfile: Dockerfile
+      # 启用 BuildKit 缓存
+      cache_from:
+        - ten-turn-detection:latest
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     image: ten-turn-detection:latest
     container_name: ten-turn-detection-service
     restart: unless-stopped
-    
+
     # GPU 配置
     deploy:
       resources:
@@ -19,28 +24,29 @@ services:
               capabilities: [gpu]
         limits:
           cpus: '2.0'
-          memory: 14G
-    
+          memory: 32G
+
     # 端口映射
     ports:
       - "50010:50010"
-    
+
     # 环境变量
     environment:
       - CUDA_VISIBLE_DEVICES=0
       - MODEL_ID=TEN-framework/TEN_Turn_Detection
       - GPU_MEMORY_UTILIZATION=0.9
       - LOG_LEVEL=INFO
-    
-    # 卷挂载
+      - PYTHONUNBUFFERED=1
+
+    # 卷挂载（持久化缓存）
     volumes:
       # 日志目录
       - ./logs:/app/logs
       # Hugging Face 缓存（避免重复下载模型）
-      - ~/.cache/huggingface:/root/.cache/huggingface
-      # 配置文件（可选，用于热更新）
-      - ./cerebrium.toml:/app/cerebrium.toml:ro
-    
+      - huggingface-cache:/root/. cache/huggingface
+      # pip 缓存（可选，进一步加速）
+      - pip-cache:/root/.cache/pip
+
     # 健康检查
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:50010/health"]
@@ -48,10 +54,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 120s
-    
+
     # 网络配置
     networks:
       - ten-network
+
+# 命名卷（持久化缓存）
+volumes:
+  huggingface-cache:
+    driver: local
+  pip-cache:
+    driver: local
 
 networks:
   ten-network:
