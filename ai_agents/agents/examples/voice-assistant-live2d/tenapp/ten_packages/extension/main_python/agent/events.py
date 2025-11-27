@@ -52,6 +52,23 @@ class ASRResultEvent(AgentEventBase):
     metadata: Dict[str, Any]
 
 
+class TurnDetectedASRResultEvent(AgentEventBase):
+    """Event triggered when turn detection is detected."""
+
+    type: Literal["data"] = "data"
+    name: Literal["turn_detected_asr_result"] = "turn_detected_asr_result"
+    text: str
+    final: bool
+    metadata: Dict[str, Any]
+
+
+class TurnInterruptedEvent(AgentEventBase):
+    """Event triggered when turn is interrupted."""
+
+    type: Literal["cmd"] = "cmd"
+    name: Literal["turn_interrupted"] = "turn_interrupted"
+
+
 class LLMResponseEvent(AgentEventBase):
     """Event triggered when LLM returns a streaming response."""
 
@@ -70,4 +87,5 @@ AgentEvent = Union[
     ToolRegisterEvent,
     ASRResultEvent,
     LLMResponseEvent,
+    TurnInterruptedEvent,
 ]

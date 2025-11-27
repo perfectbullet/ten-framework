@@ -12,7 +12,7 @@ tasks:
 
   install-tenapp:
     desc: install tenapp dependencies
-    internal: true
+    internal: false
     dir: ./tenapp
     cmds:
       - tman install

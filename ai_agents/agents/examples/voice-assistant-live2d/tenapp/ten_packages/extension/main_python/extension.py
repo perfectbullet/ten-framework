@@ -16,6 +16,8 @@ from .agent.events import (
     ASRResultEvent,
     LLMResponseEvent,
     ToolRegisterEvent,
+    TurnDetectedASRResultEvent,
+    TurnInterruptedEvent,
     UserJoinedEvent,
     UserLeftEvent,
 )
@@ -83,15 +85,31 @@ class MainControlExtension(AsyncExtension):
     @agent_event_handler(ASRResultEvent)
     async def _on_asr_result(self, event: ASRResultEvent):
         self.session_id = event.metadata.get("session_id", "100")
+        if not event.text:
+            return
+        # when getting final asr result, send to turn detection to decide if the turn is over
+        # only send to llm if the turn is over
+        self.ten_env.log_info(
+            f"[MainControlExtension] ASR result: final={event.final}, text={event.text}"
+        )
+        await self._send_to_turn_detection(event.text, event.final)
+
+    @agent_event_handler(TurnDetectedASRResultEvent)
+    async def _on_turn_detected_asr_result(
+        self, event: TurnDetectedASRResultEvent
+    ):
+        self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
         if not event.text:
             return
-        if event.final or len(event.text) > 2:
-            await self._interrupt()
         if event.final:
             self.turn_id += 1
             await self.agent.queue_llm_input(event.text)
         await self._send_transcript("user", event.text, event.final, stream_id)
+
+    @agent_event_handler(TurnInterruptedEvent)
+    async def _on_turn_interrupted(self, event: TurnInterruptedEvent):
+        await self._interrupt()
 
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
@@ -101,11 +119,6 @@ class MainControlExtension(AsyncExtension):
             )
             for s in sentences:
                 await self._send_to_tts(s, False)
-
-        if event.is_final and event.type == "message":
-            remaining_text = self.sentence_fragment or ""
-            self.sentence_fragment = ""
-            await self._send_to_tts(remaining_text, True)
 
         await self._send_transcript(
             "assistant",
@@ -200,11 +213,24 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] Sent to TTS: is_final={is_final}, text={text}"
         )
 
+    async def _send_to_turn_detection(self, text: str, final: bool):
+        await _send_data(
+            self.ten_env,
+            "text_data",
+            "turn_detection",
+            {
+                "text": text,
+                "is_final": final,
+                "metadata": self._current_metadata(),
+            },
+        )
+
     async def _interrupt(self):
         """
         Interrupts ongoing LLM and TTS generation. Typically called when user speech is detected.
         """
         self.sentence_fragment = ""
+        await _send_cmd(self.ten_env, "flush", "turn_detection")
         await self.agent.flush_llm()
         await _send_data(
             self.ten_env, "tts_flush", "tts", {"flush_id": str(uuid.uuid4())}

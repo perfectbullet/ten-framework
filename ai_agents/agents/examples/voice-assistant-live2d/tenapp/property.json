@@ -103,8 +103,13 @@
             },
             {
               "type": "extension",
-              "name": "vad",
-              "addon": "ten_vad_python"
+              "name": "turn_detection",
+              "addon": "ten_turn_detection",
+              "extension_group": "default",
+              "property": {
+                "base_url": "${env:TTD_BASE_URL|}",
+                "api_key": "${env:TTD_API_KEY|}"
+              }
             }
           ],
           "connections": [
@@ -129,17 +134,6 @@
                   "source": [
                     {
                       "extension": "weatherapi_tool_python"
-                    }
-                  ]
-                },
-                {
-                  "names": [
-                    "start_of_sentence",
-                    "end_of_sentence"
-                  ],
-                  "source": [
-                    {
-                      "extension": "vad"
                     }
                   ]
                 }
@@ -194,9 +188,29 @@
                   "dest": [
                     {
                       "extension": "stt"
-                    },
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "turn_detection",
+              "data": [
+                {
+                  "name": "text_data",
+                  "dest": [
                     {
-                      "extension": "vad"
+                      "extension": "main_control"
+                    }
+                  ]
+                }
+              ],
+              "cmd": [
+                {
+                  "name": "flush",
+                  "dest": [
+                    {
+                      "extension": "main_control"
                     }
                   ]
                 }
