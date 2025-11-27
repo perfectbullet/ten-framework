@@ -527,9 +527,8 @@ const characterOptions: CharacterProfile[] = [
         opacity: 0.22,
       },
     },
-    connectionGreeting: "Hello, 我是小美",
-    agentGreeting:
-      "",
+    connectionGreeting: "My name is Mao.",
+    agentGreeting: "My name is Mao.",
   },
   {
     id: "mao",
