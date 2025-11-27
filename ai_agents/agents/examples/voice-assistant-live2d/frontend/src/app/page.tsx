@@ -1572,77 +1572,77 @@ export default function Home() {
   return (
     <div
       className="relative min-h-[100svh] overflow-hidden text-[#2f2d4b]"
-      style={{ backgroundColor: backgroundTheme.baseColor }}
+      // style={{ backgroundColor: backgroundTheme.baseColor }}
     >
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0"
-          style={{ backgroundImage: backgroundTheme.primaryGradient }}
-        />
-        <div
-          className="absolute inset-0 mix-blend-screen"
-          style={{
-            backgroundImage: backgroundTheme.radialOverlay.gradient,
-            opacity: backgroundTheme.radialOverlay.opacity,
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: backgroundTheme.patternOverlay.image,
-            opacity: backgroundTheme.patternOverlay.opacity,
-          }}
-        />
-        <div
-          className="absolute inset-0 mix-blend-multiply"
-          style={{
-            backgroundImage: backgroundTheme.accentOverlay.image,
-            opacity: backgroundTheme.accentOverlay.opacity,
-          }}
-        />
-      </div>
+      {/*<div className="absolute inset-0">*/}
+      {/*  <div*/}
+      {/*    className="absolute inset-0"*/}
+      {/*    style={{ backgroundImage: backgroundTheme.primaryGradient }}*/}
+      {/*  />*/}
+      {/*  <div*/}
+      {/*    className="absolute inset-0 mix-blend-screen"*/}
+      {/*    style={{*/}
+      {/*      backgroundImage: backgroundTheme.radialOverlay.gradient,*/}
+      {/*      opacity: backgroundTheme.radialOverlay.opacity,*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*  <div*/}
+      {/*    className="absolute inset-0"*/}
+      {/*    style={{*/}
+      {/*      backgroundImage: backgroundTheme.patternOverlay.image,*/}
+      {/*      opacity: backgroundTheme.patternOverlay.opacity,*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*  <div*/}
+      {/*    className="absolute inset-0 mix-blend-multiply"*/}
+      {/*    style={{*/}
+      {/*      backgroundImage: backgroundTheme.accentOverlay.image,*/}
+      {/*      opacity: backgroundTheme.accentOverlay.opacity,*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*</div>*/}
 
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {floatingElements.map((item, idx) => (
-          <div
-            key={`${item.type}-${idx}`}
-            className="absolute"
-            style={{
-              top: `${item.top}%`,
-              left: `${item.left}%`,
-              width: `${item.size}px`,
-              height: `${item.size}px`,
-              transform: `rotate(${item.rotate}deg) scale(${item.scale})`,
-              animation: `${item.animation} ${item.duration}s ease-in-out infinite`,
-              animationDelay: item.delay,
-              opacity: item.opacity,
-              filter: `drop-shadow(0 18px 40px ${floatingShadowColor})`,
-            }}
-          >
-            {renderFloatingShape(item.type)}
-          </div>
-        ))}
-      </div>
+      {/*<div className="pointer-events-none absolute inset-0 overflow-hidden">*/}
+      {/*  {floatingElements.map((item, idx) => (*/}
+      {/*    <div*/}
+      {/*      key={`${item.type}-${idx}`}*/}
+      {/*      className="absolute"*/}
+      {/*      style={{*/}
+      {/*        top: `${item.top}%`,*/}
+      {/*        left: `${item.left}%`,*/}
+      {/*        width: `${item.size}px`,*/}
+      {/*        height: `${item.size}px`,*/}
+      {/*        transform: `rotate(${item.rotate}deg) scale(${item.scale})`,*/}
+      {/*        animation: `${item.animation} ${item.duration}s ease-in-out infinite`,*/}
+      {/*        animationDelay: item.delay,*/}
+      {/*        opacity: item.opacity,*/}
+      {/*        filter: `drop-shadow(0 18px 40px ${floatingShadowColor})`,*/}
+      {/*      }}*/}
+      {/*    >*/}
+      {/*      {renderFloatingShape(item.type)}*/}
+      {/*    </div>*/}
+      {/*  ))}*/}
+      {/*</div>*/}
 
       <div className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center gap-6 px-4 py-6 md:px-6 lg:gap-10">
-        <header className="max-w-xl space-y-3 text-center lg:max-w-2xl">
-          <span className="inline-flex items-center rounded-full bg-white/70 px-3.5 py-0.5 font-semibold text-[#ff79a8] text-[0.65rem] uppercase tracking-[0.25em] shadow-sm">
-            Say hello to {selectedModel.name}
-          </span>
-          <h1
-            className={`${headlineFont.className} text-3xl text-[#2f2d4b] leading-snug tracking-tight md:text-[2.75rem] md:leading-tight`}
-          >
-            {selectedModel.headline}
-          </h1>
-          <p
-            className={`${subtitleFont.className} text-[#6f6a92] text-sm md:text-base`}
-          >
-            {selectedModel.description}
-          </p>
-        </header>
+        {/*<header className="max-w-xl space-y-3 text-center lg:max-w-2xl">*/}
+        {/*  <span className="inline-flex items-center rounded-full bg-white/70 px-3.5 py-0.5 font-semibold text-[#ff79a8] text-[0.65rem] uppercase tracking-[0.25em] shadow-sm">*/}
+        {/*    Say hello to {selectedModel.name}*/}
+        {/*  </span>*/}
+        {/*  <h1*/}
+        {/*    className={`${headlineFont.className} text-3xl text-[#2f2d4b] leading-snug tracking-tight md:text-[2.75rem] md:leading-tight`}*/}
+        {/*  >*/}
+        {/*    {selectedModel.headline}*/}
+        {/*  </h1>*/}
+        {/*  <p*/}
+        {/*    className={`${subtitleFont.className} text-[#6f6a92] text-sm md:text-base`}*/}
+        {/*  >*/}
+        {/*    {selectedModel.description}*/}
+        {/*  </p>*/}
+        {/*</header>*/}
 
         <main className="flex w-full max-w-5xl flex-col items-center gap-8">
-          {renderCharacterSwitch()}
+          {/*{renderCharacterSwitch()}*/}
 
           <div className={stageWrapperClass}>
             <div className={stageGlowClass} style={stageGlowStyle} />
