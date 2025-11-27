@@ -19,10 +19,16 @@ class Agent:
 
         # Queues for ordered processing
         self._asr_queue: asyncio.Queue[ASRResultEvent] = asyncio.Queue()
+        # 待处理的？不是很懂这个
+        self._turn_detected_asr_queue: asyncio.Queue[
+            TurnDetectedASRResultEvent
+        ] = asyncio.Queue()
         self._llm_queue: asyncio.Queue[LLMResponseEvent] = asyncio.Queue()
 
         # Current consumer tasks
         self._asr_consumer: Optional[asyncio.Task] = None
+        # 下面这行也不懂
+        self._turn_detected_asr_consumer: Optional[asyncio.Task] = None
         self._llm_consumer: Optional[asyncio.Task] = None
         self._llm_active_task: Optional[asyncio.Task] = (
             None  # currently running handler
@@ -38,6 +44,10 @@ class Agent:
 
         # Start consumers
         self._asr_consumer = asyncio.create_task(self._consume_asr())
+        # 启动一个消费者，消费什么？
+        self._turn_detected_asr_consumer = asyncio.create_task(
+            self._consume_turn_detected_asr()
+        )
         self._llm_consumer = asyncio.create_task(self._consume_llm())
 
     # === Register handlers ===
@@ -84,6 +94,11 @@ class Agent:
             event = await self._asr_queue.get()
             await self._dispatch(event)
 
+    async def _consume_turn_detected_asr(self):
+        while not self.stopped:
+            event = await self._turn_detected_asr_queue.get()
+            await self._dispatch(event)
+
     async def _consume_llm(self):
         while not self.stopped:
             event = await self._llm_queue.get()
@@ -100,6 +115,9 @@ class Agent:
     async def _emit_asr(self, event: ASRResultEvent):
         await self._asr_queue.put(event)
 
+    async def _emit_turn_detected_asr(self, event: TurnDetectedASRResultEvent):
+        await self._turn_detected_asr_queue.put(event)
+
     async def _emit_llm(self, event: LLMResponseEvent):
         await self._llm_queue.put(event)
 
@@ -108,6 +126,7 @@ class Agent:
 
     # === Incoming from runtime ===
     async def on_cmd(self, cmd: Cmd):
+        src_extname = cmd.get_source().extension_name
         try:
             name = cmd.get_name()
             if name == "on_user_joined":
@@ -124,6 +143,8 @@ class Agent:
                         tool=tool, source=cmd.get_source().extension_name
                     )
                 )
+            elif name == "flush" and src_extname == "turn_detection":
+                await self._emit_direct(TurnInterruptedEvent())
             else:
                 self.ten_env.log_warn(f"Unhandled cmd: {name}")
 
@@ -138,6 +159,7 @@ class Agent:
 
     async def on_data(self, data: Data):
         try:
+            src_extname = data.get_source().extension_name
             if data.get_name() == "asr_result":
                 asr_json, _ = data.get_property_to_json(None)
                 asr = json.loads(asr_json)
@@ -148,6 +170,20 @@ class Agent:
                         metadata=asr.get("metadata", {}),
                     )
                 )
+            elif (
+                src_extname == "turn_detection"
+                and data.get_name() == "text_data"
+            ):
+                turn_detected_asr_json, _ = data.get_property_to_json(None)
+                turn_detected_asr = json.loads(turn_detected_asr_json)
+                await self._emit_turn_detected_asr(
+                    TurnDetectedASRResultEvent(
+                        text=turn_detected_asr.get("text", ""),
+                        final=turn_detected_asr.get("is_final", False),
+                        metadata=turn_detected_asr.get("metadata", {}),
+                    )
+                )
+
             else:
                 self.ten_env.log_warn(f"Unhandled data: {data.get_name()}")
         except Exception as e:

@@ -140,6 +140,9 @@
     },
     {
       "path": "../../../ten_packages/extension/ten_vad_python"
+    },
+    {
+      "path": "../../../ten_packages/extension/ten_turn_detection"
     }
   ],
   "scripts": {

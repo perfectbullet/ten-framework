@@ -1,15 +1,31 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  reactStrictMode: false, // Disable strict mode to prevent double mounting issues with PIXI
+  reactStrictMode: false,
+
+  experimental: {
+    allowedDevOrigins: [
+      'http://localhost:3000',
+      'https://localhost:3000',
+      'http://192.168.8.230:3000',
+      'https://192.168.8.230:3001',
+      'http://192.168.8.230:3001',
+      'http://192.168.8.230',
+      'http://ten_agent_dev:3000',
+      'https://ten_agent_dev:3000',
+      'http://ten_agent_dev:3000',
+      'https://ten_agent_dev:3001',
+      'http://ten_agent_dev:3001',
+      'http://ten_agent_dev',
+    ],
+  },
+
   webpack: (config, { webpack }) => {
-    // Provide PIXI as a global variable for pixi-live2d-display
     config.plugins.push(
       new webpack.ProvidePlugin({
         PIXI: 'pixi.js',
       })
     );
-
     return config;
   },
 };

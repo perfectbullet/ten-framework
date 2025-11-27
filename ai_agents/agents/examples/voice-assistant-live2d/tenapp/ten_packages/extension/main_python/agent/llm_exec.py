@@ -188,15 +188,15 @@ class LLMExec:
         ten_env.log_info(
             f"_send_to_llm: new_message {new_message}"
         )
-        if new_message.role == "user":
-            retrieved_docs = await self._retrieve_relevant_docs(new_message.content)
-            if retrieved_docs:
-                # 将检索结果注入消息
-                enriched_content = self._enrich_with_context(
-                    new_message.content,
-                    retrieved_docs
-                )
-                new_message.content = enriched_content
+        # if new_message.role == "user":
+        #     retrieved_docs = await self._retrieve_relevant_docs(new_message.content)
+        #     if retrieved_docs:
+        #         # 将检索结果注入消息
+        #         enriched_content = self._enrich_with_context(
+        #             new_message.content,
+        #             retrieved_docs
+        #         )
+        #         new_message.content = enriched_content
         # ===== RAG 检索结束 =====
 
         # Step 1: 合并上下文
