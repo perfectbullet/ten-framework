@@ -1,13 +1,11 @@
-name: turn-detection
-
 services:
   turn-detection:
     build:
       context: .
       dockerfile: Dockerfile
       # 启用 BuildKit 缓存
-      cache_from:
-        - ten-turn-detection:latest
+#      cache_from:
+#        - ten-turn-detection:latest
       args:
         - BUILDKIT_INLINE_CACHE=1
     image: ten-turn-detection:latest
@@ -43,7 +41,7 @@ services:
       # 日志目录
       - ./logs:/app/logs
       # Hugging Face 缓存（避免重复下载模型）
-      - huggingface-cache:/root/. cache/huggingface
+      - huggingface-cache:/root/.cache/huggingface
       # pip 缓存（可选，进一步加速）
       - pip-cache:/root/.cache/pip
 
