@@ -117,7 +117,7 @@ async def test_turn_detection():
 
     for i, (prompt, response) in enumerate(zip(prompts, responses), 1):
         turn_state = response.result["choices"][0]["message"]["content"]
-        print(f"  {i}. '{prompt}' → {turn_state}")
+        print(f"  {i}.'{prompt}' → {turn_state}")
 
     print("\n" + "=" * 60)
     print("All tests completed successfully!")
