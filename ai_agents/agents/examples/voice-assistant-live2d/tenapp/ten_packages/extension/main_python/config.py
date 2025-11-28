@@ -2,4 +2,4 @@ from pydantic import BaseModel
 
 
 class MainControlConfig(BaseModel):
-    greeting: str = "Hello, I am your AI assistant 小美."
+    greeting: str = "Hello, I am your AI assistant"

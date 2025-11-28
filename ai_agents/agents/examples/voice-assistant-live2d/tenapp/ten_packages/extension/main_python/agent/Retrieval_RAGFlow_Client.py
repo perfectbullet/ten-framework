@@ -27,7 +27,7 @@ class RAGFlowRetrievalClient:
             question: str,
             doc_ids: Optional[List[str]] = None,
             page: int = 1,
-            page_size: int = 10,
+            page_size: int = 3,
             similarity_threshold: float = 0.2,
             vector_similarity_weight: float = 0.3,
             top_k: int = 1024,
@@ -116,7 +116,7 @@ def test_basic_retrieval():
     # 执行检索
     result = client.retrieval(
         kb_id=["02a723a85bc411f09b8493e33f5c065d"],  # 修改为实际的知识库ID
-        question="制造工程体验讲座是哪个老师主讲"
+        question="雕蜡与铸造工艺基本原理",
     )
 
     return result
@@ -159,7 +159,7 @@ def parse_and_display_results(result: Dict[str, Any]):
     if chunks:
         print("\n" + "-" * 80)
         print("🔍 Top 检索片段:")
-        for idx, chunk in enumerate(chunks[:5], 1):  # 显示前5个
+        for idx, chunk in enumerate(chunks[:3], 1):  # 显示前5个
             print(f"\n【片段 {idx}】")
             print(f"├─ 文档名: {chunk.get('docnm_kwd', 'N/A')}")
             print(f"├─ 片段ID: {chunk.get('chunk_id', 'N/A')}")

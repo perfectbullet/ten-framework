@@ -188,15 +188,15 @@ class LLMExec:
         ten_env.log_info(
             f"_send_to_llm: new_message {new_message}"
         )
-        # if new_message.role == "user":
-        #     retrieved_docs = await self._retrieve_relevant_docs(new_message.content)
-        #     if retrieved_docs:
-        #         # 将检索结果注入消息
-        #         enriched_content = self._enrich_with_context(
-        #             new_message.content,
-        #             retrieved_docs
-        #         )
-        #         new_message.content = enriched_content
+        if new_message.role == "user":
+            retrieved_docs = await self._retrieve_relevant_docs(new_message.content)
+            if retrieved_docs:
+                # 将检索结果注入消息
+                enriched_content = self._enrich_with_context(
+                    new_message.content,
+                    retrieved_docs
+                )
+                new_message.content = enriched_content
         # ===== RAG 检索结束 =====
 
         # Step 1: 合并上下文
@@ -364,8 +364,9 @@ class LLMExec:
                 api_token="ragflow-ZjN2M5MTY2NWJjMzExZjA5Yjg0OTNlMz"  # 修改为您的实际Token
             )
             # 执行检索
+            # 修改为实际的知识库ID, 目前这个id是测试的默认知识库id, 账号是刘伟的测试环境
             result = client.retrieval(
-                kb_id=["02a723a85bc411f09b8493e33f5c065d"],  # 修改为实际的知识库ID, 目前这个id是测试的默认知识库id
+                kb_id=["02a723a85bc411f09b8493e33f5c065d"],
                 question=query
             )
             # 检查响应状态
