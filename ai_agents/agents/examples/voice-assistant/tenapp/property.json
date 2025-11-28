@@ -50,7 +50,7 @@
                 "max_tokens": 512,
                 "prompt": "",
                 "proxy_url": "",
-                "greeting": "TEN Agent已连接。今天有什么可以帮您的？",
+                "greeting": "哈哈，TEN Agent已连接。今天有什么可以帮您的？",
                 "max_memory_length": 10
               }
             },
@@ -76,7 +76,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "TEN Agent已连接。今天有什么可以帮您的？"
+                "greeting": "aha, TEN Agent已连接。今天有什么可以帮您的？"
               }
             },
             {
