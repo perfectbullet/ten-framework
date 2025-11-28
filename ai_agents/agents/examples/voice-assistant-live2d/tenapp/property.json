@@ -76,7 +76,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "Hello there, nice to meet you! I’m your anime assistant—what’s your name?FUNK hahaha"
+                "greeting": "hello, I am your voice assistant!"
               }
             },
             {

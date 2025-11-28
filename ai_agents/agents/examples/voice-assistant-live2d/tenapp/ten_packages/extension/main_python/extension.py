@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 from typing import Literal
@@ -53,6 +52,7 @@ class MainControlExtension(AsyncExtension):
 
         # Load config from runtime properties
         config_json, _ = await ten_env.get_property_to_json(None)
+        self.ten_env.log_info('[MainControlExtension] Loaded config: {}'.format(config_json))
         self.config = MainControlConfig.model_validate_json(config_json)
 
         self.agent = Agent(ten_env)
@@ -68,6 +68,7 @@ class MainControlExtension(AsyncExtension):
     @agent_event_handler(UserJoinedEvent)
     async def _on_user_joined(self, event: UserJoinedEvent):
         self._rtc_user_count += 1
+        self.ten_env.log_info("_rtc_user_count: {}, config greeting: {}".format(self._rtc_user_count, self.config.greeting))
         if self._rtc_user_count == 1 and self.config and self.config.greeting:
             await self._send_to_tts(self.config.greeting, True)
             await self._send_transcript(
