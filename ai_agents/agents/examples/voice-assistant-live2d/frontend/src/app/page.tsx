@@ -527,8 +527,8 @@ const characterOptions: CharacterProfile[] = [
         opacity: 0.22,
       },
     },
-    connectionGreeting: "My name is Mao.",
-    agentGreeting: "My name is Mao.",
+    connectionGreeting: "",
+    agentGreeting: "你好, 我是禅境的数字助手小美，很高兴见到你。",
   },
   {
     id: "mao",
@@ -1444,8 +1444,9 @@ export default function Home() {
             uid: credentials.uid,
           };
 
-          console.log("Agora config:", agoraConfig);
+          console.log("sssssssssss Agora config:", agoraConfig);
           const success = await agoraService.connect(agoraConfig);
+          console.log("success success:", success);
           if (success) {
             setIsConnected(true);
 
@@ -1454,12 +1455,14 @@ export default function Home() {
 
             // Start the agent service
             try {
+
               const startResult = await apiStartService({
                 channel: agoraConfig.channel,
                 userId: agoraConfig.uid || 0,
                 graphName: "voice_assistant_live2d",
-                language: "en",
+                language: "zh",
                 voiceType: selectedModel.voiceType,
+
                 properties: {
                   llm: {
                     greeting: selectedModel.agentGreeting,
