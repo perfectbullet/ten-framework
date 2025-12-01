@@ -111,7 +111,7 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
                     LLMToolMetadataParameter(
                         name="location",
                         type="string",
-                        description="城市的名称",
+                        description="城市名称",
                         required=True,
                     ),
                 ],
