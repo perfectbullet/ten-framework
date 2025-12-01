@@ -353,10 +353,10 @@ class LLMExec:
         """
         使用 RAGFlow 的接口检索相关文档
         """
-        if '天气' in query:
-            return []  # 如果是天气相关问题，跳过检索
-        if '你好' in query:
-            return []
+        # if '天气' in query:
+        #     return []  # 如果是天气相关问题，跳过检索
+        # if '你好' in query:
+        #     return []
         try:
             # 配置客户端
             client = RAGFlowRetrievalClient(
@@ -365,6 +365,7 @@ class LLMExec:
             )
             # 执行检索
             # 修改为实际的知识库ID, 目前这个id是测试的默认知识库id, 账号是刘伟的测试环境
+            #
             result = client.retrieval(
                 kb_id=["02a723a85bc411f09b8493e33f5c065d"],
                 question=query
@@ -391,9 +392,20 @@ class LLMExec:
 
     def _enrich_with_context(self, query: str, docs: list[str]) -> str:
         """将检索结果格式化为提示词"""
-        context = "\n\n".join([f"[文档 {i + 1}]\n{doc}" for i, doc in enumerate(docs)])
-        return f"""参考以下文档回答问题:
+        context = "\n\n".join([f"\n{doc}" for i, doc in enumerate(docs)])
+        prompt_v1 = f"""参考以下文档回答问题:
 
 {context}
 
 用户问题: {query}"""
+
+        prompt_v2 = f"""你是一个专业的问答助手。
+请根据以下检索到的上下文内容来回答问题。
+如果是天气信息，结合工具回答。
+如果你不知道答案，请直接说不知道。请保持回答简洁，最多使用三句话。
+问题：{query} 
+上下文：{context} 
+回答："""
+        log_txt = f'prompt is {prompt_v2}'
+        self.ten_env.log_info(log_txt)
+        return prompt_v2
