@@ -134,7 +134,7 @@ def fetch_weather(city: str) -> dict[str, str]:
     # 转换为拼音（OpenWeather API 需要）
     city_pinyin = convert_city_to_pinyin(city)
     
-    print(f"🔄 城市名转换: {original_city} → {city_pinyin}")
+    print(f"城市名转换: {original_city} → {city_pinyin}")
     
     params = {
         "q": city_pinyin,  # 使用拼音

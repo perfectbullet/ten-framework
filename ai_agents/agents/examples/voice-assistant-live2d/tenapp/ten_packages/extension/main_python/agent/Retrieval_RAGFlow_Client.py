@@ -82,13 +82,13 @@ class RAGFlowRetrievalClient:
                 timeout=30
             )
             # 打印请求信息
-            print(f"📤 Request URL: {url}")
-            print(f"📤 Request Headers: {json.dumps(self.headers, indent=2)}")
-            print(f"📤 Request Payload: {json.dumps(payload, indent=2, ensure_ascii=False)}")
-            print(f"\n📥 Response Status: {response.status_code}")
+            # print(f"📤 Request URL: {url}")
+            # print(f"📤 Request Headers: {json.dumps(self.headers, indent=2)}")
+            # print(f"📤 Request Payload: {json.dumps(payload, indent=2, ensure_ascii=False)}")
+            # print(f"\n📥 Response Status: {response.status_code}")
             # 解析响应
             result = response.json()
-            print(f"📥 Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
+            print(f"retrieval Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
 
             return result
 
@@ -101,7 +101,7 @@ class RAGFlowRetrievalClient:
             return {"error": "Invalid JSON response"}
 
 
-def test_basic_retrieval():
+def demo_basic_retrieval():
     """基础检索测试"""
     print("=" * 60)
     print("🧪 Test 1: Basic Retrieval")
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     # 运行测试
     try:
         # 测试1: 基础检索
-        result1 = test_basic_retrieval()
+        result1 = demo_basic_retrieval()
         parse_and_display_results(result1)
 
     except Exception as e:
