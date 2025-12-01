@@ -38,7 +38,8 @@ TOOL_REGISTER_PROPERTY_PARAMETERS = "parameters"
 TOOL_CALLBACK = "callback"
 
 CURRENT_TOOL_NAME = "get_current_weather"
-CURRENT_TOOL_DESCRIPTION = "Determine current weather in user's location."
+# CURRENT_TOOL_DESCRIPTION = "Determine current weather in user's location."
+CURRENT_TOOL_DESCRIPTION = "获取用户所在位置的当前天气。"
 CURRENT_TOOL_PARAMETERS = {
     "type": "object",
     "properties": {
@@ -110,7 +111,7 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
                     LLMToolMetadataParameter(
                         name="location",
                         type="string",
-                        description="The city and state (use only English) e.g. San Francisco, CA",
+                        description="城市的名称",
                         required=True,
                     ),
                 ],
@@ -138,7 +139,9 @@ class WeatherToolExtension(AsyncLLMToolBaseExtension):
 
         try:
             location = args["location"]
+            self.ten_env.log_info(f"Fetching weather for location: {location}")
             weather = fetch_weather(location)
+            self.ten_env.log_info(f"finished Fetching weather for location: {location}")
             return weather
         except Exception as e:
             self.ten_env.log_error(f"Failed to get current weather: {e}")
