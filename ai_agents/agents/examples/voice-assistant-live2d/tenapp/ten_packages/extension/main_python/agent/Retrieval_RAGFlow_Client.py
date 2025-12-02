@@ -1,18 +1,25 @@
-import requests
 import json
 from typing import List, Optional, Dict, Any
+
+import requests
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
 
 
 class RAGFlowRetrievalClient:
     """RAGFlow检索API客户端"""
 
-    def __init__(self, base_url: str, api_token: str):
+    def __init__(self, base_url: str, api_token: str, ollama_base_url: str = "http://192.168.8.231:11434",
+                 ollama_model: str = "qwen2.5:7b"):
         """
         初始化客户端
 
         Args:
-            base_url: API基础URL，例如 "http://localhost:5000"
+            base_url: API基础URL,例如 "http://localhost:5000"
             api_token: API Token (从APIToken表获取)
+            ollama_base_url: Ollama服务地址
+            ollama_model: 使用的本地模型名称
         """
         self.base_url = base_url.rstrip('/')
         self.api_token = api_token
@@ -20,6 +27,27 @@ class RAGFlowRetrievalClient:
             'Authorization': f'Bearer {api_token}',
             'Content-Type': 'application/json'
         }
+
+        # 初始化相关性检测模型
+        self.llm = ChatOllama(
+            model=ollama_model,
+            format="json",
+            temperature=0,
+            base_url=ollama_base_url
+        )
+
+        # 定义相关性检测提示模板
+        self.relevance_template = PromptTemplate(
+            template="""你是一个文档相关性评估员，负责评估检索到的文档与用户问题的相关性。\n 
+            以下是检索到的文档： \n\n {context} \n\n
+            以下是用户问题： {question} \n
+            如果文档包含与用户问题相关的关键词或语义内容，则评为相关。\n
+            请给出二元评分 'yes' 或 'no' 来表示文档是否与问题相关。
+            返回格式: {{"relevance": "yes"}} 或 {{"relevance": "no"}}""",
+            input_variables=["context", "question"],
+        )
+
+        self.retrieval_grader = self.relevance_template | self.llm | JsonOutputParser()
 
     def retrieval(
             self,
@@ -88,7 +116,7 @@ class RAGFlowRetrievalClient:
             # print(f"\n📥 Response Status: {response.status_code}")
             # 解析响应
             result = response.json()
-            print(f"retrieval Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
+            # print(f"retrieval Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
 
             return result
 
@@ -100,84 +128,80 @@ class RAGFlowRetrievalClient:
             print(f"Response Text: {response.text}")
             return {"error": "Invalid JSON response"}
 
+    def retrieve_docs(self, query: str, relevant: bool = True) -> list[str]:
+        """
+        使用 RAGFlow 的接口检索相关文档
+        然后通过相关性检测去掉无用的文档
+        Args:
+            query: 查询问题
+            relevant: 是否只返回相关文档。True=只返回相关文档，False=返回所有文档
+        Returns:
+            文档内容列表
+        """
+        try:
+            result = self.retrieval(
+                kb_id=["02a723a85bc411f09b8493e33f5c065d"],
+                question=query
+            )
+            # 检查响应状态
+            if result.get("code") != 0:
+                print(f"❌ 错误: {result.get('message', '未知错误')}")
+                print(f"错误代码: {result.get('code', 'N/A')}")
+                return []
+            docs = []
+            # 解析数据
+            data = result.get("data", {})
+            chunks = data.get("chunks", [])
+            if chunks:
+                for idx, chunk in enumerate(chunks, 1):
+                    # 获取内容(优先使用带权重的内容)
+                    content = chunk.get('content_with_weight') or chunk.get('content_ltks', '')
+                    if content:
+                        # 如果需要相关性检测
+                        if relevant:
+                            try:
+                                # 调用LLM进行相关性评估
+                                relevance_result = self.retrieval_grader.invoke({
+                                    "question": query,
+                                    "context": content
+                                })
+                                # 检查相关性评分
+                                is_relevant = relevance_result.get("relevance", "no").lower() == "yes"
+                                if is_relevant:
+                                    docs.append(content)
+                                    print(f"✅ 文档块 {idx} 相关性检测通过： {is_relevant}")
+                                else:
+                                    print(f"❌ 文档块 {idx} 相关性检测未通过： {is_relevant}")
+                            except Exception as e:
+                                print(f"⚠️ 文档块 {idx} 相关性检测失败: {e}，默认保留")
+                                docs.append(content)  # 检测失败时保留文档
+                        else:
+                            # 不需要相关性检测，直接添加
+                            docs.append(content)
+            print(f"检索结果: 总共 {len(chunks)} 个文档块，返回 {len(docs)} 个文档块")
+            return docs
+        except Exception as e:
+            print(f"❌ RAGFlow retrieval failed: {e}")
+        return []
 
-def demo_basic_retrieval():
-    """基础检索测试"""
-    print("=" * 60)
-    print("🧪 Test 1: Basic Retrieval")
-    print("=" * 60)
 
+def demo_retrieve_docs(query):
+    """文档检索测试"""
+    print("=" * 60)
+    print(f"问题: {query}")
     # 配置客户端
     client = RAGFlowRetrievalClient(
         base_url="http://192.168.8.231:9380/v1/api/",  # 修改为您的实际URL
         api_token="ragflow-ZjN2M5MTY2NWJjMzExZjA5Yjg0OTNlMz"  # 修改为您的实际Token，这个token是ragflow的token
     )
-
-    # 执行检索
-    result = client.retrieval(
-        kb_id=["02a723a85bc411f09b8493e33f5c065d"],  # 修改为实际的知识库ID
-        question="雕蜡与铸造工艺基本原理",
+    # 执行文档检索
+    result_docs = client.retrieve_docs(
+        query=query,
+        relevant=True
     )
+    print(f"Retrieved {len(result_docs)} relevant documents.")
 
-    return result
-
-
-def parse_and_display_results(result: Dict[str, Any]):
-    """解析并美化显示结果"""
-    print("\n" + "=" * 80)
-    print("📊 检索结果解析")
-    print("=" * 80)
-
-    # 检查响应状态
-    if result.get("code") != 0:
-        print(f"❌ 错误: {result.get('message', '未知错误')}")
-        print(f"错误代码: {result.get('code', 'N/A')}")
-        return
-
-    # 解析数据
-    data = result.get("data", {})
-    chunks = data.get("chunks", [])
-    doc_aggs = data.get("doc_aggs", [])
-    total = data.get("total", 0)
-
-    # 显示统计信息
-    print(f"✅ 检索成功!")
-    print(f"📄 总匹配数: {total}")
-    print(f"📦 返回片段数: {len(chunks)}")
-    print(f"📚 涉及文档数: {len(doc_aggs)}")
-
-    # 显示文档统计
-    if doc_aggs:
-        print("\n" + "-" * 80)
-        print("📚 文档分布:")
-        for agg in doc_aggs:
-            print(f"  • {agg.get('doc_name', 'N/A')}")
-            print(f"    ├─ 文档ID: {agg.get('doc_id', 'N/A')}")
-            print(f"    └─ 片段数: {agg.get('count', 0)}")
-
-    # 显示详细片段信息
-    if chunks:
-        print("\n" + "-" * 80)
-        print("🔍 Top 检索片段:")
-        for idx, chunk in enumerate(chunks[:3], 1):  # 显示前5个
-            print(f"\n【片段 {idx}】")
-            print(f"├─ 文档名: {chunk.get('docnm_kwd', 'N/A')}")
-            print(f"├─ 片段ID: {chunk.get('chunk_id', 'N/A')}")
-            print(f"├─ 综合相似度: {chunk.get('similarity', 0):.4f}")
-            print(f"├─ 向量相似度: {chunk.get('vector_similarity', 0):.4f}")
-            print(f"├─ 关键词相似度: {chunk.get('term_similarity', 0):.4f}")
-
-            # 显示内容(优先使用带权重的内容)
-            content = chunk.get('content_with_weight') or chunk.get('content_ltks', '')
-            if content:
-                # 截取前200字符并清理格式
-                display_content = content.replace('\n', ' ').strip()[:200]
-                print(f"└─ 内容预览:")
-                print(f"   {display_content}...")
-            else:
-                print(f"└─ 内容预览: (无内容)")
-
-    print("\n" + "=" * 80)
+    print("=" * 60)
 
 
 if __name__ == "__main__":
@@ -189,17 +213,14 @@ if __name__ == "__main__":
     2. api_token: 您的有效API Token
     3. kb_id: 您的实际知识库ID
     """
-
-    print("🚀 RAGFlow Retrieval API Test Client")
-    print(f"📅 Current Date: 2025-11-18 10:26:43 UTC")
-    print(f"👤 User: perfectbullet")
     print("=" * 60)
 
     # 运行测试
     try:
         # 测试1: 基础检索
-        result1 = demo_basic_retrieval()
-        parse_and_display_results(result1)
+        demo_retrieve_docs("雕蜡与铸造工艺基本原理")
+        demo_retrieve_docs("北京的天气怎么样")
+        demo_retrieve_docs("简单介绍一下人工只能")
 
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
