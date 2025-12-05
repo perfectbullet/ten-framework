@@ -1,0 +1,5 @@
+dashscope==1.24.1
+pydantic
+
+# For WebSocket support
+websocket-client
