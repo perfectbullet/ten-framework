@@ -1,0 +1,9 @@
+{
+    "params": {
+        "asr_backend": "dashscope",
+        "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|}",
+        "language_hints": [
+            "en"
+        ]
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "params": {
+        "asr_backend": "funasr",
+        "funasr_host": "127.0.0.1",
+        "funasr_port": "10095",
+        "funasr_is_ssl": false,
+        "funasr_chunk_size": "5,10,5",
+        "funasr_chunk_interval": 10,
+        "funasr_mode": "2pass",
+        "funasr_hotwords": "",
+        "funasr_itn": true,
+        "language_hints": [
+            "zh"
+        ],
+        "sample_rate": 16000
+    }
+}

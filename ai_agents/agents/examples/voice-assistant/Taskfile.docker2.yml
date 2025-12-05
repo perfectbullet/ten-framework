@@ -1,0 +1,43 @@
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+#  run-api-prod:
+#    desc: run api server in production
+#    cmds:
+#      - /app/server/bin/api -tenapp_dir=/app/agents/examples/voice-assistant
+#    background: true
+
+  run-api-server:
+    desc: run api server
+    dir: ../../../server
+    cmds:
+      - ./bin/api -tenapp_dir={{.PWD}}/tenapp
+
+  run-frontend-prod:
+    desc: run frontend in production
+    dir: ./playground
+    cmds:
+      - npm start
+    background: true
+
+  run-gd-server:
+    desc: run tman dev http server for TMAN Designer
+    dir: ./tenapp
+    cmds:
+      - tman designer
+
+  run-prod:
+    desc: run both api and frontend in production
+    deps:
+      - task: run-gd-server
+      - task: run-api-server
+      - task: run-frontend-prod
+
+
+#  health-check:
+#    desc: check if both services are running
+#    cmds:
+#      - curl -f http://localhost:8080/health || echo "API server not responding"
+#      - curl -f http://localhost:3000 || echo "Frontend not responding"
