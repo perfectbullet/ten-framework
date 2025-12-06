@@ -138,7 +138,7 @@ def test_asr_result():
     }
 
     audio_file_path = os.path.join(
-        os.path.dirname(__file__), f"test_data/16k_en_US.pcm"
+        os.path.dirname(__file__), f"test_data/asr_example.wav"
     )
     # Check if the audio file exists
     if not os.path.exists(audio_file_path):
