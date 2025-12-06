@@ -143,3 +143,5 @@ ai_agents/*.log
 ai_agents/*.pcm
 /ai_agents/agents/examples/voice-assistant-live2d/.env
 /前端用的模型/
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/tests/test_data/asr_example.mp3
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/tests/test_data/asr_example.wav
