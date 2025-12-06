@@ -13,7 +13,7 @@ def patch_deepgram_ws():
     """
     Automatically patch Recognition globally before any test runs.
     """
-    patch_target = "ten_packages.extension.aliyun_asr_bigmodel_python.extension.Recognition"
+    patch_target = "ten_packages.extension.aliyun_asr_bigmodel_local_python.extension.Recognition"
 
     with patch(patch_target) as MockWSClient:
         print(f"✅ Patching {patch_target} before test session.")

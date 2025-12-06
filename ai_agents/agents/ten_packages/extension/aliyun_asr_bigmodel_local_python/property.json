@@ -1,6 +1,5 @@
 {
     "params": {
-        "asr_backend": "funasr",
         "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|}",
         "asr_backend": "funasr",
         "funasr_host": "192.168.8.230",

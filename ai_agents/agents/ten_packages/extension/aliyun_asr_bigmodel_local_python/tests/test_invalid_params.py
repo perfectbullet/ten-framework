@@ -35,6 +35,6 @@ def test_invalid_params():
     }
     tester = AliyunASRBigmodelExtensionTester()
     tester.set_test_mode_single(
-        "aliyun_asr_bigmodel_python", json.dumps(property_json)
+        "aliyun_asr_bigmodel_local_python", json.dumps(property_json)
     )
     err = tester.run()
