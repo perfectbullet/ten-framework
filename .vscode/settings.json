@@ -118,5 +118,40 @@
     "**/node_modules/*/**": true,
     "**/out/*/**": true,
     "**/third_party/*/**": true
+  },
+  "deploy": {
+    "packages": [
+      {
+        "name": "版本 2.3.4",
+        "description": "2.3.4 版本的部署包",
+        "files": [
+          "**/*.py", // 匹配所有 Python 文件
+          "/*.json" // 匹配根目录下所有 JSON 文件
+        ],
+        "exclude": [
+          "tests/**" // 排除 tests 文件夹下所有文件
+        ],
+        "deployOnSave": false // 保存文件时自动部署
+      }
+    ],
+    "targets": [
+      {
+        "type": "sftp",
+        "name": "我的 SFTP 文件夹",
+        "description": "一个 SFTP 服务器文件夹",
+        "dir": "/data/metahuman_work/ten-framework", // 目标目录
+        "host": "192.168.8.230", // 服务器地址
+        "port": 22, // 端口号
+        "user": "user", // 用户名
+        "password": "123456", // 密码
+        "checkBeforeDeploy": true, // 部署前检查
+        "mappings": [ // 路径映射
+          {
+            "source": ".", // 本地源路径
+            "target": "/data/metahuman_work/ten-framework" // 远程目标路径
+          }
+        ]
+      },
+    ]
   }
 }
