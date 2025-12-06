@@ -146,7 +146,7 @@ def test_asr_result():
 
     tester = AliyunASRBigmodelExtensionTester(audio_file_path)
     tester.set_test_mode_single(
-        "aliyun_asr_bigmodel_python", json.dumps(property_json)
+        "aliyun_asr_bigmodel_local_python", json.dumps(property_json)
     )
     err = tester.run()
     assert err is None, f"err: {err}"

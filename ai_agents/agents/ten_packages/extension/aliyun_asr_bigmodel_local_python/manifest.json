@@ -25,8 +25,13 @@
                 "params": {
                     "type": "object",
                     "properties": {
+                        "asr_backend": {
+                            "type": "string",
+                            "description": "ASR backend: 'dashscope' or 'funasr'"
+                        },
                         "api_key": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Dashscope API key"
                         },
                         "language_hints": {
                             "type": "array",
@@ -48,6 +53,38 @@
                         },
                         "sample_rate": {
                             "type": "int64"
+                        },
+                        "funasr_host": {
+                            "type": "string",
+                            "description": "FunASR server host"
+                        },
+                        "funasr_port": {
+                            "type": "string",
+                            "description": "FunASR server port"
+                        },
+                        "funasr_is_ssl": {
+                            "type": "bool",
+                            "description": "Use WSS or WS"
+                        },
+                        "funasr_chunk_size": {
+                            "type": "string",
+                            "description": "FunASR chunk size parameters"
+                        },
+                        "funasr_chunk_interval": {
+                            "type": "int64",
+                            "description": "FunASR chunk interval in ms"
+                        },
+                        "funasr_mode": {
+                            "type": "string",
+                            "description": "FunASR recognition mode"
+                        },
+                        "funasr_hotwords": {
+                            "type": "string",
+                            "description": "FunASR hot words"
+                        },
+                        "funasr_itn": {
+                            "type": "bool",
+                            "description": "FunASR inverse text normalization"
                         }
                     }
                 }
