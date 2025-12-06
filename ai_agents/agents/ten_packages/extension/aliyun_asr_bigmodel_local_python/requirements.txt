@@ -3,3 +3,4 @@ pydantic
 
 # For WebSocket support
 websocket-client
+websockets

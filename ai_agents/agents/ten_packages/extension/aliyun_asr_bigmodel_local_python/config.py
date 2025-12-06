@@ -7,7 +7,7 @@ from ten_ai_base.utils import encrypt
 @dataclass
 class AliyunASRBigmodelConfig(BaseModel):
     # Backend selection: "dashscope" (cloud) or "funasr" (local)
-    asr_backend: str = "dashscope"
+    asr_backend: str = "funasr"
     
     # Dashscope (Aliyun Cloud) configuration
     api_key: str = ""

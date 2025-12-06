@@ -1,6 +1,6 @@
 {
     "type": "extension",
-    "name": "aliyun_asr_bigmodel_python",
+    "name": "aliyun_asr_bigmodel_local_python",
     "version": "0.2.3",
     "dependencies": [
         {
@@ -54,13 +54,7 @@
             }
         }
     },
-    "package": {
-        "include": [
-            "manifest.json",
-            "property.json",
-            "**.py",
-            "requirements.txt",
-            "docs/**"
-        ]
+    "scripts": {
+        "start": "scripts/start.sh"
     }
 }
