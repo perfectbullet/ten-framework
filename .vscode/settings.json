@@ -151,7 +151,7 @@
             "target": "/data/metahuman_work/ten-framework" // 远程目标路径
           }
         ]
-      },
+      }
     ]
   }
 }
