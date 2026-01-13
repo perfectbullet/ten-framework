@@ -1,0 +1,11 @@
+{
+  "use_onnx": true,
+  "sampling_rate": 16000,
+  "threshold": 0.5,
+  "min_speech_duration_ms": 250,
+  "min_silence_duration_ms": 100,
+  "speech_pad_ms": 30,
+  "chunk_size": 512,
+  "dump": false,
+  "dump_path": ""
+}
