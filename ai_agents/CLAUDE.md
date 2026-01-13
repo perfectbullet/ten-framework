@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **TEN Framework AI Agents** repository, a modular platform for building real-time AI agents with voice, video, and multimodal capabilities. The framework uses a graph-based architecture where extensions (ASR, LLM, TTS, RTC, tools) are connected via property.json configurations to create complete AI agent pipelines.
 
+**Important:** The `ten_ai_base` and `ten_runtime_python` packages are installed via `tman` and are **not present** in the `agents/ten_packages/system/` directory of this repository. They are external dependencies managed by the TEN package manager.
+
 ## Development Guidelines
 
 ### Do Not Modify Git-Ignored Files
@@ -44,9 +46,9 @@ The TEN Framework is built around **extensions** - modular components that provi
 - `tests/` - Standalone test directory with `bin/start` script
 
 **Base Extension Classes:**
-- Located in `agents/ten_packages/system/ten_ai_base/interface/ten_ai_base/`
-- Common bases: `AsyncASRBaseExtension`, `AsyncTTSBaseExtension`, `LLMBaseExtension`
-- API interfaces defined in `agents/ten_packages/system/ten_ai_base/api/*.json`
+- The base classes (`AsyncASRBaseExtension`, `AsyncTTSBaseExtension`, `LLMBaseExtension`) come from the `ten_ai_base` package
+- This is an **external dependency** installed via `tman install`, not in this repository
+- Import pattern: `from ten_ai_base.asr import AsyncASRBaseExtension`
 
 ### Graph-Based Configuration
 
@@ -92,11 +94,6 @@ agents/
 │   │   ├── openai_llm2_python/
 │   │   ├── elevenlabs_tts2_python/
 │   │   └── ...
-│   ├── system/             # Core framework packages
-│   │   ├── ten_ai_base/    # Base classes and API interfaces
-│   │   ├── ten_runtime_python/
-│   │   └── ten_runtime_go/
-│   └── addon_loader/       # Language-specific addon loaders
 ├── examples/               # Complete agent examples
 │   ├── voice-assistant/    # Basic voice agent (STT→LLM→TTS)
 │   ├── voice-assistant-realtime/  # OpenAI Realtime API
@@ -108,15 +105,12 @@ agents/
 ├── scripts/                # Build and package scripts
 └── manifest.json           # App-level manifest
 
-server/                     # Go API server
-├── main.go                 # HTTP server for agent lifecycle
-└── internal/               # Server implementation
-
+server/                     # Go API server for agent lifecycle management
 playground/                 # Next.js frontend UI
-└── src/                    # React components
-
 esp32-client/              # ESP32 hardware client
 ```
+
+**Note:** Core framework packages (`ten_runtime_python`, `ten_ai_base`, `ten_runtime_go`) are **external dependencies** installed via `tman` and are not in this repository.
 
 ## Development Commands
 
@@ -204,6 +198,8 @@ The Go server manages agent processes via REST API:
 }
 ```
 
+**timeout**: Determines how long the agent remains active without pings. Set to `-1` for indefinite lifetime. Default is controlled by `WORKER_QUIT_TIMEOUT_SECONDS` in `.env` (default: 60 seconds).
+
 **POST /stop** - Stop an agent
 **POST /ping** - Keep agent alive (if timeout != -1)
 
@@ -211,11 +207,14 @@ The Go server manages agent processes via REST API:
 
 ### PYTHONPATH Configuration
 
-Extensions require specific PYTHONPATH to import TEN runtime and AI base:
+Extensions require specific PYTHONPATH to import TEN runtime and AI base. These paths point to **external packages** installed by `tman`:
 
 ```bash
+# After running `tman install`, packages are available at:
 export PYTHONPATH="./agents/ten_packages/system/ten_runtime_python/lib:./agents/ten_packages/system/ten_runtime_python/interface:./agents/ten_packages/system/ten_ai_base/interface"
 ```
+
+**Important:** The `ten_runtime_python` and `ten_ai_base` directories will only exist **after** running `tman install` in the tenapp directory. They are downloaded from the TEN package registry.
 
 This is configured in:
 - `Taskfile.yml` tasks (lint, test-extension)
@@ -453,6 +452,32 @@ Key points:
 - Lock/unlock buffer pattern ensures thread safety
 - Calculate samples: `samples_per_channel = total_bytes / (bytes_per_sample * channels)`
 
+**3. Thread-Safe Callback Bridge**
+
+When vendor SDKs run callbacks in separate threads, bridge them to the extension's asyncio loop:
+
+```python
+class VendorCallback:
+    def __init__(self, extension_instance):
+        self.loop = asyncio.get_event_loop()  # Capture main loop
+
+    def on_event(self, result):
+        asyncio.run_coroutine_threadsafe(
+            self.extension.on_vendor_event(result), self.loop
+        )
+```
+
+## Anti-Patterns to Avoid
+
+When working with TEN Framework extensions:
+
+- **Don't** call vendor SDK methods directly in lifecycle hooks - wrap in connection management
+- **Don't** assume single-threaded execution - use `asyncio.run_coroutine_threadsafe` for cross-thread callbacks
+- **Don't** send audio after `finalize()` in disconnect mode - connection is closed
+- **Don't** forget to reset timeline counters on reconnect - causes timestamp drift
+- **Don't** modify git-ignored files (manifest-lock.json, BUILD.gn, compile_commands.json, .ten/, node_modules/)
+- **Don't** strip `api_key` from params during config processing - only strip when creating HTTP payloads
+
 ## TMAN Tool
 
 `tman` is the TEN package manager used for:
@@ -499,13 +524,16 @@ See `.env.example` for complete list.
 
 When working on:
 - **New extension** → Check `agents/ten_packages/extension/<similar_extension>/` for patterns
-- **API changes** → Check `agents/ten_packages/system/ten_ai_base/api/*.json`
 - **Graph config** → Check `agents/examples/*/tenapp/property.json`
 - **Test setup** → Check `agents/ten_packages/extension/*/tests/bin/start`
+- **Server API** → Check `server/main.go` and `server/README.md`
+- **Build tasks** → Check root `Taskfile.yml` or example-specific `Taskfile.yml`
 
 ## Common Issues
 
 **Import errors in extensions:**
+- Remember that `ten_ai_base` and `ten_runtime_python` are **external dependencies** installed via `tman`
+- Run `tman install` in the tenapp directory before running tests
 - Ensure PYTHONPATH includes ten_runtime_python and ten_ai_base interfaces
 - Check pyrightconfig.json executionEnvironments for the example
 
