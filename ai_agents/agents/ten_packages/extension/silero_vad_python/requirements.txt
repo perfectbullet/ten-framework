@@ -1,0 +1,4 @@
+silero-vad
+torch
+torchaudio
+onnxruntime
