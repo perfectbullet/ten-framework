@@ -108,7 +108,7 @@ def test_with_audio():
     print("\n=== test_with_audio: Starting ===")
 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    test_file = os.path.join(cur_dir, "16k_en_us_helloworld.pcm")
+    test_file = os.path.join(cur_dir, "hdj-zl-16k.pcm")
 
     if not os.path.isfile(test_file):
         print(f"test_with_audio: Test file not found: {test_file}")
@@ -130,7 +130,7 @@ def test_with_audio():
         "dump_path": "",
     }
 
-    tester = ExtensionTesterAudio(test_file, max_chunks=200)
+    tester = ExtensionTesterAudio(test_file, max_chunks=2000)
     tester.set_test_mode_single("silero_vad_python", json.dumps(property_json))
     print("test_with_audio: Running tester...")
     tester.run()
