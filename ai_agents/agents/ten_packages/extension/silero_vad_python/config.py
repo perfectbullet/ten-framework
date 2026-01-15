@@ -48,6 +48,10 @@ class SileroVADConfig(BaseModel):
         gt=0,
         description="Audio chunk size in samples (512 = 32ms @ 16kHz)"
     )
+    passthrough: bool = Field(
+        default=True,
+        description="Forward audio frames to output (set to False for VAD-only mode)"
+    )
 
     # Debug configuration
     dump: bool = Field(

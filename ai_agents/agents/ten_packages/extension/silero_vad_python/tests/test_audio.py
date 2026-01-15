@@ -85,6 +85,11 @@ class ExtensionTesterAudio(AsyncExtensionTester):
         ten_env.log_info("test_audio: Stopping test")
         ten_env.stop_test()
 
+    async def on_audio_frame(self, ten_env: AsyncTenEnvTester, audio_frame) -> None:
+        # Receive and discard output audio frames from the extension
+        # to prevent message queue from filling up
+        pass
+
     async def on_cmd(self, ten_env: AsyncTenEnvTester, cmd: Cmd) -> None:
         cmd_name = cmd.get_name()
         ten_env.log_info(f"test_audio: Got command: {cmd_name}")
@@ -94,7 +99,7 @@ class ExtensionTesterAudio(AsyncExtensionTester):
         elif cmd_name == "end_of_sentence":
             self.end_count += 1
 
-        cmd_result = CmdResult.create(StatusCode.OK)
+        cmd_result = CmdResult.create(StatusCode.OK, cmd)
         await ten_env.return_result(cmd_result)
 
 
@@ -120,6 +125,7 @@ def test_with_audio():
         "min_silence_duration_ms": 100,
         "speech_pad_ms": 30,
         "chunk_size": 512,
+        "passthrough": False,  # Disable audio passthrough for testing
         "dump": False,
         "dump_path": "",
     }
@@ -144,6 +150,7 @@ def test_with_noise():
         "min_silence_duration_ms": 100,
         "speech_pad_ms": 30,
         "chunk_size": 512,
+        "passthrough": False,  # Disable audio passthrough for testing
         "dump": False,
         "dump_path": "",
     }
