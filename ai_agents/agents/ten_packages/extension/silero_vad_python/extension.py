@@ -82,7 +82,6 @@ class SileroVADPythonExtension(AsyncExtension):
             self.model,
             threshold=self.config.threshold,
             sampling_rate=self.config.sampling_rate,
-            min_speech_duration_ms=self.config.min_speech_duration_ms,
             min_silence_duration_ms=self.config.min_silence_duration_ms,
             speech_pad_ms=self.config.speech_pad_ms,
         )
@@ -108,7 +107,7 @@ class SileroVADPythonExtension(AsyncExtension):
         self.current_start_ms = 0
         self.total_samples_processed = 0
         if self.vad_iterator is not None:
-            self.vad_iterator.reset()
+            self.vad_iterator.reset_states()
 
     async def on_cmd(self, ten_env: AsyncTenEnv, cmd: Cmd) -> None:
         cmd_name = cmd.get_name()
@@ -187,8 +186,9 @@ class SileroVADPythonExtension(AsyncExtension):
         frame_buf = audio_frame.get_buf()
         self._dump_audio_if_needed(frame_buf, "in")
 
-        # Direct passthrough - forward audio unchanged
-        await self._send_audio_frame(ten_env, frame_buf)
+        # Optional passthrough - forward audio unchanged if enabled
+        if self.config.passthrough:
+            await self._send_audio_frame(ten_env, frame_buf)
 
         # Accumulate audio buffer
         self.audio_buffer.extend(frame_buf)
