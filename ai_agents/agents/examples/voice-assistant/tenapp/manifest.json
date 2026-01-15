@@ -140,6 +140,18 @@
     },
     {
       "path": "../../../ten_packages/extension/weatherapi_tool_python"
+    },
+    {
+      "path": "../../../ten_packages/extension/ten_vad_python"
+    },
+    {
+      "path": "../../../ten_packages/extension/aliyun_asr_bigmodel_local_python"
+    },
+    {
+      "path": "../../../ten_packages/extension/cosy_tts_python_local"
+    },
+    {
+      "path": "../../../ten_packages/extension/silero_vad_python"
     }
   ],
   "scripts": {

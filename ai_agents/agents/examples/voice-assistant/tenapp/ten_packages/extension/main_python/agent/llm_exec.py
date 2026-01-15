@@ -25,7 +25,7 @@ from ten_ai_base.struct import (
 )
 from ten_ai_base.types import LLMToolMetadata, LLMToolResult
 from ..helper import _send_cmd, _send_cmd_ex
-from ten_runtime import AsyncTenEnv, Loc, StatusCode
+from ten_runtime import AsyncTenEnv, StatusCode
 import uuid
 
 
@@ -116,7 +116,7 @@ class LLMExec:
                 self.current_text = None
                 if self.on_response and text:
                     await self.on_response(self.ten_env, "", text, True)
-            except Exception as e:
+            except Exception:
                 self.ten_env.log_error(
                     f"Error processing input queue: {traceback.format_exc()}"
                 )
@@ -153,15 +153,21 @@ class LLMExec:
     ) -> None:
         messages = self.contexts.copy()
         messages.append(new_message)
+        # 不适用长长的消息列表，只发送最新的一条消息，因为我给的模型是记录上下文的。
+        new_single_message = [
+            new_message,
+        ]
+        available_tools = []
+
         request_id = str(uuid.uuid4())
         self.current_request_id = request_id
         llm_input = LLMRequest(
             request_id=request_id,
-            messages=messages,
+            messages=new_single_message,
             model="qwen-max",
             streaming=True,
             parameters={"temperature": 0.7},
-            tools=self.available_tools,
+            tools=available_tools,
         )
         input_json = llm_input.model_dump()
         response = _send_cmd_ex(ten_env, "chat_completion", "llm", input_json)
@@ -173,9 +179,9 @@ class LLMExec:
             if cmd_result and cmd_result.is_final() is False:
                 if cmd_result.get_status_code() == StatusCode.OK:
                     response_json, _ = cmd_result.get_property_to_json(None)
-                    ten_env.log_info(
-                        f"_send_to_llm: response_json {response_json}"
-                    )
+                    # ten_env.log_info(
+                    #     f"_send_to_llm: response_json {response_json}"
+                    # )
                     completion = parse_llm_response(response_json)
                     await self._handle_llm_response(completion)
 

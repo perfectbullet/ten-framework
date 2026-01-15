@@ -26,14 +26,25 @@
             {
               "type": "extension",
               "name": "stt",
-              "addon": "aliyun_asr_bigmodel_python",
+              "addon": "aliyun_asr_bigmodel_local_python",
               "extension_group": "stt",
               "property": {
                 "params": {
-                  "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
+                  "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|no_api_key}",
+                  "asr_backend": "funasr",
+                  "funasr_host": "192.168.8.230",
+                  "funasr_port": "30095",
+                  "funasr_is_ssl": true,
+                  "funasr_chunk_size": "5,10,5",
+                  "funasr_chunk_interval": 10,
+                  "funasr_mode": "offline",
+                  "funasr_hotwords": "",
+                  "funasr_itn": true,
+                  "max_sentence_silence": 800,
                   "language_hints": [
-                      "zh"
-                  ]
+                    "zh"
+                  ],
+                  "sample_rate": 16000
                 }
               }
             },
@@ -43,30 +54,32 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "http://192.168.8.231:11434/v1",
-                "api_key": "ollama",
+                "base_url": "http://192.168.8.230:8100/api/chat/v1",
+                "api_key": "ollama2",
                 "frequency_penalty": 0.9,
-                "model": "qwen2.5:32b",
+                "model": "deepseek-chat",
                 "max_tokens": 512,
                 "prompt": "",
-                "proxy_url": "",
-                "greeting": "哈哈，TEN Agent已连接。今天有什么可以帮您的？",
+                "proxy_url": "no_proxy",
+                "greeting": " You are a helpful assistant.    ",
                 "max_memory_length": 10
               }
             },
             {
               "type": "extension",
               "name": "tts",
-              "addon": "cosy_tts_python",
+              "addon": "cosy_tts_python_local",
               "extension_group": "tts",
               "property": {
                 "dump": false,
                 "dump_path": "./",
                 "params": {
-                  "api_key": "sk-75e6a24fba264d1cbe61bd6f49f98569",
+                  "api_key": "${env:COSY_TTS_API_KEY|no_api_key}",
                   "model": "cosyvoice-v1",
                   "sample_rate": 16000,
-                  "voice": "longlaotie"
+                  "voice": "班尼特",
+                  "use_local_service": true,
+                  "local_service_url": "ws://192.168.8.230:50002/streaming/ws"
                 }
               }
             },
@@ -76,7 +89,7 @@
               "addon": "main_python",
               "extension_group": "control",
               "property": {
-                "greeting": "aha, TEN Agent已连接。今天有什么可以帮您的？"
+                "greeting": "今天有什么可以帮您的？"
               }
             },
             {
@@ -88,18 +101,25 @@
             },
             {
               "type": "extension",
-              "name": "weatherapi_tool_python",
-              "addon": "weatherapi_tool_python",
-              "extension_group": "default",
-              "property": {
-                "api_key": "${env:WEATHERAPI_API_KEY|}"
-              }
-            },
-            {
-              "type": "extension",
               "name": "streamid_adapter",
               "addon": "streamid_adapter",
               "property": {}
+            },
+            {
+              "type": "extension",
+              "name": "vad",
+              "addon": "silero_vad_python",
+              "property": {
+                "use_onnx": true,
+                "sampling_rate": 16000,
+                "threshold": 0.5,
+                "min_speech_duration_ms": 250,
+                "min_silence_duration_ms": 100,
+                "speech_pad_ms": 30,
+                "chunk_size": 512,
+                "dump": false,
+                "dump_path": ""
+              }
             }
           ],
           "connections": [
@@ -119,11 +139,12 @@
                 },
                 {
                   "names": [
-                    "tool_register"
+                    "start_of_sentence",
+                    "end_of_sentence"
                   ],
                   "source": [
                     {
-                      "extension": "weatherapi_tool_python"
+                      "extension": "vad"
                     }
                   ]
                 }
@@ -178,6 +199,9 @@
                   "dest": [
                     {
                       "extension": "stt"
+                    },
+                    {
+                      "extension": "vad"
                     }
                   ]
                 }
