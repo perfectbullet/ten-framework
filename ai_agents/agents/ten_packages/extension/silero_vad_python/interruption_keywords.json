@@ -1,0 +1,114 @@
+{
+  "version": "1.0",
+  "description": "Keywords and phrases for detecting user interruption during TTS playback",
+  "keywords": {
+    "high_priority": {
+      "description": "Strong interruption commands - immediate action",
+      "keywords": [
+        "停",
+        "停止",
+        "别说了",
+        "闭嘴",
+        "闭嘴吧",
+        "够了",
+        "行了",
+        "不用",
+        "不用了",
+        "算了",
+        "不要",
+        "不用讲",
+        "别讲",
+        "stop",
+        "stop it",
+        "shut up",
+        "be quiet",
+        "enough",
+        "never mind",
+        "forget it"
+      ]
+    },
+    "medium_priority": {
+      "description": "Correction and questioning - strong interruption signal",
+      "keywords": [
+        "不对",
+        "错了",
+        "不是",
+        "不是这样的",
+        "你错了",
+        "你说错了",
+        "等一下",
+        "等等",
+        "等着",
+        "慢着",
+        "停一下",
+        "什么",
+        "你说什么",
+        "什么?",
+        "wait",
+        "wait a moment",
+        "hold on",
+        "hang on",
+        "that's wrong",
+        "that's not right",
+        "you're wrong",
+        "incorrect",
+        "excuse me",
+        "what",
+        "what do you mean"
+      ]
+    },
+    "low_priority": {
+      "description": "Soft interruption - may need context confirmation",
+      "keywords": [
+        "我说",
+        "我说是",
+        "我想说",
+        "其实",
+        "实际上",
+        "嗯?",
+        "啊?",
+        "咋了",
+        "actually",
+        "in fact",
+        "correction",
+        "i think",
+        "i meant",
+        "nope",
+        "not really"
+      ]
+    }
+  },
+  "phrases": {
+    "chinese": [
+      "停一下，我有个问题",
+      "等一下，我想说的是",
+      "不对，你理解错了",
+      "不用说了，我知道了",
+      "够了，别再讲了",
+      "不是这样的",
+      "你说错了",
+      "我打断一下",
+      "让我说",
+      "等会儿"
+    ],
+    "english": [
+      "stop, i have a question",
+      "wait, let me clarify",
+      "that's not correct",
+      "i didn't mean that",
+      "can you stop for a moment",
+      "actually, i wanted to say",
+      "you got it wrong",
+      "let me finish",
+      "hold on a second",
+      "wait a minute"
+    ]
+  },
+  "settings": {
+    "min_match_length": 1,
+    "case_sensitive": false,
+    "require_exact_match": false,
+    "fuzzy_match_enabled": true,
+    "default_priority_threshold": "medium"
+  }
+}
