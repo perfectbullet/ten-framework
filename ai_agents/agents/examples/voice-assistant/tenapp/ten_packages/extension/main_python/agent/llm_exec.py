@@ -186,7 +186,7 @@ class LLMExec:
                     await self._handle_llm_response(completion)
 
     async def _handle_llm_response(self, llm_output: LLMResponse | None):
-        self.ten_env.log_info(f"_handle_llm_response: {llm_output}")
+        # self.ten_env.log_info(f"_handle_llm_response: {llm_output}")
 
         match llm_output:
             case LLMResponseMessageDelta():

@@ -46,3 +46,4 @@ xdump_config
 build/
 *.tsbuildinfo
 azure_tts_log.txt
+vad_dump
