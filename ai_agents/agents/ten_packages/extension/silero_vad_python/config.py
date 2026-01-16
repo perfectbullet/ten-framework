@@ -62,3 +62,27 @@ class SileroVADConfig(BaseModel):
         default="",
         description="Directory path for dumping audio files"
     )
+
+    # ASR (Speech Recognition) configuration
+    enable_asr: bool = Field(
+        default=True,
+        description="Enable ASR for speech interruption detection"
+    )
+    asr_model_dir: str = Field(
+        default="speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-onnx",
+        description="FunASR model directory path"
+    )
+    asr_quantize: bool = Field(
+        default=True,
+        description="Use quantized ASR model for faster inference"
+    )
+
+    # Interruption detection configuration
+    interruption_keywords_file: str = Field(
+        default="interruption_keywords.json",
+        description="Path to interruption keywords JSON file"
+    )
+    interruption_threshold: str = Field(
+        default="medium",
+        description="Minimum priority threshold for interruption (high/medium/low)"
+    )

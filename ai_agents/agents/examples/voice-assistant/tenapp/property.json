@@ -77,9 +77,9 @@
                   "api_key": "${env:COSY_TTS_API_KEY|no_api_key}",
                   "model": "cosyvoice-v1",
                   "sample_rate": 16000,
-                  "voice": "班尼特",
+                  "voice": "hutao",
                   "use_local_service": true,
-                  "local_service_url": "ws://192.168.8.230:50002/streaming/ws"
+                  "local_service_url": "ws://192.168.8.233:50002/streaming/ws"
                 }
               }
             },

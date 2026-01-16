@@ -49,7 +49,7 @@ class OpenAILLM2Config(BaseModel):
     max_tokens: int = 4096
     seed: int = random.randint(0, 1000000)
     # prompt: str = "You are a helpful assistant."
-    prompt: str = """你是一个智能助手。当用户询问关于金属浇铸、失蜡铸造、蜡模的制作相关的问题时，参考用户提供的上下文回答。
+    prompt: str = """你是一个智能助手。当用户问问题时，参考用户提供的上下文回答。
 当用户询问关于天气的问题，使用天气相关工具来查询天气信息，然后回复。
 对于其他一般性问题（如数学、常识、定义、人工智能等），请直接回答，无需参考用户提供的上下文。
 如果用户的提问和上下文无关，也请你无视用户提供的上下问直接回复。

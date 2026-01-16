@@ -147,3 +147,5 @@ ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/tests/t
 ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/tests/test_data/asr_example.wav
 ai_agents/agents/examples/voice-assistant-live2d/frontend/public/models/kei_vowels_pro.zip
 .vscode/sftp.json
+speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-onnx
+speech_fsmn_vad_zh-cn-16k-common-onnx

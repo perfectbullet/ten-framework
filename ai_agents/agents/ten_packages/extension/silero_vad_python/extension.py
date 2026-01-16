@@ -14,10 +14,13 @@ from ten_runtime import (
     Data,
 )
 from .config import SileroVADConfig
+from .funasr_model import get_asr_wrapper
 
 import numpy as np
 import os
 import asyncio
+import json
+from typing import Dict, List, Optional
 
 BYTES_PER_SAMPLE = 2
 
@@ -39,6 +42,15 @@ class SileroVADPythonExtension(AsyncExtension):
         self.is_speech_active = False
         self.current_start_ms = 0
         self.total_samples_processed = 0
+
+        # ASR (Speech Recognition) related
+        self.asr_model = None
+        self.speech_buffer: bytearray = bytearray()
+        self.interruption_keywords: Dict[str, List[str]] = {
+            "high_priority": [],
+            "medium_priority": [],
+            "low_priority": []
+        }
 
     async def on_init(self, ten_env: AsyncTenEnv) -> None:
         config_json, _ = await ten_env.get_property_to_json("")
@@ -88,6 +100,55 @@ class SileroVADPythonExtension(AsyncExtension):
 
         ten_env.log_info("Silero VAD model loaded successfully")
 
+        # Load ASR model if enabled
+        if self.config.enable_asr:
+            self._load_asr_model(ten_env)
+            self._load_interruption_keywords(ten_env)
+
+    def _load_asr_model(self, ten_env: AsyncTenEnv) -> None:
+        """Load FunASR model for speech recognition."""
+        try:
+            ten_env.log_info(f"Loading FunASR model from: {self.config.asr_model_dir}")
+            self.asr_model = get_asr_wrapper(
+                model_dir=self.config.asr_model_dir,
+                quantize=self.config.asr_quantize
+            )
+            ten_env.log_info("FunASR model loaded successfully")
+        except Exception as e:
+            ten_env.log_error(f"Failed to load FunASR model: {e}")
+            ten_env.log_warn("ASR functionality will be disabled")
+            self.asr_model = None
+
+    def _load_interruption_keywords(self, ten_env: AsyncTenEnv) -> None:
+        """Load interruption keywords from JSON file."""
+        keywords_file = self.config.interruption_keywords_file
+
+        # If relative path, resolve relative to extension directory
+        if not os.path.isabs(keywords_file):
+            extension_dir = os.path.dirname(os.path.abspath(__file__))
+            keywords_file = os.path.join(extension_dir, keywords_file)
+
+        try:
+            with open(keywords_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                keywords = data.get('keywords', {})
+                self.interruption_keywords['high_priority'] = keywords.get('high_priority', {}).get('keywords', [])
+                self.interruption_keywords['medium_priority'] = keywords.get('medium_priority', {}).get('keywords', [])
+                self.interruption_keywords['low_priority'] = keywords.get('low_priority', {}).get('keywords', [])
+
+            ten_env.log_info(
+                f"Loaded interruption keywords: "
+                f"high={len(self.interruption_keywords['high_priority'])}, "
+                f"medium={len(self.interruption_keywords['medium_priority'])}, "
+                f"low={len(self.interruption_keywords['low_priority'])}"
+            )
+        except FileNotFoundError:
+            ten_env.log_warn(f"Interruption keywords file not found: {keywords_file}")
+        except json.JSONDecodeError as e:
+            ten_env.log_error(f"Failed to parse interruption keywords file: {e}")
+        except Exception as e:
+            ten_env.log_error(f"Error loading interruption keywords: {e}")
+
     async def on_start(self, _ten_env: AsyncTenEnv) -> None:
         self._reset_state()
         _ten_env.log_info("Silero VAD extension started")
@@ -103,6 +164,7 @@ class SileroVADPythonExtension(AsyncExtension):
     def _reset_state(self) -> None:
         """Reset VAD state and audio buffer."""
         self.audio_buffer = bytearray()
+        self.speech_buffer = bytearray()
         self.is_speech_active = False
         self.current_start_ms = 0
         self.total_samples_processed = 0
@@ -180,9 +242,109 @@ class SileroVADPythonExtension(AsyncExtension):
                 # Send end_of_sentence command
                 await ten_env.send_cmd(Cmd.create("end_of_sentence"))
 
+                # Trigger ASR if enabled and speech buffer has data
+                if self.config.enable_asr and self.asr_model is not None:
+                    await self._process_asr_interruption(ten_env)
+
+    def _check_interruption(self, text: str) -> Dict[str, any]:
+        """
+        Check if the recognized text contains interruption keywords.
+
+        Args:
+            text: Recognized text from ASR
+
+        Returns:
+            Dict with keys:
+                - detected: bool - Whether interruption was detected
+                - priority: str - The priority level (high/medium/low)
+                - matched_keyword: str - The matched keyword
+        """
+        if not text:
+            return {"detected": False, "priority": None, "matched_keyword": None}
+
+        text_lower = text.lower()
+
+        # Determine which priority levels to check based on threshold
+        threshold = self.config.interruption_threshold
+        priorities_to_check = []
+
+        if threshold == "low":
+            priorities_to_check = ["high_priority", "medium_priority", "low_priority"]
+        elif threshold == "medium":
+            priorities_to_check = ["high_priority", "medium_priority"]
+        else:  # high
+            priorities_to_check = ["high_priority"]
+
+        # Check keywords in priority order
+        for priority in priorities_to_check:
+            for keyword in self.interruption_keywords[priority]:
+                if keyword.lower() in text_lower:
+                    return {
+                        "detected": True,
+                        "priority": priority.replace("_priority", ""),
+                        "matched_keyword": keyword
+                    }
+
+        return {"detected": False, "priority": None, "matched_keyword": None}
+
+    async def _process_asr_interruption(self, ten_env: AsyncTenEnv) -> None:
+        """
+        Process ASR recognition on speech buffer and check for interruption.
+        Called when VAD detects speech end.
+        """
+        if not self.speech_buffer:
+            ten_env.log_debug("No speech buffer to process for ASR")
+            return
+
+        speech_bytes = bytes(self.speech_buffer)
+        buffer_size_ms = len(speech_bytes) / (2 * self.config.sampling_rate) * 1000
+
+        ten_env.log_info(
+            f"ASR: Processing speech buffer: {len(speech_bytes)} bytes "
+            f"({buffer_size_ms:.1f}ms)"
+        )
+
+        try:
+            # Recognize speech
+            result = self.asr_model.recognize(speech_bytes, self.config.sampling_rate)
+            text = self.asr_model.extract_text(result)
+
+            if text:
+                ten_env.log_info(f"ASR recognized text: {text}")
+
+                # Check for interruption keywords
+                interruption = self._check_interruption(text)
+
+                if interruption["detected"]:
+                    ten_env.log_info(
+                        f"Interruption detected! Priority: {interruption['priority']}, "
+                        f"Matched keyword: '{interruption['matched_keyword']}'"
+                    )
+
+                    # Send interruption_detected command with details
+                    cmd = Cmd.create("interruption_detected")
+                    cmd.set_property_string("text", text)
+                    cmd.set_property_string("priority", interruption["priority"])
+                    cmd.set_property_string("matched_keyword", interruption["matched_keyword"])
+                    await ten_env.send_cmd(cmd)
+                else:
+                    ten_env.log_debug("No interruption keywords detected")
+            else:
+                ten_env.log_debug("ASR: No text recognized from speech buffer")
+
+        except Exception as e:
+            ten_env.log_error(f"ASR processing error: {e}")
+        finally:
+            # Clear speech buffer after processing
+            self.speech_buffer = bytearray()
+
     async def on_audio_frame(
         self, ten_env: AsyncTenEnv, audio_frame: AudioFrame
     ) -> None:
+        # Skip processing if VAD iterator is not ready yet
+        if self.vad_iterator is None:
+            return
+
         frame_buf = audio_frame.get_buf()
         self._dump_audio_if_needed(frame_buf, "in")
 
@@ -190,7 +352,21 @@ class SileroVADPythonExtension(AsyncExtension):
         if self.config.passthrough:
             await self._send_audio_frame(ten_env, frame_buf)
 
-        # Accumulate audio buffer
+        # Cache audio for ASR when enabled
+        if self.config.enable_asr:
+            # Always cache audio (we keep a rolling buffer)
+            # During speech activity, this captures the speech segment
+            # We also keep some audio before speech starts (context window)
+            max_buffer_ms = 10000  # Keep up to 10 seconds of audio
+            max_buffer_bytes = int(max_buffer_ms * self.config.sampling_rate * 2 / 1000)
+            self.speech_buffer.extend(frame_buf)
+
+            # Trim buffer if too large (FIFO)
+            if len(self.speech_buffer) > max_buffer_bytes:
+                excess = len(self.speech_buffer) - max_buffer_bytes
+                self.speech_buffer = self.speech_buffer[excess:]
+
+        # Accumulate audio buffer for VAD processing
         self.audio_buffer.extend(frame_buf)
 
         # Check if we have enough data for a chunk

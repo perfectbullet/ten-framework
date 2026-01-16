@@ -2,10 +2,15 @@
   "use_onnx": true,
   "sampling_rate": 16000,
   "threshold": 0.5,
-  "min_speech_duration_ms": 250,
-  "min_silence_duration_ms": 100,
+  "min_speech_duration_ms": 500,
+  "min_silence_duration_ms": 200,
   "speech_pad_ms": 30,
   "chunk_size": 512,
   "dump": false,
-  "dump_path": ""
+  "dump_path": "",
+  "enable_asr": true,
+  "asr_model_dir": "speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-onnx",
+  "asr_quantize": true,
+  "interruption_keywords_file": "interruption_keywords.json",
+  "interruption_threshold": "medium"
 }
