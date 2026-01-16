@@ -17,10 +17,10 @@ remote_dir: "/data/metahuman_work/ten-framework/ai_agents"    # Remote directory
 
 # Include patterns (包含模式) - Which files to sync
 include_patterns:
-  - "*"                        # Include all files by default (默认包含所有文件)
+  # - "*"                        # Include all files by default (默认包含所有文件)
   - "*.py"                   # Only Python files
   #- "*.js"                   # Only JavaScript files
-  # - "src/**"                 # Only files in src directory
+  - "agents/ten_packages/extension/silero_vad_python/*"                 # Only files in src directory
   #- "docker-compose.yml"     # Specific file to include
   #- tenapp/property.json
   #- .env

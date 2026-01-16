@@ -86,8 +86,18 @@ class MainControlExtension(AsyncExtension):
         stream_id = int(self.session_id)
         if not event.text:
             return
+
+        self.ten_env.log_info(
+            f"[MainControlExtension] ASR result: text='{event.text}', final={event.final}, len={len(event.text)}"
+        )
+
         if event.final or len(event.text) > 2:
+            self.ten_env.log_info(
+                f"[MainControlExtension] Calling _interrupt() due to ASR result (final={event.final}, text_len={len(event.text)})"
+            )
             await self._interrupt()
+            self.ten_env.log_info("[MainControlExtension] _interrupt() completed")
+
         if event.final:
             self.turn_id += 1
             await self.agent.queue_llm_input(event.text)
@@ -202,7 +212,7 @@ class MainControlExtension(AsyncExtension):
 
     async def _interrupt(self):
         """
-        Interrupts ongoing LLM and TTS generation. Typically called when user speech is detected.
+        中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。该操作通常在检测到用户语音时触发。
         """
         self.sentence_fragment = ""
         await self.agent.flush_llm()

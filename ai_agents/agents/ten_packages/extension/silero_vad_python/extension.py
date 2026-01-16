@@ -52,6 +52,10 @@ class SileroVADPythonExtension(AsyncExtension):
             "low_priority": []
         }
 
+        # Speech segment buffer for saving detected speech segments as WAV
+        self.speech_segment_buffer: bytearray = bytearray()
+        self.speech_segment_count: int = 0
+
     async def on_init(self, ten_env: AsyncTenEnv) -> None:
         config_json, _ = await ten_env.get_property_to_json("")
         self.config = SileroVADConfig.model_validate_json(config_json)
@@ -165,6 +169,7 @@ class SileroVADPythonExtension(AsyncExtension):
         """Reset VAD state and audio buffer."""
         self.audio_buffer = bytearray()
         self.speech_buffer = bytearray()
+        self.speech_segment_buffer = bytearray()
         self.is_speech_active = False
         self.current_start_ms = 0
         self.total_samples_processed = 0
@@ -226,6 +231,9 @@ class SileroVADPythonExtension(AsyncExtension):
                 self.current_start_ms = result['start']
                 ten_env.log_info(f"Speech start detected at {result['start']}ms")
 
+                # Clear speech segment buffer for new segment
+                self.speech_segment_buffer = bytearray()
+
                 # Send start_of_sentence command
                 await ten_env.send_cmd(Cmd.create("start_of_sentence"))
 
@@ -242,9 +250,44 @@ class SileroVADPythonExtension(AsyncExtension):
                 # Send end_of_sentence command
                 await ten_env.send_cmd(Cmd.create("end_of_sentence"))
 
+                # Save speech segment as WAV file
+                self._save_speech_segment_as_wav(ten_env, duration_ms)
+
                 # Trigger ASR if enabled and speech buffer has data
                 if self.config.enable_asr and self.asr_model is not None:
                     await self._process_asr_interruption(ten_env)
+
+    def _save_speech_segment_as_wav(self, ten_env: AsyncTenEnv, duration_ms: int) -> None:
+        """Save detected speech segment to a WAV file."""
+        if not self.config.dump:
+            return
+
+        if not self.config.dump_path:
+            return
+
+        if not self.speech_segment_buffer:
+            return
+
+        import datetime
+        import wave
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{self.name}_speech_{self.speech_segment_count}_{timestamp}_{duration_ms}ms.wav"
+        dump_file = os.path.join(self.config.dump_path, filename)
+
+        # Ensure dump directory exists
+        os.makedirs(self.config.dump_path, exist_ok=True)
+
+        # Write WAV file
+        with wave.open(dump_file, 'wb') as wav_file:
+            wav_file.setnchannels(1)  # Mono
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(self.config.sampling_rate)
+            wav_file.writeframes(bytes(self.speech_segment_buffer))
+
+        ten_env.log_info(f"Saved speech segment: {filename} ({len(self.speech_segment_buffer)} bytes)")
+        self.speech_segment_count += 1
+        self.speech_segment_buffer = bytearray()
 
     def _check_interruption(self, text: str) -> Dict[str, any]:
         """
@@ -258,6 +301,7 @@ class SileroVADPythonExtension(AsyncExtension):
                 - detected: bool - Whether interruption was detected
                 - priority: str - The priority level (high/medium/low)
                 - matched_keyword: str - The matched keyword
+                
         """
         if not text:
             return {"detected": False, "priority": None, "matched_keyword": None}
@@ -352,6 +396,10 @@ class SileroVADPythonExtension(AsyncExtension):
         if self.config.passthrough:
             await self._send_audio_frame(ten_env, frame_buf)
 
+        # Cache audio for speech segment saving
+        if self.is_speech_active and self.config.dump:
+            self.speech_segment_buffer.extend(frame_buf)
+
         # Cache audio for ASR when enabled
         if self.config.enable_asr:
             # Always cache audio (we keep a rolling buffer)
@@ -387,3 +435,4 @@ class SileroVADPythonExtension(AsyncExtension):
 
         if result:
             await self._process_vad_result(ten_env, result)
+

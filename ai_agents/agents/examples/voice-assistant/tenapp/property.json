@@ -79,7 +79,7 @@
                   "sample_rate": 16000,
                   "voice": "hutao",
                   "use_local_service": true,
-                  "local_service_url": "ws://192.168.8.233:50002/streaming/ws"
+                  "local_service_url": "ws://192.168.8.230:50002/streaming/ws"
                 }
               }
             },
@@ -112,13 +112,14 @@
               "property": {
                 "use_onnx": true,
                 "sampling_rate": 16000,
-                "threshold": 0.5,
-                "min_speech_duration_ms": 250,
+                "threshold": 0.80,
+                "min_speech_duration_ms": 800,
                 "min_silence_duration_ms": 100,
                 "speech_pad_ms": 30,
                 "chunk_size": 512,
-                "dump": false,
-                "dump_path": ""
+                "dump": true,
+                "dump_path": "./vad_dump",
+                "enable_asr": false
               }
             }
           ],
