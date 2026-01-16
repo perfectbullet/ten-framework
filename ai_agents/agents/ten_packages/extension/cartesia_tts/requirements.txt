@@ -1,2 +1,0 @@
-asyncio
-cartesia>=2.0.15
