@@ -2,3 +2,5 @@ silero-vad
 torch
 torchaudio
 onnxruntime
+funasr-onnx>=0.1.0
+librosa

@@ -18,6 +18,12 @@
         "不要",
         "不用讲",
         "别讲",
+        "打断",
+        "打断一下",
+        "我打断一下",
+        "别说了别说了",
+        "停停",
+        "停停停",
         "stop",
         "stop it",
         "shut up",
@@ -44,6 +50,9 @@
         "什么",
         "你说什么",
         "什么?",
+        "等会儿",
+        "稍等",
+        "稍等一下",
         "wait",
         "wait a moment",
         "hold on",
@@ -68,6 +77,11 @@
         "嗯?",
         "啊?",
         "咋了",
+        "不是那个意思",
+        "我想问",
+        "我有问题",
+        "听我说",
+        "让我说完",
         "actually",
         "in fact",
         "correction",
@@ -89,7 +103,10 @@
       "你说错了",
       "我打断一下",
       "让我说",
-      "等会儿"
+      "等会儿",
+      "打断一下我想说",
+      "停停停别说了",
+      "等一等我有话要说"
     ],
     "english": [
       "stop, i have a question",
@@ -101,7 +118,9 @@
       "you got it wrong",
       "let me finish",
       "hold on a second",
-      "wait a minute"
+      "wait a minute",
+      "just stop for a second",
+      "hold on, i have a question"
     ]
   },
   "settings": {
