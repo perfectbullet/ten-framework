@@ -223,11 +223,12 @@ This is configured in:
 
 ### Type Checking
 
-Pyright is configured in `pyrightconfig.json`:
+Pyright is configured in `pyrightconfig.json` (at repository root):
 - Mode: `basic`
 - Key checks: `reportUnusedCoroutine`, `reportMissingAwait`, `reportUnawaitedAsyncFunctions` = error
 - Most type checks disabled to accommodate dynamic TEN runtime APIs
 - Separate execution environments per example to resolve imports correctly
+- Each example has its own executionEnvironment with paths to `ten_runtime_python` and `ten_ai_base` interfaces
 
 ## Extension Development Patterns
 
@@ -546,3 +547,44 @@ When working on:
 - Ensure .env has required API keys
 - Check PYTHONPATH in tests/bin/start script
 - Verify test configs in tests/configs/ directory
+
+## VAD + ASR Pipeline Pattern (Silero Extension)
+
+Some extensions like `silero_vad_python` implement a combined VAD + ASR pipeline for local speech recognition with interruption detection:
+
+**Architecture:**
+- VAD (Voice Activity Detection) using Silero model detects speech start/end
+- ASR (FunASR) runs locally on speech segments for offline recognition
+- Interruption keywords checked against recognized text with priority levels
+
+**Key Features:**
+- `enable_asr`: Enable local ASR with FunASR model
+- `interruption_keywords_file`: JSON file defining keywords by priority (high/medium/low)
+- `interruption_threshold`: Which priority levels to check ("low", "medium", "high")
+- `passthrough`: Forward audio frames to downstream extensions
+
+**Commands Output:**
+- `start_of_sentence`: Speech activity began
+- `end_of_sentence`: Speech ended (after silence period)
+- `interruption_detected`: ASR found interruption keyword (includes `text`, `priority`, `matched_keyword` properties)
+
+**Audio Processing:**
+- Input: 16-bit PCM, mono, 8kHz or 16kHz
+- Conversion: int16 → float32 normalized to [-1, 1] for VAD
+- Chunk-based processing (default 512 samples)
+
+## Dual Backend Architecture Pattern
+
+Some extensions (e.g., `aliyun_asr_bigmodel_local_python`) support multiple vendor backends through a unified interface:
+
+**Pattern:**
+- `asr_backend` config property selects backend ("dashscope", "funasr", etc.)
+- Separate adapter classes (e.g., `FunASRAdapter`) normalize vendor APIs to a common interface
+- Conditional instantiation in `start_connection()` based on config
+- Callback adapters bridge vendor-specific message formats to TEN's data structures
+
+**Key Considerations:**
+- Each backend may have different message formats—convert to unified structure
+- Thread safety: vendor SDKs often use separate threads for callbacks
+- Test all backend configurations when adding features
+- Timeline management may differ between backends
