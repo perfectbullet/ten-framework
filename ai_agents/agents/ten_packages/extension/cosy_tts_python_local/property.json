@@ -1,0 +1,12 @@
+{
+    "dump": false,
+    "dump_path": "./",
+    "params": {
+        "api_key": "${env:COSY_TTS_API_KEY|}",
+        "model": "cosyvoice-v1",
+        "sample_rate": 16000,
+        "voice": "longlaotie",
+        "use_local_service": true,
+        "local_service_url": "http://192.168.8.230:50002"
+    }
+}
