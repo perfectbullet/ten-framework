@@ -414,11 +414,15 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
                 duration_ms = end_ms - start_ms if end_ms > start_ms else 0
 
-                # Calculate actual start time
-                actual_start_ms = int(
-                    self.audio_timeline.get_audio_duration_before_time(start_ms)
-                    + self.sent_user_audio_duration_ms_before_last_reset
-                )
+                # Calculate actual start time (only if valid timestamps available)
+                if start_ms > 0:
+                    actual_start_ms = int(
+                        self.audio_timeline.get_audio_duration_before_time(start_ms)
+                        + self.sent_user_audio_duration_ms_before_last_reset
+                    )
+                else:
+                    # No valid timestamps, use 0 as fallback
+                    actual_start_ms = 0
 
                 self.ten_env.log_debug(
                     f"Aliyun ASR result: {text}, is_final: {is_final}, "
