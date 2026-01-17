@@ -12,6 +12,8 @@ from ten_runtime import (
 )
 
 from .agent.agent import Agent
+from .agent.ollama_client import OllamaClient
+from .config import OllamaConfig
 from .agent.events import (
     ASRResultEvent,
     LLMResponseEvent,
@@ -36,6 +38,8 @@ class MainControlExtension(AsyncExtension):
         self.ten_env: AsyncTenEnv = None
         self.agent: Agent = None
         self.config: MainControlConfig = None
+        self.ollama_client: OllamaClient = None
+        self.ollama_config: OllamaConfig = None
 
         self.stopped: bool = False
         self._rtc_user_count: int = 0
@@ -54,6 +58,18 @@ class MainControlExtension(AsyncExtension):
         self.config = MainControlConfig.model_validate_json(config_json)
 
         self.agent = Agent(ten_env)
+
+        # Initialize Ollama client from environment variables
+        self.ollama_config = OllamaConfig.from_env()
+        if self.ollama_config.enabled:
+            self.ollama_client = OllamaClient(
+                base_url=self.ollama_config.base_url,
+                model=self.ollama_config.model,
+                timeout=self.ollama_config.timeout,
+            )
+            ten_env.log_info(
+                f"[MainControlExtension] Ollama client initialized: {self.ollama_config.base_url}, model={self.ollama_config.model}"
+            )
 
         # Now auto-register decorated methods
         for attr_name in dir(self):
@@ -90,6 +106,18 @@ class MainControlExtension(AsyncExtension):
         self.ten_env.log_info(
             f"[MainControlExtension] ASR result: text='{event.text}', final={event.final}, len={len(event.text)}"
         )
+
+        # Semantic validation using Ollama (only on final results)
+        if event.final and self.ollama_client:
+            is_meaningful, elapsed, raw_response = await self.ollama_client.is_meaningful(event.text)
+            self.ten_env.log_info(
+                f"[MainControlExtension] Ollama validation: text='{event.text}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={raw_response}"
+            )
+            if not is_meaningful:
+                self.ten_env.log_info(
+                    f"[MainControlExtension] Skipping noise text: '{event.text}'"
+                )
+                return
 
         if event.final or len(event.text) > 2:
             self.ten_env.log_info(
@@ -132,6 +160,8 @@ class MainControlExtension(AsyncExtension):
         ten_env.log_info("[MainControlExtension] on_stop")
         self.stopped = True
         await self.agent.stop()
+        if self.ollama_client:
+            await self.ollama_client.close()
 
     async def on_cmd(self, ten_env: AsyncTenEnv, cmd: Cmd):
         await self.agent.on_cmd(cmd)
