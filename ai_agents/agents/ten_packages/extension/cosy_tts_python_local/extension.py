@@ -64,6 +64,14 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
         self.chunk_count: int = 0
         # Flag indicating if the first request is being processed
         self.is_first_message_of_request: bool = False
+        # Debug audio data (pre-loaded PCM audio for testing)
+        self.debug_audio_data: bytes = b""
+        # Current position in debug audio data for looping
+        self.debug_audio_position: int = 0
+        # Chunk size for sending debug audio (bytes)
+        self.debug_audio_chunk_size: int = 3200  # 100ms at 16kHz mono 16-bit
+        # Flag indicating if debug audio should continue playing after text_input_end
+        self.debug_audio_active: bool = False
 
     async def on_init(self, ten_env: AsyncTenEnv) -> None:
         try:
@@ -83,17 +91,26 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                     category=LOG_CATEGORY_KEY_POINT,
                 )
 
-            # Initialize Cosy TTS client
-            # Use CosyTTSClient for local WebSocket service
-            self.ten_env.log_info(
-                f"Using local CosyVoice service at: {self.config.local_service_url}",
-                category=LOG_CATEGORY_KEY_POINT,
-            )
-            self.client = CosyTTSClient(
-                self.config, self.ten_env, self.vendor()
-            )
+            # Load debug audio if enabled
+            if self.config.use_debug_audio:
+                await self._load_debug_audio()
+                self.ten_env.log_info(
+                    f"Debug audio mode enabled, loaded {len(self.debug_audio_data)} bytes from {self.config.debug_audio_path}",
+                    category=LOG_CATEGORY_KEY_POINT,
+                )
+            else:
+                # Initialize Cosy TTS client
+                # Use CosyTTSClient for local WebSocket service
+                self.ten_env.log_info(
+                    f"Using local CosyVoice service at: {self.config.local_service_url}",
+                    category=LOG_CATEGORY_KEY_POINT,
+                )
+                self.client = CosyTTSClient(
+                    self.config, self.ten_env, self.vendor()
+                )
 
-            self.client.start()
+                self.client.start()
+
             self.audio_processor_task = asyncio.create_task(
                 self._process_audio_data()
             )
@@ -114,7 +131,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 ten_env.log_info("Audio processor task cancelled.")
             self.audio_processor_task = None
 
-        if self.client:
+        # Only stop client if not in debug audio mode
+        if self.client and not self.config.use_debug_audio:
             # Stop client properly (local client has async stop method)
             if hasattr(self.client, "stop") and asyncio.iscoroutinefunction(
                 self.client.stop
@@ -141,8 +159,13 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
             f"cancel_tts called, current_request_id: {self.current_request_id}"
         )
 
-        # Cancel the TTS client
-        if self.client:
+        # In debug mode, deactivate debug audio
+        if self.config.use_debug_audio:
+            self.debug_audio_active = False
+            self.ten_env.log_info("Debug mode: deactivated debug audio streaming")
+
+        # Cancel the TTS client (only in non-debug mode)
+        if self.client and not self.config.use_debug_audio:
             self.ten_env.log_info(
                 f"Cancelling TTS client for request ID: {self.current_request_id}"
             )
@@ -163,7 +186,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 f"KEYPOINT Requesting TTS for text: {t.text}, text_input_end: {t.text_input_end}, request_id: {t.request_id}, current_request_id: {self.current_request_id}"
             )
 
-            if self.client is None:
+            # In debug mode, client is not initialized
+            if not self.config.use_debug_audio and self.client is None:
                 self.ten_env.log_error("Client is not initialized")
                 return
 
@@ -185,7 +209,9 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                     f"KEYPOINT New TTS request with ID: {t.request_id}"
                 )
                 if not self.current_request_finished:
-                    self.client.complete()
+                    # Complete previous request (non-debug mode only)
+                    if not self.config.use_debug_audio:
+                        self.client.complete()
                     self.current_request_finished = True
 
                 self.current_request_id = t.request_id
@@ -237,7 +263,16 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 )
 
                 # Start audio synthesis
-                self.client.synthesize_audio(t.text, t.text_input_end)
+                if not self.config.use_debug_audio:
+                    # Normal mode: synthesize with TTS service
+                    self.client.synthesize_audio(t.text, t.text_input_end)
+                else:
+                    # Debug mode: activate debug audio streaming
+                    self.debug_audio_active = True
+                    self.debug_audio_position = 0  # Reset to start of file
+                    self.ten_env.log_info(
+                        f"KEYPOINT Debug mode: activated debug audio streaming for request_id: {t.request_id}"
+                    )
                 self.is_first_message_of_request = False
 
             # Handle text input end
@@ -245,8 +280,13 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 self.ten_env.log_info(
                     f"KEYPOINT finish session for request ID: {t.request_id}, current_request_id: {self.current_request_id}"
                 )
-                self.client.complete()
-                self.current_request_finished = True
+                # Complete the request (non-debug mode only)
+                if not self.config.use_debug_audio:
+                    self.client.complete()
+                # In debug mode, keep debug audio active for continuous playback
+                # Don't set current_request_finished - audio will continue until cancelled
+                if not self.config.use_debug_audio:
+                    self.current_request_finished = True
 
         except WebSocketConnectionClosedException as e:
             self.ten_env.log_error(f"WebSocket connection closed, {e}")
@@ -255,7 +295,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 code=ModuleErrorCode.NON_FATAL_ERROR.value,
                 vendor_info=ModuleErrorVendorInfo(vendor=self.vendor()),
             )
-            self.client.cancel()
+            if self.client and not self.config.use_debug_audio:
+                self.client.cancel()
 
         except Exception as e:
             self.ten_env.log_error(
@@ -266,7 +307,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 code=ModuleErrorCode.FATAL_ERROR.value,
                 vendor_info=ModuleErrorVendorInfo(vendor=self.vendor()),
             )
-            self.client.cancel()
+            if self.client and not self.config.use_debug_audio:
+                self.client.cancel()
 
     async def _process_audio_data(self) -> None:
         """
@@ -281,13 +323,19 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
 
             while True:  # Continuous loop for processing multiple requests
                 try:
-                    self.ten_env.log_info(
-                        "Waiting for audio data from client..."
-                    )
-                    # Get audio data from client
-                    done, message_type, data = (
-                        await self.client.get_audio_data()
-                    )
+                    # Debug audio mode: use pre-loaded audio file
+                    if self.config.use_debug_audio:
+                        done, message_type, data = (
+                            await self._get_next_debug_audio_chunk()
+                        )
+                    else:
+                        # Normal mode: get audio data from TTS client
+                        self.ten_env.log_info(
+                            "Waiting for audio data from client..."
+                        )
+                        done, message_type, data = (
+                            await self.client.get_audio_data()
+                        )
 
                     self.ten_env.log_info(
                         f"Received done: {done}, message_type: {message_type}, current_request_id: {self.current_request_id}"
@@ -626,3 +674,91 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
             asyncio.create_task(
                 self.recorder_map[self.current_request_id].write(audio_chunk)
             )
+
+    async def _load_debug_audio(self) -> None:
+        """
+        Load debug audio from file for testing without TTS service.
+        Supports both WAV and raw PCM formats.
+        """
+        try:
+            import wave
+
+            self.ten_env.log_info(
+                f"Attempting to load debug audio from: {self.config.debug_audio_path}"
+            )
+
+            # Try to open as WAV file first
+            try:
+                with wave.open(self.config.debug_audio_path, "rb") as wav_file:
+                    # Get audio parameters
+                    frames = wav_file.getnframes()
+                    self.ten_env.log_info(
+                        f"WAV file info - channels: {wav_file.getnchannels()}, "
+                        f"sample_rate: {wav_file.getframerate()}, "
+                        f"frames: {frames}, "
+                        f"sample_width: {wav_file.getsampwidth()}"
+                    )
+
+                    # Read all frames and convert to bytes
+                    self.debug_audio_data = wav_file.readframes(frames)
+                    self.ten_env.log_info(
+                        f"Loaded debug audio (WAV): {len(self.debug_audio_data)} bytes from {self.config.debug_audio_path}"
+                    )
+            except wave.Error:
+                # Not a WAV file, treat as raw PCM
+                with open(self.config.debug_audio_path, "rb") as f:
+                    self.debug_audio_data = f.read()
+                self.ten_env.log_info(
+                    f"Loaded debug audio (raw PCM): {len(self.debug_audio_data)} bytes from {self.config.debug_audio_path}"
+                )
+
+            self.debug_audio_position = 0
+
+        except FileNotFoundError as e:
+            self.ten_env.log_error(
+                f"Debug audio file not found: {self.config.debug_audio_path}, error: {e}"
+            )
+            raise ValueError(
+                f"Debug audio file not found: {self.config.debug_audio_path}"
+            )
+        except Exception as e:
+            self.ten_env.log_error(
+                f"Failed to load debug audio: {e}, traceback: {traceback.format_exc()}"
+            )
+            raise ValueError(f"Failed to load debug audio: {e}")
+
+    async def _get_next_debug_audio_chunk(self) -> tuple[bool, int, bytes | None]:
+        """
+        Get next chunk of debug audio data. Loops when reaching end of file.
+
+        Returns:
+            (done, message_type, data) tuple
+            - done: Always False (debug audio loops until explicitly stopped)
+            - message_type: MESSAGE_TYPE_PCM
+            - data: Audio chunk bytes or None if debug audio is not active
+        """
+        # In debug mode, check if debug audio is active (has a request)
+        if not self.debug_audio_active:
+            await asyncio.sleep(0.05)  # Small delay to prevent busy waiting
+            return (False, MESSAGE_TYPE_PCM, None)
+
+        # If debug audio data is empty, return None
+        if not self.debug_audio_data:
+            await asyncio.sleep(0.05)
+            return (False, MESSAGE_TYPE_PCM, None)
+
+        # Get chunk based on current position
+        chunk = self.debug_audio_data[
+            self.debug_audio_position : self.debug_audio_position + self.debug_audio_chunk_size
+        ]
+
+        # Update position with wraparound
+        self.debug_audio_position = (
+            self.debug_audio_position + len(chunk)
+        ) % len(self.debug_audio_data)
+
+        # Small delay to simulate real-time audio streaming
+        # 100ms = 0.1 second for 3200 bytes at 16kHz
+        await asyncio.sleep(0.1)
+
+        return (False, MESSAGE_TYPE_PCM, chunk)
