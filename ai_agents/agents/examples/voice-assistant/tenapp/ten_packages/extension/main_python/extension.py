@@ -47,8 +47,42 @@ class MainControlExtension(AsyncExtension):
         self.turn_id: int = 0
         self.session_id: str = "0"
 
+        # 打断短语列表 - 这些短语会触发打断但不发送给 LLM
+        self._interrupt_phrases = {
+            "打断一下", "停一下", "等一下", "别说了", "稍等一下",
+            "stop", "wait", "hold on",
+        }
+
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
+
+    def _is_interrupt_phrase(self, text: str) -> bool:
+        """
+        检查文本是否是打断短语。
+        处理前后标点符号，如 "，打断一下" 或 "打断一下。"
+        也支持重复字符，如 "停停停"、"等等等"
+        """
+        import string
+        import re
+
+        # 去除前后标点符号后检查
+        text_clean = text.strip().strip(string.punctuation + "，。！？、；：""''《》【】")
+        text_lower = text_clean.lower()
+
+        # 检查是否包含打断短语
+        for phrase in self._interrupt_phrases:
+            if phrase.lower() in text_lower or text_lower in phrase.lower():
+                return True
+
+        # 检查重复的打断意图字符（如：停停停、等等等、别别别、stopstop）
+        # 匹配单个汉字重复3次及以上
+        if re.match(r'^([停等别])\1{2,}$', text_clean):
+            return True
+        # 匹配英文单词重复2次及以上（如：stopstop）
+        if re.match(r'^([a-z]+)\1{1,}$', text_lower):
+            return True
+
+        return False
 
     async def on_init(self, ten_env: AsyncTenEnv):
         self.ten_env = ten_env
@@ -106,6 +140,15 @@ class MainControlExtension(AsyncExtension):
         self.ten_env.log_info(
             f"[MainControlExtension] ASR result: text='{event.text}', final={event.final}, len={len(event.text)}"
         )
+
+        # 检查是否是打断短语（在语义验证之前）
+        if event.final and self._is_interrupt_phrase(event.text):
+            self.ten_env.log_info(
+                f"[MainControlExtension] Interrupt phrase detected: '{event.text}', calling _interrupt()"
+            )
+            await self._interrupt()
+            await self._send_transcript("user", event.text, event.final, stream_id)
+            return  # 不发送给 LLM
 
         # Semantic validation using Ollama (only on final results)
         if event.final and self.ollama_client:
