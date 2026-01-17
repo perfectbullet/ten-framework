@@ -1,4 +1,5 @@
 import copy
+import os
 from pydantic import BaseModel, Field
 from typing import Any
 from ten_ai_base import utils
@@ -27,6 +28,8 @@ class CosyTTSConfig(BaseModel):
     # Debug and dump settings
     dump: bool = False
     dump_path: str = "/tmp"
+    use_debug_audio: bool = False  # Use pre-recorded debug audio instead of TTS
+    debug_audio_path: str = "/app/agents/examples/voice-assistant/zh-demo-emotion.wav"  # Path to debug audio file (WAV/PCM format, Docker path)
 
     # Parameters
     # Function reserved, currently empty, may need to add content later
@@ -61,6 +64,8 @@ class CosyTTSConfig(BaseModel):
             "use_local_service",
             "local_service_url",
             "local_spk_id",
+            "use_debug_audio",
+            "debug_audio_path",
         ]
 
         for param_name in param_names:
@@ -71,6 +76,15 @@ class CosyTTSConfig(BaseModel):
 
     def validate_params(self) -> None:
         """Validate required configuration parameters."""
+        # If using debug audio, only validate debug audio path
+        if self.use_debug_audio:
+            if not self.debug_audio_path or self.debug_audio_path.strip() == "":
+                raise ValueError(
+                    "debug_audio_path is required when use_debug_audio is True"
+                )
+            # Skip file existence check - will be checked at runtime
+            return
+
         if self.use_local_service:
             # For local service, only validate local-specific params
             required_fields = [

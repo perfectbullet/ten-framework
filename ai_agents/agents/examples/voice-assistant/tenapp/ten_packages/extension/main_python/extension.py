@@ -27,6 +27,14 @@ from .config import MainControlConfig  # assume extracted from your base model
 import uuid
 
 
+def _truncate_text(text: str, max_len: int = 50) -> str:
+    """截断文本用于日志显示，保留开头和结尾"""
+    if len(text) <= max_len:
+        return text
+    half_len = (max_len - 3) // 2
+    return f"{text[:half_len]}...{text[-half_len:]}"
+
+
 class MainControlExtension(AsyncExtension):
     """
     The entry point of the agent module.
@@ -138,13 +146,13 @@ class MainControlExtension(AsyncExtension):
             return
 
         self.ten_env.log_info(
-            f"[MainControlExtension] ASR result: text='{event.text}', final={event.final}, len={len(event.text)}"
+            f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
         )
 
         # 检查是否是打断短语（在语义验证之前）
         if event.final and self._is_interrupt_phrase(event.text):
             self.ten_env.log_info(
-                f"[MainControlExtension] Interrupt phrase detected: '{event.text}', calling _interrupt()"
+                f"[MainControlExtension] Interrupt phrase detected: '{_truncate_text(event.text)}', calling _interrupt()"
             )
             await self._interrupt()
             await self._send_transcript("user", event.text, event.final, stream_id)
@@ -154,11 +162,11 @@ class MainControlExtension(AsyncExtension):
         if event.final and self.ollama_client:
             is_meaningful, elapsed, raw_response = await self.ollama_client.is_meaningful(event.text)
             self.ten_env.log_info(
-                f"[MainControlExtension] Ollama validation: text='{event.text}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={raw_response}"
+                f"[MainControlExtension] Ollama validation: text='{_truncate_text(event.text)}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={_truncate_text(raw_response, 30)}"
             )
             if not is_meaningful:
                 self.ten_env.log_info(
-                    f"[MainControlExtension] Skipping noise text: '{event.text}'"
+                    f"[MainControlExtension] Skipping noise text: '{_truncate_text(event.text)}'"
                 )
                 return
 
@@ -260,7 +268,7 @@ class MainControlExtension(AsyncExtension):
                 },
             )
         self.ten_env.log_info(
-            f"[MainControlExtension] Sent transcript: {role}, final={final}, text={text}"
+            f"[MainControlExtension] Sent transcript: {role}, final={final}, text={_truncate_text(text)}"
         )
 
     async def _send_to_tts(self, text: str, is_final: bool):
@@ -280,7 +288,7 @@ class MainControlExtension(AsyncExtension):
             },
         )
         self.ten_env.log_info(
-            f"[MainControlExtension] Sent to TTS: is_final={is_final}, text={text}"
+            f"[MainControlExtension] Sent to TTS: is_final={is_final}, text={_truncate_text(text)}"
         )
 
     async def _interrupt(self):
