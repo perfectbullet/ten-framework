@@ -15,18 +15,31 @@ private_key: "/home/zj/.ssh/id_rsa"  # Path to private key (私钥路径)
 local_dir: "/home/zj/ten-framework/ai_agents"      # Local directory to sync (要同步的本地目录)
 remote_dir: "/data/metahuman_work/ten-framework/ai_agents"    # Remote directory (远程目录)
 
-# Include patterns (包含模式) - Which files to sync
+# Include patterns (包含模式) - 指定要同步的文件
+# 注意：本工具使用 fnmatch 模式，不支持 glob 风格的 ** 双星号
+# 常用模式示例：
+#   - "*.py"           匹配所有 .py 文件（包括子目录）
+#   - "dir/*.py"       匹配 dir/ 目录下的 .py 文件
+#   - "dir/*/*.py"     匹配 dir/ 的一级子目录中的 .py 文件
+#   - "dir/file.txt"   匹配特定文件
 include_patterns:
-  # - "*"                        # Include all files by default (默认包含所有文件)
-  - "*.py"                   # Only Python files
-  #- "*.js"                   # Only JavaScript files
-  - "agents/ten_packages/extension/silero_vad_python/*"                 # Only files in src directory
-  #- "docker-compose.yml"     # Specific file to include
-  #- tenapp/property.json
-  #- .env
-  #- Taskfile.yml
-  #- property.json
-  # - tenapp
+  # - "*"                        # 包含所有文件
+  # - "*.py"                     # 所有 Python 文件
+  # - "*.js"                     # 所有 JavaScript 文件
+  # silero_vad_python 扩展的 Python 文件
+  - "agents/ten_packages/extension/silero_vad_python/*.py"
+  - "agents/ten_packages/extension/silero_vad_python/*/*.py"
+  - agents/examples/voice-assistant/*.py
+  - agents/examples/voice-assistant/*.json
+  - agents/examples/voice-assistant/*.yml
+  - agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/*.py
+  # 其他可能需要同步的文件（取消注释以启用）
+  # - "docker-compose.yml"       # Docker 配置
+  # - "tenapp/property.json"     # TEN 应用配置
+  # - ".env"                     # 环境变量（慎用，包含敏感信息）
+  # - "Taskfile.yml"             # Taskfile 配置
+  # - "property.json"            # 属性配置文件
+  # - "tenapp"                   # 整个 tenapp 目录
 
 # Exclude patterns (排除模式) - Which files to skip
 exclude_patterns:
