@@ -7,7 +7,7 @@ WebSocket 接口提供持久连接支持，允许客户端在单个连接中发�
 ## 连接地址
 
 ```
-ws://192.168.8.230:50002/streaming/ws
+ws://192.168.8.233:50002/streaming/ws
 ```
 
 ## 请求格式
@@ -105,7 +105,7 @@ import base64
 import websockets
 
 async def test_websocket():
-    async with websockets.connect("ws://192.168.8.230:50002/streaming/ws") as ws:
+    async with websockets.connect("ws://192.168.8.233:50002/streaming/ws") as ws:
         # 发送请求
         request = {
             "action": "synthesize",
@@ -114,21 +114,21 @@ async def test_websocket():
             "chunk_id": 1
         }
         await ws.send(json.dumps(request))
-        
+
         # 接收响应
         audio_chunks = []
         while True:
             message = await ws.recv()
             response = json.loads(message)
-            
+
             if response["type"] == "audio":
                 audio_data = base64.b64decode(response["data"])
                 audio_chunks.append(audio_data)
-            
+
             elif response["type"] == "complete":
                 print("合成完成")
                 break
-            
+
             elif response["type"] == "error":
                 print(f"错误: {response['data']}")
                 break
