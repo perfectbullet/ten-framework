@@ -1,0 +1,42 @@
+# Speaker Recognition SDK - Default Configuration
+
+model:
+  # Path to FunASR directory (for local model loading)
+  model_path: "/home/zj/zenking_work/FunASR"
+  # Model ID for ModelScope/FunASR
+  model_id: "iic/speech_campplus_sv_zh-cn_16k-common"
+  # Device to run model on: cuda or cpu
+  device: "cuda"
+  # Audio sample rate in Hz
+  sample_rate: 16000
+  # Embedding vector dimension
+  embedding_dim: 192
+
+mongo:
+  # MongoDB connection URI
+  uri: "mongodb://speaker:speaker2026@192.168.8.233:27017/speaker?authSource=admin"
+  # Database name
+  database: "speaker"
+  # Collection name
+  collection: "speakers"
+  # Connection timeout in milliseconds
+  timeout_ms: 5000
+
+matcher:
+  # Similarity threshold for positive match (0-1)
+  similarity_threshold: 0.75
+  # Number of top candidates to return
+  num_candidates: 5
+  # Confidence level thresholds
+  high_confidence: 0.85
+  medium_confidence: 0.75
+
+audio:
+  # Minimum audio duration in seconds for enrollment
+  min_duration: 1.0
+  # Segment length in seconds for processing
+  segment_length: 3.0
+  # Segment overlap ratio (0-1)
+  segment_overlap: 0.5
+  # Aggregation method for multiple embeddings: mean, max, center
+  aggregation: "mean"
