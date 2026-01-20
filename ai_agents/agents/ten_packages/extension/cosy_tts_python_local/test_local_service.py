@@ -63,9 +63,9 @@ async def test_local_service():
     print("=" * 60)
 
     # Test configuration
-    service_url = "ws://192.168.8.230:50002/streaming/ws"
-    test_text = "你好，这是一个测试。"
-    speaker_id = "班尼特"  # Change to your available speaker
+    service_url = "ws://192.168.8.233:50002/streaming/ws"
+    test_text = "你好，世界，这是一个测试。"
+    speaker_id = "hutao"  # Change to your available speaker
 
     print("\nConfiguration:")
     print(f"  Service URL: {service_url}")
