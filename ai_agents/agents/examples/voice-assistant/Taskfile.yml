@@ -38,7 +38,7 @@ tasks:
     cmds:
       - task: install-tenapp
       - task: install-tenapp-python-deps
-      - task: install-frontend
+      # - task: install-frontend
       - task: build-api-server
 
 
@@ -71,7 +71,7 @@ tasks:
     desc: run everything
     deps:
       - task: run-gd-server
-      - task: run-frontend
+      # - task: run-frontend
       - task: run-api-server
 
 
