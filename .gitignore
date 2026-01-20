@@ -157,3 +157,4 @@ ai_agents/agents/examples/voice-assistant/zh-demo-emotion.wav
 ai_agents/agents/examples/voice-assistant/zh-demo-emotion.mp4
 ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/en-demo-emotion.mp4:Zone.Identifier
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_output.wav
+ai_agents/docker-compose copy.yml

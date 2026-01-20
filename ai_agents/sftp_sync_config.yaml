@@ -2,10 +2,10 @@
 # 配置文件示例
 
 # Connection settings (连接设置)
-host: "192.168.8.230"         # Remote server IP or hostname (远程服务器IP或主机名)
+host: "192.168.8.233"         # Remote server IP or hostname (远程服务器IP或主机名)
 port: 22                       # SSH port (SSH端口)
-username: "user"             # SSH username (SSH用户名)
-password: "your_passphrase_here"         # SSH password (SSH密码) - Optional if using private_key
+username: "zenking"             # SSH username (SSH用户名)
+# password: "your_passphrase_here"         # SSH password (SSH密码) - Optional if using private_key
 
 # SSH key authentication (SSH密钥认证) - More secure than password
 private_key: "/home/zj/.ssh/id_rsa"  # Path to private key (私钥路径)
@@ -36,7 +36,7 @@ include_patterns:
   - agents/ten_packages/extension/cosy_tts_python_local/*.py
   - agents/ten_packages/extension/silero_vad_python/*.py
   # 其他可能需要同步的文件（取消注释以启用）
-  # - "docker-compose.yml"       # Docker 配置
+  - "docker-compose.yml"       # Docker 配置
   # - "tenapp/property.json"     # TEN 应用配置
   # - ".env"                     # 环境变量（慎用，包含敏感信息）
   # - "Taskfile.yml"             # Taskfile 配置
