@@ -29,6 +29,7 @@ include_patterns:
   # silero_vad_python 扩展的 Python 文件
   - "agents/ten_packages/extension/silero_vad_python/*.py"
   - "agents/ten_packages/extension/silero_vad_python/*/*.py"
+  - "agents/ten_packages/extension/silero_vad_python/requirements.txt"
   - agents/examples/voice-assistant/*.py
   - agents/examples/voice-assistant/*.json
   - agents/examples/voice-assistant/*.yml

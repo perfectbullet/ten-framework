@@ -43,9 +43,6 @@
       "path": "../../../ten_packages/extension/openai_tts2_python"
     },
     {
-      "path": "../../../ten_packages/extension/polly_tts"
-    },
-    {
       "path": "../../../ten_packages/extension/rime_http_tts"
     },
     {
@@ -68,18 +65,6 @@
     },
     {
       "path": "../../../ten_packages/extension/silero_vad_python"
-    },
-    {
-      "path": "../../../ten_packages/extension/openai_asr_python"
-    },
-    {
-      "path": "../../../ten_packages/extension/soniox_asr_python"
-    },
-    {
-      "path": "../../../ten_packages/extension/speechmatics_asr_python"
-    },
-    {
-      "path": "../../../ten_packages/extension/tencent_asr_python"
     }
   ],
   "scripts": {
