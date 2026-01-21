@@ -39,7 +39,7 @@ include_patterns:
   # 其他可能需要同步的文件（取消注释以启用）
   - "docker-compose.yml"       # Docker 配置
   # - "tenapp/property.json"     # TEN 应用配置
-  # - ".env"                     # 环境变量（慎用，包含敏感信息）
+  - ".env"                     # 环境变量（慎用，包含敏感信息）
   # - "Taskfile.yml"             # Taskfile 配置
   # - "property.json"            # 属性配置文件
   # - "tenapp"                   # 整个 tenapp 目录

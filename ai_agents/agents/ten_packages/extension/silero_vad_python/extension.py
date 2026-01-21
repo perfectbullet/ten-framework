@@ -216,6 +216,8 @@ class SileroVADPythonExtension(AsyncExtension):
         dump_file = os.path.join(
             self.config.dump_path, f"{self.name}_{suffix}.pcm"
         )
+        # Create directory if it doesn't exist
+        os.makedirs(self.config.dump_path, exist_ok=True)
         with open(dump_file, "ab") as f:
             f.write(buf)
 

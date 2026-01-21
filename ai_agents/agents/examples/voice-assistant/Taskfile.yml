@@ -29,6 +29,9 @@ tasks:
   build-api-server:
     desc: build api server
     dir: ../../../server
+    env:
+      GOPROXY: https://goproxy.cn,direct
+      GOSUMDB: off
     cmds:
       - go mod tidy && go mod download && go build -o bin/api main.go
 
