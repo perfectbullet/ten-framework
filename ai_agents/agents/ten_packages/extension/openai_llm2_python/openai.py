@@ -172,6 +172,10 @@ class OpenAIChatGPT:
         system_prompt = request_input.prompt or self.config.prompt
 
         self.ten_env.log_info(
+            f"get_chat_completions: {request_input} "
+        )
+
+        self.ten_env.log_info(
             f"get_chat_completions: {len(messages)} messages, streaming: {request_input.streaming}"
         )
 
@@ -254,10 +258,47 @@ class OpenAIChatGPT:
             "n": 1,  # Assuming single response for now
         }
 
+        # 额外的请求体参数（非 OpenAI 标准参数，通过 extra_body 传递）
+        extra_body = {}
+
+        # 处理 channel_name 参数（API 要求参数）
+        # 格式: employee_<team_id>_<user_id>_<employee_id>
+        # 例如: employee_4_46935014_29
+        if request_input.parameters and "channel_name" in request_input.parameters:
+            channel_name = request_input.parameters["channel_name"]
+            if channel_name:  # channel_name 是必需参数
+                extra_body["channel_name"] = channel_name
+                self.ten_env.log_info(f"Setting channel_name: {channel_name}")
+
+                # 解析 channel_name 提取 team_id, user_id, employee_id
+                # 格式: employee_<team_id>_<user_id>_<employee_id>
+                parts = channel_name.split('_')
+                if len(parts) >= 4 and parts[0] == "employee":
+                    try:
+                        team_id = parts[1]
+                        user_id = parts[2]
+                        employee_id = parts[3]
+
+                        extra_body["team_id"] = team_id
+                        extra_body["user_id"] = user_id
+                        extra_body["employee_id"] = employee_id
+
+                        self.ten_env.log_info(f"Parsed from channel_name: team_id={team_id}, user_id={user_id}, employee_id={employee_id}")
+                    except (ValueError, IndexError) as e:
+                        self.ten_env.log_error(f"Failed to parse channel_name '{channel_name}': {e}")
+                else:
+                    self.ten_env.log_error(f"Invalid channel_name format: '{channel_name}', expected 'employee_<team_id>_<user_id>_<employee_id>'")
+            else:
+                self.ten_env.log_error("channel_name parameter is empty, this may cause API call to fail")
+
+        # Add extra_body if there are additional parameters
+        if extra_body:
+            req["extra_body"] = extra_body
+
         # Add additional parameters if they are not in the black list
         for key, value in (request_input.parameters or {}).items():
             # Check if it's a valid option and not in black list
-            if not self.config.is_black_list_params(key):
+            if not self.config.is_black_list_params(key) and key != 'channel_name':
                 self.ten_env.log_debug(f"set openai param: {key} = {value}")
                 req[key] = value
 
