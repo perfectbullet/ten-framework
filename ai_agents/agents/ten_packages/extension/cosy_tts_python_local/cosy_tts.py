@@ -304,6 +304,20 @@ class CosyTTSClient:
             f"Starting TTS synthesis, text: {text}, input_end: {text_input_end}"
         )
 
+        # Check if synthesizer exists but is disconnected (e.g., server closed connection)
+        if self.synthesizer is not None and not self.synthesizer.connected:
+            self.ten_env.log_warn(
+                "Synthesizer disconnected, will recreate connection..."
+            )
+            self.synthesizer = None
+
+        # Also check if callback is closed (connection was closed)
+        if self.synthesizer is not None and self._callback and self._callback._closed:
+            self.ten_env.log_warn(
+                "Callback is closed, will recreate connection..."
+            )
+            self.synthesizer = None
+
         # Ensure synthesizer exists, create if needed
         if self.synthesizer is None:
             self.ten_env.log_info(

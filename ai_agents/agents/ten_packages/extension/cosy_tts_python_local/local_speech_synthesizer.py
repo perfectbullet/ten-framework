@@ -126,8 +126,13 @@ class LocalSpeechSynthesizer:
             )
 
             # Start WebSocket in a separate thread
+            # ping_interval > ping_timeout (required by websocket-client library)
             self.ws_thread = threading.Thread(
-                target=self.ws.run_forever, daemon=True
+                target=lambda: self.ws.run_forever(
+                    ping_interval=10,  # Send ping every 20 seconds
+                    ping_timeout=5,   # Wait for pong response (must be < ping_interval)
+                ),
+                daemon=True
             )
             self.ws_thread.start()
 

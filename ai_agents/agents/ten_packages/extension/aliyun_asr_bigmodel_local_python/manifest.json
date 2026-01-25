@@ -15,11 +15,6 @@
         }
     ],
     "api": {
-        "interface": [
-            {
-                "import_uri": "../../system/ten_ai_base/api/asr-interface.json"
-            }
-        ],
         "property": {
             "properties": {
                 "params": {

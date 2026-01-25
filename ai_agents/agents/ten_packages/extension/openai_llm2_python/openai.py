@@ -5,12 +5,14 @@
 # Copyright (c) 2024 Agora IO. All rights reserved.
 #
 #
+import os
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 import json
 import random
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator, List, Optional
 from pydantic import BaseModel
 import requests
 from openai import AsyncOpenAI, AsyncStream
@@ -32,6 +34,30 @@ from ten_ai_base.struct import (
 )
 from ten_ai_base.types import LLMToolMetadata
 from ten_runtime.async_ten_env import AsyncTenEnv
+
+
+def get_channel_from_cmdline() -> Optional[str]:
+    """
+    从父进程命令行获取 channel name。
+
+    父进程命令行格式: tman run start -- --property /var/log/ten_agent/property-employee_4_46935014_29-xxx.json
+
+    Returns:
+        channel name 字符串，如果解析失败则返回 None
+    """
+    try:
+        parent_pid = os.getppid()
+        with open(f'/proc/{parent_pid}/cmdline', 'r') as f:
+            cmdline = f.read()
+            # 从 property-文件名 中提取 channel
+            # 格式: property-employee_4_46935014_29-20260122_080649_000.json
+            match = re.search(r'property-([^-]+(?:_[^-]+)*)-', cmdline)
+            if match:
+                return match.group(1)
+    except Exception:
+        # 解析失败时静默返回 None
+        pass
+    return None
 
 
 @dataclass
@@ -264,32 +290,31 @@ class OpenAIChatGPT:
         # 处理 channel_name 参数（API 要求参数）
         # 格式: employee_<team_id>_<user_id>_<employee_id>
         # 例如: employee_4_46935014_29
-        if request_input.parameters and "channel_name" in request_input.parameters:
-            channel_name = request_input.parameters["channel_name"]
-            if channel_name:  # channel_name 是必需参数
-                extra_body["channel_name"] = channel_name
-                self.ten_env.log_info(f"Setting channel_name: {channel_name}")
+        channel_name = get_channel_from_cmdline()
+        if channel_name:  # channel_name 是必需参数
+            extra_body["channel_name"] = channel_name
+            self.ten_env.log_info(f"Setting channel_name: {channel_name}")
 
-                # 解析 channel_name 提取 team_id, user_id, employee_id
-                # 格式: employee_<team_id>_<user_id>_<employee_id>
-                parts = channel_name.split('_')
-                if len(parts) >= 4 and parts[0] == "employee":
-                    try:
-                        team_id = parts[1]
-                        user_id = parts[2]
-                        employee_id = parts[3]
+            # 解析 channel_name 提取 team_id, user_id, employee_id
+            # 格式: employee_<team_id>_<user_id>_<employee_id>
+            parts = channel_name.split('_')
+            if len(parts) >= 4 and parts[0] == "employee":
+                try:
+                    team_id = parts[1]
+                    user_id = parts[2]
+                    employee_id = parts[3]
 
-                        extra_body["team_id"] = team_id
-                        extra_body["user_id"] = user_id
-                        extra_body["employee_id"] = employee_id
-
-                        self.ten_env.log_info(f"Parsed from channel_name: team_id={team_id}, user_id={user_id}, employee_id={employee_id}")
-                    except (ValueError, IndexError) as e:
-                        self.ten_env.log_error(f"Failed to parse channel_name '{channel_name}': {e}")
-                else:
-                    self.ten_env.log_error(f"Invalid channel_name format: '{channel_name}', expected 'employee_<team_id>_<user_id>_<employee_id>'")
+                    extra_body["team_id"] = team_id
+                    extra_body["user_id"] = user_id
+                    extra_body["employee_id"] = employee_id
+                    extra_body["session_id"] = f"sess_{team_id}_{user_id}_{employee_id}"
+                    self.ten_env.log_info(f"Parsed from channel_name: team_id={team_id}, user_id={user_id}, employee_id={employee_id}")
+                except (ValueError, IndexError) as e:
+                    self.ten_env.log_error(f"Failed to parse channel_name '{channel_name}': {e}")
             else:
-                self.ten_env.log_error("channel_name parameter is empty, this may cause API call to fail")
+                self.ten_env.log_error(f"Invalid channel_name format: '{channel_name}', expected 'employee_<team_id>_<user_id>_<employee_id>'")
+        else:
+            self.ten_env.log_error("channel_name parameter is empty, this may cause API call to fail")
 
         # Add extra_body if there are additional parameters
         if extra_body:
