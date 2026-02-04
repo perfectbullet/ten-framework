@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import json
 import random
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List
 from pydantic import BaseModel
 import requests
 from openai import AsyncOpenAI, AsyncStream
@@ -36,28 +36,94 @@ from ten_ai_base.types import LLMToolMetadata
 from ten_runtime.async_ten_env import AsyncTenEnv
 
 
-def get_channel_from_cmdline() -> Optional[str]:
+def get_channel_from_cmdline() -> dict:
     """
-    从父进程命令行获取 channel name。
-
-    父进程命令行格式: tman run start -- --property /var/log/ten_agent/property-employee_4_46935014_29-xxx.json
+    从 property.json 文件中读取 agora_rtc 的 channel 值并解析。
 
     Returns:
-        channel name 字符串，如果解析失败则返回 None
+        dict: {
+            "channel_name": str,  # 如 "employee_4_3_29"
+            "team_id": str,       # 如 "4"，解析失败时使用默认值 "4"
+            "user_id": str,       # 如 "86622292"，解析失败时使用默认值 "3"
+            "employee_id": str    # 如 "29"，解析失败时使用默认值 "29"
+        }
     """
+    # 默认值
+    default_team_id = "4"
+    default_user_id = "3"
+    default_employee_id = "29"
+    default_channel_name = "employee_4_3_29"
+
     try:
+        # 1. 从父进程命令行获取 property.json 文件路径
         parent_pid = os.getppid()
         with open(f'/proc/{parent_pid}/cmdline', 'r') as f:
             cmdline = f.read()
-            # 从 property-文件名 中提取 channel
-            # 格式: property-employee_4_46935014_29-20260122_080649_000.json
-            match = re.search(r'property-([^-]+(?:_[^-]+)*)-', cmdline)
-            if match:
-                return match.group(1)
+            # 查找 --property 参数
+            match = re.search(r'--property\s+(\S+)', cmdline)
+            if not match:
+                return {
+                    "channel_name": default_channel_name,
+                    "team_id": default_team_id,
+                    "user_id": default_user_id,
+                    "employee_id": default_employee_id,
+                }
+            property_path = match.group(1)
+
+        # 2. 读取 property.json 文件
+        with open(property_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # 3. 导航到 agora_rtc 节点的 property，获取 channel 值
+        graphs = data.get("ten", {}).get("predefined_graphs", [])
+        if not graphs:
+            return {
+                "channel_name": None,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
+
+        nodes = graphs[0].get("graph", {}).get("nodes", [])
+        channel_name = None
+        for node in nodes:
+            if node.get("name") == "agora_rtc":
+                channel_name = node.get("property", {}).get("channel")
+                break
+
+        if not channel_name:
+            return {
+                "channel_name": None,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
+
+        # 4. 解析 channel_name 格式: employee_<team_id>_<user_id>_<employee_id>
+        parts = channel_name.split('_')
+        if len(parts) >= 4 and parts[0] == "employee":
+            return {
+                "channel_name": channel_name,
+                "team_id": parts[1],
+                "user_id": parts[2],
+                "employee_id": parts[3],
+            }
+        else:
+            # 格式不匹配，返回 channel_name 但使用默认的 team_id, user_id, employee_id
+            return {
+                "channel_name": channel_name,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
     except Exception:
-        # 解析失败时静默返回 None
-        pass
-    return None
+        # 发生任何错误时，返回默认值
+        return {
+            "channel_name": None,
+            "team_id": default_team_id,
+            "user_id": default_user_id,
+            "employee_id": default_employee_id,
+        }
 
 
 @dataclass
@@ -287,34 +353,20 @@ class OpenAIChatGPT:
         # 额外的请求体参数（非 OpenAI 标准参数，通过 extra_body 传递）
         extra_body = {}
 
-        # 处理 channel_name 参数（API 要求参数）
-        # 格式: employee_<team_id>_<user_id>_<employee_id>
-        # 例如: employee_4_46935014_29
-        channel_name = get_channel_from_cmdline()
-        if channel_name:  # channel_name 是必需参数
-            extra_body["channel_name"] = channel_name
-            self.ten_env.log_info(f"Setting channel_name: {channel_name}")
+        # 从 property.json 获取 channel 信息（使用默认值兜底）
+        channel_info = get_channel_from_cmdline()
+        channel_name = channel_info.get("channel_name")
+        team_id = channel_info.get("team_id")
+        user_id = channel_info.get("user_id")
+        employee_id = channel_info.get("employee_id")
 
-            # 解析 channel_name 提取 team_id, user_id, employee_id
-            # 格式: employee_<team_id>_<user_id>_<employee_id>
-            parts = channel_name.split('_')
-            if len(parts) >= 4 and parts[0] == "employee":
-                try:
-                    team_id = parts[1]
-                    user_id = parts[2]
-                    employee_id = parts[3]
-
-                    extra_body["team_id"] = team_id
-                    extra_body["user_id"] = user_id
-                    extra_body["employee_id"] = employee_id
-                    extra_body["session_id"] = f"sess_{team_id}_{user_id}_{employee_id}"
-                    self.ten_env.log_info(f"Parsed from channel_name: team_id={team_id}, user_id={user_id}, employee_id={employee_id}")
-                except (ValueError, IndexError) as e:
-                    self.ten_env.log_error(f"Failed to parse channel_name '{channel_name}': {e}")
-            else:
-                self.ten_env.log_error(f"Invalid channel_name format: '{channel_name}', expected 'employee_<team_id>_<user_id>_<employee_id>'")
-        else:
-            self.ten_env.log_error("channel_name parameter is empty, this may cause API call to fail")
+        # 始终使用 channel 信息（全部使用默认值兜底）
+        extra_body["channel_name"] = channel_name
+        extra_body["team_id"] = team_id
+        extra_body["user_id"] = user_id
+        extra_body["employee_id"] = employee_id
+        extra_body["session_id"] = f"sess_{team_id}_{user_id}_{employee_id}"
+        self.ten_env.log_info(f"Channel info: channel_name={channel_name}, team_id={team_id}, user_id={user_id}, employee_id={employee_id}")
 
         # Add extra_body if there are additional parameters
         if extra_body:
@@ -323,6 +375,7 @@ class OpenAIChatGPT:
         # Add additional parameters if they are not in the black list
         for key, value in (request_input.parameters or {}).items():
             # Check if it's a valid option and not in black list
+            # 跳过 channel_name，因为已经在 extra_body 中处理
             if not self.config.is_black_list_params(key) and key != 'channel_name':
                 self.ten_env.log_debug(f"set openai param: {key} = {value}")
                 req[key] = value
