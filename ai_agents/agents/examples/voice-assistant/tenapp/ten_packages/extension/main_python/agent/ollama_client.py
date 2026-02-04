@@ -16,7 +16,7 @@ class OllamaClient:
 
     def __init__(
         self,
-        base_url: str = "http://192.168.8.231:11434",
+        base_url: str = "http://192.168.8.233:11434",
         model: str = "qwen2.5:7b",
         timeout: float = 5.0,
     ):
@@ -145,7 +145,7 @@ async def test_ollama_client():
     Run this module directly to test: python -m agent.ollama_client
     """
     client = OllamaClient(
-        base_url="http://192.168.8.231:11434",
+        base_url="http://192.168.8.233:11434",
         model="qwen2.5:7b",
         timeout=10.0,
     )
@@ -213,7 +213,7 @@ async def test_is_meaningful_detailed():
     Shows raw response from Ollama for each test case.
     """
     client = OllamaClient(
-        base_url="http://192.168.8.231:11434",
+        base_url="http://192.168.8.233:11434",
         model="qwen2.5:7b",
         timeout=10.0,
     )

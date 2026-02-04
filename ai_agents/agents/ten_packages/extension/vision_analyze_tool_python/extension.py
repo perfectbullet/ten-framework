@@ -6,16 +6,8 @@
 import json
 import uuid
 from datetime import datetime
-from ten_ai_base.struct import (
-    EventType,
-    LLMMessage,
-    LLMMessageContent,
-    LLMRequest,
-    parse_llm_response,
-)
 from ten_runtime import (
     AudioFrame,
-    StatusCode,
     VideoFrame,
     AsyncTenEnv,
     Cmd,
@@ -137,7 +129,7 @@ def call_qwen25vl(prompt: str, image_path: str = None):
     :return: 模型响应结果
     """
     # Ollama API 地址（默认本地）
-    url = "http://192.168.8.231:11434/api/generate"
+    url = "http://192.168.8.233:11434/api/generate"
 
     # 构建请求数据（核心：多模态输入需用 "images" 字段传 Base64 图像）
     data = {
