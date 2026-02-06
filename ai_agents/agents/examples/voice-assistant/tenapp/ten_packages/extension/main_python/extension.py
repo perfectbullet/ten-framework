@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 from typing import Literal
@@ -57,7 +56,7 @@ class MainControlExtension(AsyncExtension):
 
         # 打断短语列表 - 这些短语会触发打断但不发送给 LLM
         self._interrupt_phrases = {
-            "打断一下", "停一下", "等一下", "别说了", "稍等一下",
+            "打断一下", "停一下", "等一下", "别说了", "稍等一下", "我知道了", "好的，我知道了", "好的我知道了"
             "stop", "wait", "hold on",
         }
 
