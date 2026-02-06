@@ -7,6 +7,7 @@
 #
 import os
 import re
+import traceback
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
@@ -36,7 +37,7 @@ from ten_ai_base.types import LLMToolMetadata
 from ten_runtime.async_ten_env import AsyncTenEnv
 
 
-def get_channel_from_cmdline() -> dict:
+def get_channel_from_cmdline(ten_env) -> dict:
     """
     从 property.json 文件中读取 agora_rtc 的 channel 值并解析。
 
@@ -57,11 +58,27 @@ def get_channel_from_cmdline() -> dict:
     try:
         # 1. 从父进程命令行获取 property.json 文件路径
         parent_pid = os.getppid()
-        with open(f'/proc/{parent_pid}/cmdline', 'r') as f:
+        ten_env.log_info(f"[get_channel] parent_pid: {parent_pid}")
+
+        cmdline_path = f'/proc/{parent_pid}/cmdline'
+        ten_env.log_info(f"[get_channel] reading cmdline from: {cmdline_path}")
+
+        with open(cmdline_path, 'r') as f:
             cmdline = f.read()
-            # 查找 --property 参数
-            match = re.search(r'--property\s+(\S+)', cmdline)
+            # cmdline 中的参数用 \x00 分隔，替换为空格以便正则匹配
+            cmdline_readable = cmdline.replace('\x00', ' ')
+
+            # 保存原始 cmdline 到本地文件（用于调试）
+            output_file = f"/tmp/cmdline_pid_{parent_pid}.txt"
+            with open(output_file, 'wb') as out_f:
+                out_f.write(cmdline.encode('utf-8', errors='replace'))
+            ten_env.log_info(f"[get_channel] cmdline saved to: {output_file}")
+
+            # 查找 --property 参数（使用替换后的 cmdline_readable）
+            # 路径以 /var/log 开头，包含 property-xxx.json 格式
+            match = re.search(r'property\s*(/var/log/[^/]+/property-[^\.]+\.json)', cmdline_readable)
             if not match:
+                ten_env.log_error("[get_channel] no --property found in cmdline, using defaults")
                 return {
                     "channel_name": default_channel_name,
                     "team_id": default_team_id,
@@ -69,14 +86,18 @@ def get_channel_from_cmdline() -> dict:
                     "employee_id": default_employee_id,
                 }
             property_path = match.group(1)
+            # ten_env.log_info(f"[get_channel] found property path: {property_path}")
 
         # 2. 读取 property.json 文件
+        ten_env.log_info(f"[get_channel] reading property file: {property_path}")
         with open(property_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
         # 3. 导航到 agora_rtc 节点的 property，获取 channel 值
         graphs = data.get("ten", {}).get("predefined_graphs", [])
+        ten_env.log_info(f"[get_channel] found {len(graphs)} predefined_graphs")
         if not graphs:
+            ten_env.log_error("[get_channel] no predefined_graphs found, using defaults")
             return {
                 "channel_name": None,
                 "team_id": default_team_id,
@@ -85,13 +106,17 @@ def get_channel_from_cmdline() -> dict:
             }
 
         nodes = graphs[0].get("graph", {}).get("nodes", [])
+        ten_env.log_info(f"[get_channel] found {len(nodes)} nodes in graph")
         channel_name = None
         for node in nodes:
-            if node.get("name") == "agora_rtc":
+            node_name = node.get("name")
+            if node_name == "agora_rtc":
                 channel_name = node.get("property", {}).get("channel")
+                ten_env.log_info(f"[get_channel] found agora_rtc node, channel: {channel_name}")
                 break
 
         if not channel_name:
+            ten_env.log_error("[get_channel] no channel found in agora_rtc node, using defaults")
             return {
                 "channel_name": None,
                 "team_id": default_team_id,
@@ -101,7 +126,9 @@ def get_channel_from_cmdline() -> dict:
 
         # 4. 解析 channel_name 格式: employee_<team_id>_<user_id>_<employee_id>
         parts = channel_name.split('_')
+        ten_env.log_info(f"[get_channel] channel_name parts: {parts}, len={len(parts)}")
         if len(parts) >= 4 and parts[0] == "employee":
+            ten_env.log_info(f"[get_channel] successfully parsed: team_id={parts[1]}, user_id={parts[2]}, employee_id={parts[3]}")
             return {
                 "channel_name": channel_name,
                 "team_id": parts[1],
@@ -110,13 +137,15 @@ def get_channel_from_cmdline() -> dict:
             }
         else:
             # 格式不匹配，返回 channel_name 但使用默认的 team_id, user_id, employee_id
+            ten_env.log_error(f"[get_channel] channel format mismatch: {channel_name}, using default ids")
             return {
                 "channel_name": channel_name,
                 "team_id": default_team_id,
                 "user_id": default_user_id,
                 "employee_id": default_employee_id,
             }
-    except Exception:
+    except Exception as e:
+        ten_env.log_error(f"[get_channel] Exception: {e}, traceback: {traceback.format_exc()}")
         # 发生任何错误时，返回默认值
         return {
             "channel_name": None,
@@ -264,10 +293,6 @@ class OpenAIChatGPT:
         system_prompt = request_input.prompt or self.config.prompt
 
         self.ten_env.log_info(
-            f"get_chat_completions: {request_input} "
-        )
-
-        self.ten_env.log_info(
             f"get_chat_completions: {len(messages)} messages, streaming: {request_input.streaming}"
         )
 
@@ -354,7 +379,8 @@ class OpenAIChatGPT:
         extra_body = {}
 
         # 从 property.json 获取 channel 信息（使用默认值兜底）
-        channel_info = get_channel_from_cmdline()
+        self.ten_env.log_info("[get_channel] About to call get_channel_from_cmdline")
+        channel_info = get_channel_from_cmdline(self.ten_env)
         channel_name = channel_info.get("channel_name")
         team_id = channel_info.get("team_id")
         user_id = channel_info.get("user_id")

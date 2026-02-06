@@ -159,3 +159,5 @@ ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_pyt
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_output.wav
 ai_agents/docker-compose copy.yml
 ai_agents/sftp_sync_config.yaml
+ai_agents/agents/ten_packages/extension/silero_vad_python/TEST_GUIDE.md
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/02386561316(02386561316)_20250507153540(1).mp3
