@@ -1,5 +1,7 @@
 import json
 import time
+import string
+import re
 from typing import Literal
 
 from .agent.decorators import agent_event_handler
@@ -69,9 +71,6 @@ class MainControlExtension(AsyncExtension):
         处理前后标点符号，如 "，打断一下" 或 "打断一下。"
         也支持重复字符，如 "停停停"、"等等等"
         """
-        import string
-        import re
-
         # 去除前后标点符号后检查
         text_clean = text.strip().strip(string.punctuation + "，。！？、；：""''《》【】")
         text_lower = text_clean.lower()

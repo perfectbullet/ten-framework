@@ -473,6 +473,14 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         elif self.config.finalize_mode == "mute_pkg":
             await self._handle_finalize_mute_pkg()
 
+    def _clean_leading_punctuation(self, text: str) -> str:
+        """Remove leading punctuation from ASR result text."""
+        # Common Chinese and English punctuation marks at the beginning
+        leading_punct = '，,。.！!？?；;：:、\t\n\r '
+        while text and text[0] in leading_punct:
+            text = text[1:]
+        return text
+
     async def _handle_asr_result(
         self,
         text: str,
@@ -483,6 +491,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     ):
         """Process ASR recognition result"""
         assert self.config is not None
+
+        # Clean leading punctuation from ASR result
+        text = self._clean_leading_punctuation(text)
 
         if final:
             await self._finalize_end()
