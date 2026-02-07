@@ -161,3 +161,4 @@ ai_agents/docker-compose copy.yml
 ai_agents/sftp_sync_config.yaml
 ai_agents/agents/ten_packages/extension/silero_vad_python/TEST_GUIDE.md
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/02386561316(02386561316)_20250507153540(1).mp3
+ai_agents/cmdline_pid_7424.txt
