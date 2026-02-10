@@ -3,10 +3,14 @@
 # Licensed under the Apache License, Version 2.0.
 # See the LICENSE file for more information.
 #
+import re
 import asyncio
 from datetime import datetime
 import os
 import traceback
+import json
+
+import aiohttp
 
 from websocket import WebSocketConnectionClosedException
 from ten_ai_base.const import LOG_CATEGORY_KEY_POINT, LOG_CATEGORY_VENDOR
@@ -30,6 +34,123 @@ from .cosy_tts import (
     MESSAGE_TYPE_CMD_CANCEL,
     MESSAGE_TYPE_CMD_RESULT_GENERATED,
 )
+
+def get_channel_from_cmdline(ten_env) -> dict:
+    """
+    从 property.json 文件中读取 agora_rtc 的 channel 值并解析。
+
+    Returns:
+        dict: {
+            "channel_name": str,  # 如 "employee_4_3_29"
+            "team_id": str,       # 如 "4"，解析失败时使用默认值 "4"
+            "user_id": str,       # 如 "86622292"，解析失败时使用默认值 "3"
+            "employee_id": str    # 如 "29"，解析失败时使用默认值 "29"
+        }
+    """
+    # 默认值
+    default_team_id = "4"
+    default_user_id = "3"
+    default_employee_id = "29"
+    default_channel_name = "employee_4_3_29"
+
+    try:
+        # 1. 从父进程命令行获取 property.json 文件路径
+        parent_pid = os.getppid()
+        ten_env.log_info(f"[get_channel] parent_pid: {parent_pid}")
+
+        cmdline_path = f'/proc/{parent_pid}/cmdline'
+        ten_env.log_info(f"[get_channel] reading cmdline from: {cmdline_path}")
+
+        with open(cmdline_path, 'r') as f:
+            cmdline = f.read()
+            # cmdline 中的参数用 \x00 分隔，替换为空格以便正则匹配
+            cmdline_readable = cmdline.replace('\x00', ' ')
+
+            # 保存原始 cmdline 到本地文件（用于调试）
+            output_file = f"/tmp/cmdline_pid_{parent_pid}.txt"
+            with open(output_file, 'wb') as out_f:
+                out_f.write(cmdline.encode('utf-8', errors='replace'))
+            ten_env.log_info(f"[get_channel] cmdline saved to: {output_file}")
+
+            # 查找 --property 参数（使用替换后的 cmdline_readable）
+            # 路径以 /var/log 开头，包含 property-xxx.json 格式
+            match = re.search(r'property\s*(/var/log/[^/]+/property-[^\.]+\.json)', cmdline_readable)
+            if not match:
+                ten_env.log_error("[get_channel] no --property found in cmdline, using defaults")
+                return {
+                    "channel_name": default_channel_name,
+                    "team_id": default_team_id,
+                    "user_id": default_user_id,
+                    "employee_id": default_employee_id,
+                }
+            property_path = match.group(1)
+            # ten_env.log_info(f"[get_channel] found property path: {property_path}")
+
+        # 2. 读取 property.json 文件
+        ten_env.log_info(f"[get_channel] reading property file: {property_path}")
+        with open(property_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # 3. 导航到 agora_rtc 节点的 property，获取 channel 值
+        graphs = data.get("ten", {}).get("predefined_graphs", [])
+        ten_env.log_info(f"[get_channel] found {len(graphs)} predefined_graphs")
+        if not graphs:
+            ten_env.log_error("[get_channel] no predefined_graphs found, using defaults")
+            return {
+                "channel_name": None,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
+
+        nodes = graphs[0].get("graph", {}).get("nodes", [])
+        ten_env.log_info(f"[get_channel] found {len(nodes)} nodes in graph")
+        channel_name = None
+        for node in nodes:
+            node_name = node.get("name")
+            if node_name == "agora_rtc":
+                channel_name = node.get("property", {}).get("channel")
+                ten_env.log_info(f"[get_channel] found agora_rtc node, channel: {channel_name}")
+                break
+
+        if not channel_name:
+            ten_env.log_error("[get_channel] no channel found in agora_rtc node, using defaults")
+            return {
+                "channel_name": None,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
+
+        # 4. 解析 channel_name 格式: employee_<team_id>_<user_id>_<employee_id>
+        parts = channel_name.split('_')
+        ten_env.log_info(f"[get_channel] channel_name parts: {parts}, len={len(parts)}")
+        if len(parts) >= 4 and parts[0] == "employee":
+            ten_env.log_info(f"[get_channel] successfully parsed: team_id={parts[1]}, user_id={parts[2]}, employee_id={parts[3]}")
+            return {
+                "channel_name": channel_name,
+                "team_id": parts[1],
+                "user_id": parts[2],
+                "employee_id": parts[3],
+            }
+        else:
+            # 格式不匹配，返回 channel_name 但使用默认的 team_id, user_id, employee_id
+            ten_env.log_error(f"[get_channel] channel format mismatch: {channel_name}, using default ids")
+            return {
+                "channel_name": channel_name,
+                "team_id": default_team_id,
+                "user_id": default_user_id,
+                "employee_id": default_employee_id,
+            }
+    except Exception as e:
+        ten_env.log_error(f"[get_channel] Exception: {e}, traceback: {traceback.format_exc()}")
+        # 发生任何错误时，返回默认值
+        return {
+            "channel_name": None,
+            "team_id": default_team_id,
+            "user_id": default_user_id,
+            "employee_id": default_employee_id,
+        }
 
 
 class CosyTTSExtension(AsyncTTS2BaseExtension):
@@ -77,7 +198,6 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
         try:
             await super().on_init(ten_env)
             ten_env.log_debug("on_init")
-
             if self.config is None:
                 config_json, _ = await self.ten_env.get_property_to_json("")
                 self.config = CosyTTSConfig.model_validate_json(config_json)
@@ -85,12 +205,16 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 self.config.update_params()
                 # Validate params
                 self.config.validate_params()
+                employee_id = get_channel_from_cmdline(ten_env)['employee_id']
+
+                # 从API获取voice
+                self.config.voice = await self._get_voice_from_employee_api(employee_id, ten_env)
+                ten_env.log_info(f"got employee_id: {employee_id}, resolved voice: {self.config.voice}")
 
                 self.ten_env.log_info(
-                    f"config: {self.config.to_str(sensitive_handling=True)}",
+                    f"cosy tts config: {self.config.to_str(sensitive_handling=True)}",
                     category=LOG_CATEGORY_KEY_POINT,
                 )
-
             # Load debug audio if enabled
             if self.config.use_debug_audio:
                 await self._load_debug_audio()
@@ -657,6 +781,34 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 vendor_info=vendor_info,
             ),
         )
+
+    async def _get_voice_from_employee_api(self, employee_id: str, ten_env: AsyncTenEnv) -> str:
+        """从员工API获取gender和tone，组合成voice值"""
+        api_base_url = os.getenv("EMPLOYEE_API_BASE_URL", "http://192.168.8.233:8100")
+        url = f"{api_base_url}/api/employee/detail/{employee_id}"
+        default_voice = "hutao"
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers={"Accept": "application/json"}) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get("code") == 200 and "data" in data:
+                            employee_data = data["data"]
+                            gender = employee_data.get("gender")
+                            tone = employee_data.get("tone")
+
+                            # 检查 gender 和 tone 是否有效
+                            if gender is not None and tone:
+                                voice = f"{gender}_{tone}"
+                                ten_env.log_info(f"Generated voice from API: {voice}")
+                                return voice
+
+            ten_env.log_info(f"Invalid or missing gender/tone, using default voice: {default_voice}")
+            return default_voice
+        except Exception as e:
+            ten_env.log_error(f"Failed to fetch employee data: {e}, using default voice: {default_voice}")
+            return default_voice
 
     async def _write_audio_to_dump_file(self, audio_chunk: bytes) -> None:
         """
