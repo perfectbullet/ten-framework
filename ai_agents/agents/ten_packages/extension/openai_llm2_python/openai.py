@@ -8,7 +8,6 @@
 import os
 import re
 import traceback
-from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 import json
@@ -30,7 +29,6 @@ from ten_ai_base.struct import (
     LLMResponseMessageDone,
     LLMResponseReasoningDelta,
     LLMResponseReasoningDone,
-    LLMResponseToolCall,
     TextContent,
 )
 from ten_ai_base.types import LLMToolMetadata
@@ -158,7 +156,7 @@ def get_channel_from_cmdline(ten_env) -> dict:
 @dataclass
 class OpenAILLM2Config(BaseModel):
     api_key: str = ""
-    base_url: str = "https://api.openai.com/v1"
+    base_url: str = ""
     model: str = (
         "gpt-4o"  # Adjust this to match the equivalent of `openai.GPT4o` in the Python library
     )
@@ -251,6 +249,10 @@ class OpenAIChatGPT:
             ten_env.log_info(f"Setting proxies: {proxies}")
             self.session.proxies.update(proxies)
         self.client.session = self.session
+
+        # 从 property.json 获取 channel 信息（使用默认值兜底）
+        self.ten_env.log_info("[get_channel] About to call get_channel_from_cmdline")
+        self.channel_info = get_channel_from_cmdline(self.ten_env)
 
     def _convert_tools_to_dict(self, tool: LLMToolMetadata):
         json_dict = {
@@ -378,14 +380,10 @@ class OpenAIChatGPT:
         # 额外的请求体参数（非 OpenAI 标准参数，通过 extra_body 传递）
         extra_body = {}
 
-        # 从 property.json 获取 channel 信息（使用默认值兜底）
-        self.ten_env.log_info("[get_channel] About to call get_channel_from_cmdline")
-        channel_info = get_channel_from_cmdline(self.ten_env)
-        channel_name = channel_info.get("channel_name")
-        team_id = channel_info.get("team_id")
-        user_id = channel_info.get("user_id")
-        employee_id = channel_info.get("employee_id")
-
+        channel_name = self.channel_info.get("channel_name")
+        team_id = self.channel_info.get("team_id")
+        user_id = self.channel_info.get("user_id")
+        employee_id = self.channel_info.get("employee_id")
         # 始终使用 channel 信息（全部使用默认值兜底）
         extra_body["channel_name"] = channel_name
         extra_body["team_id"] = team_id
@@ -415,13 +413,13 @@ class OpenAIChatGPT:
 
             full_content = ""
             # Check for tool calls
-            tool_calls_dict = defaultdict(
-                lambda: {
-                    "id": None,
-                    "function": {"arguments": "", "name": None},
-                    "type": None,
-                }
-            )
+            # tool_calls_dict = defaultdict(
+            #     lambda: {
+            #         "id": None,
+            #         "function": {"arguments": "", "name": None},
+            #         "type": None,
+            #     }
+            # )
 
             # Example usage
             parser = ThinkParser()
@@ -497,69 +495,69 @@ class OpenAIChatGPT:
 
                 full_content += content
 
-                if delta.tool_calls:
-                    try:
-                        for tool_call in delta.tool_calls:
-                            self.ten_env.log_info(f"Tool call: {tool_call}")
-                            if tool_call.index not in tool_calls_dict:
-                                tool_calls_dict[tool_call.index] = {
-                                    "id": None,
-                                    "function": {"arguments": "", "name": None},
-                                    "type": None,
-                                }
+                # if delta.tool_calls:
+                #     try:
+                #         for tool_call in delta.tool_calls:
+                #             self.ten_env.log_info(f"Tool call: {tool_call}")
+                #             if tool_call.index not in tool_calls_dict:
+                #                 tool_calls_dict[tool_call.index] = {
+                #                     "id": None,
+                #                     "function": {"arguments": "", "name": None},
+                #                     "type": None,
+                #                 }
 
-                            if tool_call.id:
-                                tool_calls_dict[tool_call.index][
-                                    "id"
-                                ] = tool_call.id
+                #             if tool_call.id:
+                #                 tool_calls_dict[tool_call.index][
+                #                     "id"
+                #                 ] = tool_call.id
 
-                            # If the function name is not None, set it
-                            if tool_call.function.name:
-                                tool_calls_dict[tool_call.index]["function"][
-                                    "name"
-                                ] = tool_call.function.name
+                #             # If the function name is not None, set it
+                #             if tool_call.function.name:
+                #                 tool_calls_dict[tool_call.index]["function"][
+                #                     "name"
+                #                 ] = tool_call.function.name
 
-                            # Append the arguments if not None
-                            if tool_call.function.arguments:
-                                tool_calls_dict[tool_call.index]["function"][
-                                    "arguments"
-                                ] += tool_call.function.arguments
+                #             # Append the arguments if not None
+                #             if tool_call.function.arguments:
+                #                 tool_calls_dict[tool_call.index]["function"][
+                #                     "arguments"
+                #                 ] += tool_call.function.arguments
 
-                            # If the type is not None, set it
-                            if tool_call.type:
-                                tool_calls_dict[tool_call.index][
-                                    "type"
-                                ] = tool_call.type
-                    except Exception as e:
-                        import traceback
+                #             # If the type is not None, set it
+                #             if tool_call.type:
+                #                 tool_calls_dict[tool_call.index][
+                #                     "type"
+                #                 ] = tool_call.type
+                #     except Exception as e:
+                #         import traceback
 
-                        traceback.print_exc()
-                        self.ten_env.log_error(
-                            f"Error processing tool call: {e} {tool_calls_dict}"
-                        )
+                #         traceback.print_exc()
+                #         self.ten_env.log_error(
+                #             f"Error processing tool call: {e} {tool_calls_dict}"
+                #         )
 
             if last_chat_completion is None:
                 self.ten_env.log_info("No chat completion choices found.")
                 return
 
             # Convert the dictionary to a list
-            tool_calls_list = list(tool_calls_dict.values())
+            # tool_calls_list = list(tool_calls_dict.values())
 
             # Emit tool calls event (fire-and-forget)
-            if tool_calls_list:
-                for tool_call in tool_calls_list:
-                    arguements = json.loads(tool_call["function"]["arguments"])
-                    self.ten_env.log_info(
-                        f"Tool call22: {choice.delta.model_dump_json()}"
-                    )
-                    yield LLMResponseToolCall(
-                        response_id=last_chat_completion.id,
-                        id=last_chat_completion.id,
-                        tool_call_id=tool_call["id"],
-                        name=tool_call["function"]["name"],
-                        arguments=arguements,
-                        created=last_chat_completion.created,
-                    )
+            # if tool_calls_list:
+            #     for tool_call in tool_calls_list:
+            #         arguements = json.loads(tool_call["function"]["arguments"])
+            #         self.ten_env.log_info(
+            #             f"Tool call22: {choice.delta.model_dump_json()}"
+            #         )
+            #         yield LLMResponseToolCall(
+            #             response_id=last_chat_completion.id,
+            #             id=last_chat_completion.id,
+            #             tool_call_id=tool_call["id"],
+            #             name=tool_call["function"]["name"],
+            #             arguments=arguements,
+            #             created=last_chat_completion.created,
+            #         )
 
             # Emit content finished event after the loop completes
             yield LLMResponseMessageDone(

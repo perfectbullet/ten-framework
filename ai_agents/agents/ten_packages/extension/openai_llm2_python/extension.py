@@ -50,6 +50,13 @@ class OpenAILLM2Extension(AsyncLLM2BaseExtension):
         # Create instance
         try:
             self.client = OpenAIChatGPT(async_ten_env, self.config)
+            employee_id = self.client.channel_info['employee_id']
+            await async_ten_env.set_property_string("employee_id", employee_id)
+            async_ten_env.log_info(f"set property string employee_id is: {employee_id}")
+
+            got_ep_id, err = await async_ten_env.get_property_string("employee_id")
+            async_ten_env.log_info(f"got property string got_ep_id is: {got_ep_id}")
+
             async_ten_env.log_info(
                 f"initialized with max_tokens: {self.config.max_tokens}, model: {self.config.model}"
             )
