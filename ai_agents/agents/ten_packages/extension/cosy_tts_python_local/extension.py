@@ -73,8 +73,8 @@ def get_channel_from_cmdline(ten_env) -> dict:
             ten_env.log_info(f"[get_channel] cmdline saved to: {output_file}")
 
             # 查找 --property 参数（使用替换后的 cmdline_readable）
-            # 路径以 /var/log 开头，包含 property-xxx.json 格式
-            match = re.search(r'property\s*(/var/log/[^/]+/property-[^\.]+\.json)', cmdline_readable)
+            # 匹配 /tmp/xxx/property-xxx.json 或 /var/log/property-xxx.json 格式
+            match = re.search(r'--property\s+(/[a-z]+/[^/]*/property-[^\.]+\.json|/var/log/property-[^\.]+\.json)', cmdline_readable)
             if not match:
                 ten_env.log_error("[get_channel] no --property found in cmdline, using defaults")
                 return {
