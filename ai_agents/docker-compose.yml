@@ -9,7 +9,7 @@ services:
     network_mode: host
     volumes:
       - ./:/app
-      - ${LOG_PATH}:${LOG_PATH}
+      - ./log/:/var/log/
       - ../.vscode/:/app/.vscode
       - ../tools/pylint/.pylintrc:/tools/pylint/.pylintrc
       - ../tools/upgrade:/tools/upgrade
