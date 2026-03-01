@@ -22,7 +22,8 @@ from .agent.events import (
     UserJoinedEvent,
     UserLeftEvent,
 )
-from .helper import _send_cmd, _send_data, parse_sentences
+from .helper import _send_cmd, _send_data
+from .sentence_buffer import SentenceBuffer
 from .config import MainControlConfig  # assume extracted from your base model
 
 import uuid
@@ -52,7 +53,8 @@ class MainControlExtension(AsyncExtension):
 
         self.stopped: bool = False
         self._rtc_user_count: int = 0
-        self.sentence_fragment: str = ""
+        # SentenceBuffer: max_length=60字, max_time=0.8秒
+        self.sentence_buffer = SentenceBuffer(max_length=60, max_time=0.8)
         self.turn_id: int = 0
         self.session_id: str = "0"
 
@@ -183,15 +185,12 @@ class MainControlExtension(AsyncExtension):
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
         if not event.is_final and event.type == "message":
-            sentences, self.sentence_fragment = parse_sentences(
-                self.sentence_fragment, event.delta
-            )
+            sentences = self.sentence_buffer.feed(event.delta)
             for s in sentences:
                 await self._send_to_tts(s, False)
 
         if event.is_final and event.type == "message":
-            remaining_text = self.sentence_fragment or ""
-            self.sentence_fragment = ""
+            remaining_text = self.sentence_buffer.flush()
             await self._send_to_tts(remaining_text, True)
 
         await self._send_transcript(
@@ -293,7 +292,7 @@ class MainControlExtension(AsyncExtension):
         """
         中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。该操作通常在检测到用户语音时触发。
         """
-        self.sentence_fragment = ""
+        self.sentence_buffer = SentenceBuffer()
         await self.agent.flush_llm()
         await _send_data(
             self.ten_env, "tts_flush", "tts", {"flush_id": str(uuid.uuid4())}

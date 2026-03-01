@@ -5,38 +5,8 @@
 #
 
 import json
-import re
 from typing import Any, AsyncGenerator, Optional
 from ten_runtime import AsyncTenEnv, Cmd, CmdResult, Data, Loc, TenError
-
-
-def is_punctuation(char):
-    if char in [".", "。", "?", "？", "!", "！"]:
-        return True
-    return False
-
-
-# 句末标点符号的正则表达式
-_SENTENCE_END_PATTERN = re.compile(r"(.*[。！？.!?])(.*)")
-
-
-def parse_sentences(sentence_fragment, content):
-    full_text = sentence_fragment + content
-    sentences = []
-    remain = full_text
-
-    while True:
-        match = _SENTENCE_END_PATTERN.match(remain)
-        if match:
-            sentence = match.group(1)
-            # Check if the sentence contains non-punctuation characters
-            if any(c.isalnum() for c in sentence):
-                sentences.append(sentence)
-            remain = match.group(2)
-        else:
-            break
-
-    return sentences, remain
 
 
 async def _send_cmd(
