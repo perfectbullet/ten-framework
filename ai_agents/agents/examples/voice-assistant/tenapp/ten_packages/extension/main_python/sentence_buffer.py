@@ -41,12 +41,12 @@ class SentenceBuffer:
     """
 
     # 句末标点符号
-    # SENTENCE_ENDINGS = "。！？.!?"
+    SENTENCE_ENDINGS = "。！？.!?"
 
     # 次要分隔符（用于强制分段时的优先切分点）
-    # SECONDARY_DELIMITERS = "，,、；;：:"
+    SECONDARY_DELIMITERS = "，,、；;：:"
 
-    def __init__(self, max_length: int = 60, max_time: float = 0.8):
+    def __init__(self, max_length: int = 300, max_time: float = 1.8):
         """
         初始化缓冲区
 
@@ -93,12 +93,12 @@ class SentenceBuffer:
         full_text = "".join(self._buffer)
 
         # 策略1: 优先检查句末标点
-        # sentences, consumed_length = self._split_by_sentence_endings(full_text)
-        # if sentences:
-        #     self._last_feed_time = current_time
-        #     # 移除已输出的部分
-        #     self._buffer = [full_text[consumed_length:]] if consumed_length < len(full_text) else []
-        #     return sentences
+        sentences, consumed_length = self._split_by_sentence_endings(full_text)
+        if sentences:
+            self._last_feed_time = current_time
+            # 移除已输出的部分
+            self._buffer = [full_text[consumed_length:]] if consumed_length < len(full_text) else []
+            return sentences
 
         # 策略2: 检查字符数限制
         if self._max_length > 0 and len(full_text) >= self._max_length:
@@ -149,7 +149,7 @@ class SentenceBuffer:
         else:
             return [], 0
 
-    # def _force_split(self, full_text: str) -> tuple[list[str], int]:
+    def _force_split(self, full_text: str) -> tuple[list[str], int]:
         """
         强制分割文本（在次要分隔符处优先）
 
