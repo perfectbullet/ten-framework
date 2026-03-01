@@ -92,6 +92,12 @@ class SentenceBuffer:
         self._buffer.append(text)
         full_text = "".join(self._buffer)
 
+        # 策略0: 如果输入文本长度 >= 8，直接合并缓冲区和输入作为一个句子输出
+        if len(text) >= 8:
+            self._buffer = []
+            self._last_feed_time = current_time
+            return [full_text]
+
         # 策略1: 优先检查句末标点
         sentences, consumed_length = self._split_by_sentence_endings(full_text)
         if sentences:
