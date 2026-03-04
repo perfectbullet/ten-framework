@@ -152,10 +152,14 @@ class MainControlExtension(AsyncExtension):
             return  # 不发送给 LLM
 
         # Semantic validation using TextIntentValidator (only on final results)
+        corrected_text = None
         if event.final and self.text_intent_validator:
-            is_meaningful, elapsed, raw_response = await self.text_intent_validator.is_meaningful(event.text)
+            is_meaningful, elapsed, raw_response, corrected_text = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
-                f"[MainControlExtension] TextIntentValidator validation: text='{_truncate_text(event.text)}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={_truncate_text(raw_response, 30)}"
+                f"[MainControlExtension] TextIntentValidator: "
+                f"original='{_truncate_text(event.text)}', "
+                f"corrected='{_truncate_text(corrected_text) if corrected_text else 'N/A'}', "
+                f"is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s"
             )
             if not is_meaningful:
                 self.ten_env.log_info(
@@ -172,7 +176,9 @@ class MainControlExtension(AsyncExtension):
 
         if event.final:
             self.turn_id += 1
-            await self.agent.queue_llm_input(event.text)
+            # Use corrected text for LLM if available
+            llm_text = corrected_text if corrected_text else event.text
+            await self.agent.queue_llm_input(llm_text)
         await self._send_transcript("user", event.text, event.final, stream_id)
 
     @agent_event_handler(LLMResponseEvent)

@@ -16,3 +16,5 @@ services:
     working_dir: /app
     env_file:
       - agents/examples/voice-assistant/.env
+    environment:
+      - TZ=Asia/Shanghai

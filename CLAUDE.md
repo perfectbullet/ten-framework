@@ -236,3 +236,11 @@ The TEN ecosystem includes:
 - [ten-vad](https://github.com/ten-framework/ten-vad) - Voice Activity Detection
 - [ten-turn-detection](https://github.com/ten-framework/ten-turn-detection) - Turn detection for full-duplex dialogue
 - [portal](https://github.com/ten-framework/portal) - Official website and blog
+
+
+**Summary Language Requirement**:
+- All document summaries (chunk/section/document level) are generated in Chinese
+- Implementation in `app/services/semantic_chunking.py`
+- Chunk summary: "请用简洁的中文总结以下文本的核心内容，不超过50字"
+- Section summary: "请用简洁的中文总结以下章节内容的主要观点，不超过100字"
+- Document summary: "请用简洁的中文总结以下文档的整体内容和主要要点，不超过200字"
