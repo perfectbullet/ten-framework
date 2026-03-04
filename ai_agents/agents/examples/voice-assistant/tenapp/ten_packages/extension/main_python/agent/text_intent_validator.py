@@ -1,5 +1,5 @@
 """
-Ollama client for semantic text validation.
+Text intent validator for semantic validation.
 Detects if ASR text is a meaningful question or just noise.
 """
 import asyncio
@@ -8,25 +8,31 @@ from typing import Optional
 
 import httpx
 
+# Module constants
+DEFAULT_BASE_URL = "http://192.168.8.233:11434"
+DEFAULT_MODEL = "qwen2.5:7b"
+DEFAULT_TIMEOUT = 5.0
 
-class OllamaClient:
+
+class TextIntentValidator:
     """
-    Client for Ollama API to validate if text is meaningful or noise.
+    Text intent validator for semantic validation using Ollama LLM.
+    Validates if text is a meaningful interaction or just noise.
     """
 
     def __init__(
         self,
-        base_url: str = "http://192.168.8.233:11434",
-        model: str = "qwen2.5:7b",
-        timeout: float = 5.0,
+        base_url: str = DEFAULT_BASE_URL,
+        model: str = DEFAULT_MODEL,
+        timeout: float = DEFAULT_TIMEOUT,
     ):
         """
-        Initialize Ollama client.
+        Initialize TextIntentValidator.
 
         Args:
-            base_url: Ollama API endpoint URL (default from env: OLLAMA_BASE_URL)
-            model: Model name to use for validation (default from env: OLLAMA_MODEL)
-            timeout: Request timeout in seconds (default from env: OLLAMA_TIMEOUT)
+            base_url: Ollama API endpoint URL
+            model: Model name to use for validation
+            timeout: Request timeout in seconds
         """
         self.base_url = base_url.rstrip("/")
         self.model = model
@@ -52,25 +58,39 @@ class OllamaClient:
         The prompt asks the model to determine if the text is a meaningful
         question or just noise/meaningless sounds.
         """
-        return f"""你是一个文本验证助手。你的任务是判断给定文本是有意义的问题还是仅仅是噪音。
+        return f"""你是一个ASR文本验证助手。你的任务是判断给定文本是有意义的用户交互意图还是仅仅是噪音。
 
-分析文本并只回答:
-- "YES" 如果文本是有意义的问题、陈述或命令，值得回应
-- "NO" 如果文本只是噪音、无意义的声音、填充词或胡言乱语
+判断标准:
+- 回答 "YES" 如果文本包含有意义的问题、请求、命令或完整的交互意图
+- 回答 "NO" 如果文本只是噪音、填充词、简单的问候词或无意义的声音
 
 噪音(NO)的例子:
-- "um", "uh", "ah", "mm-hmm", "hmm", "嗯", "啊", "呃"
-- "the the the", "I I I", "那个那个", "然后然后"
-- 没有上下文的随机单词，如 "hey", "oh" 除非明显在请求什么
-- 不完整或说不通的短语
+- 纯填充词/迟疑声: "um", "uh", "ah", "er", "hmm", "嗯", "啊", "呃", "唔"
+- Stuttering重复: "the the the", "I I I", "那个那个", "然后然后"
+- 简单的问候词（单独使用）: "hello", "hi", "hey", "你好"
+- 单个无意义的感叹词: "oh", "ah" 除非有上下文表明在交流
 
 有意义(YES)的例子:
-- "今天天气怎么样?"
-- "讲个笑话"
-- "你好吗?"
-- "你能帮我吗?"
-- "你好" (作为问候)
-- 任何完整的句子或问题
+
+问题类 (QUESTIONS):
+- "今天天气怎么样?", "What's the weather like?"
+- "what's your name", "what's yourname" (ASR打字错误)
+- "讲个笑话", "Tell me a joke"
+- "你好吗?", "How are you?"
+
+请求类 (REQUESTS/COMMANDS):
+- "你能帮我吗?", "Can you help me?"
+- "我想听音乐", "Play some music"
+
+问候+问题组合类 (GREETING + QUESTION):
+- "Hello, how are you?"
+- "你好，今天天气怎么样?"
+- "hello， what's yourname" (混合标点和打字错误，但包含问题)
+
+注意:
+- 单独的问候词（如"hello"、"你好"）应返回NO，除非它们是完整问候语的一部分
+- 如果文本包含疑问词（what, how, why, when, where, who, 什么, 怎么, 为什么, 哪里），应倾向于YES
+- ASR识别中的打字错误、混合标点不应影响判断，应识别其真实意图
 
 待分析文本: "{text}"
 
@@ -139,12 +159,12 @@ class OllamaClient:
 
 
 # Test function for standalone testing
-async def test_ollama_client():
+async def test_text_intent_validator():
     """
-    Test the Ollama client with sample inputs (English + Chinese).
-    Run this module directly to test: python -m agent.ollama_client
+    Test the TextIntentValidator with sample inputs (English + Chinese).
+    Run this module directly to test: python -m agent.text_intent_validator
     """
-    client = OllamaClient(
+    validator = TextIntentValidator(
         base_url="http://192.168.8.233:11434",
         model="qwen2.5:7b",
         timeout=10.0,
@@ -174,12 +194,12 @@ async def test_ollama_client():
     ]
 
     print("=" * 70)
-    print("Testing Ollama Semantic Validation (English + Chinese)")
+    print("Testing TextIntentValidator Semantic Validation (English + Chinese)")
     print("=" * 70)
 
     results = []
     for text, expected in test_cases:
-        is_meaningful, elapsed, raw_response = await client.is_meaningful(text)
+        is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
         status = "✓" if is_meaningful == expected else "✗"
         results.append(
             {
@@ -204,7 +224,7 @@ async def test_ollama_client():
     print(f"Average response time: {avg_time:.3f}s")
     print("=" * 70)
 
-    await client.close()
+    await validator.close()
 
 
 async def test_is_meaningful_detailed():
@@ -212,7 +232,7 @@ async def test_is_meaningful_detailed():
     Detailed test for is_meaningful function.
     Shows raw response from Ollama for each test case.
     """
-    client = OllamaClient(
+    validator = TextIntentValidator(
         base_url="http://192.168.8.233:11434",
         model="qwen2.5:7b",
         timeout=10.0,
@@ -228,6 +248,7 @@ async def test_is_meaningful_detailed():
         "What's the weather like?",
         "你好",
         "Hello",
+        "hello， what's yourname",
         "讲个笑话",
         # Noise/fillers
         "嗯",
@@ -238,10 +259,11 @@ async def test_is_meaningful_detailed():
         # Edge cases
         "那个那个那个",
         "然后然后",
+        "问你"
     ]
 
     for text in test_texts:
-        is_meaningful, elapsed, raw_response = await client.is_meaningful(text)
+        is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
         result_str = "✓ 有意义" if is_meaningful else "✗ 噪音"
         print(f"\n文本: '{text}'")
         print(f"结果: {result_str}")
@@ -249,10 +271,10 @@ async def test_is_meaningful_detailed():
         print(f"原始回复: {raw_response}")
 
     print("\n" + "=" * 70)
-    await client.close()
+    await validator.close()
 
 
 if __name__ == "__main__":
     # Run both tests
-    asyncio.run(test_ollama_client())
+    # asyncio.run(test_text_intent_validator())
     asyncio.run(test_is_meaningful_detailed())

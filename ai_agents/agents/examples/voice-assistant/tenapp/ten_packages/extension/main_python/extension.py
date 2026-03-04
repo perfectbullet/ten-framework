@@ -13,8 +13,7 @@ from ten_runtime import (
 )
 
 from .agent.agent import Agent
-from .agent.ollama_client import OllamaClient
-from .config import OllamaConfig
+from .agent.text_intent_validator import TextIntentValidator
 from .agent.events import (
     ASRResultEvent,
     LLMResponseEvent,
@@ -48,8 +47,7 @@ class MainControlExtension(AsyncExtension):
         self.ten_env: AsyncTenEnv = None
         self.agent: Agent = None
         self.config: MainControlConfig = None
-        self.ollama_client: OllamaClient = None
-        self.ollama_config: OllamaConfig = None
+        self.text_intent_validator: TextIntentValidator = None
 
         self.stopped: bool = False
         self._rtc_user_count: int = 0
@@ -59,8 +57,9 @@ class MainControlExtension(AsyncExtension):
         self.session_id: str = "0"
 
         # 打断短语列表 - 这些短语会触发打断但不发送给 LLM
+        # 注意：避免使用容易误触发的短语如单独的"好的"、"等一下"、"稍等一下"
         self._interrupt_phrases = {
-            "打断一下", "停一下", "等一下", "别说了", "稍等一下", "我知道了", "好的，我知道了", "好的我知道了"
+            "打断一下", "停一下", "别说了",
             "stop", "wait", "hold on",
         }
 
@@ -101,17 +100,11 @@ class MainControlExtension(AsyncExtension):
 
         self.agent = Agent(ten_env)
 
-        # Initialize Ollama client from environment variables
-        self.ollama_config = OllamaConfig.from_env()
-        if self.ollama_config.enabled:
-            self.ollama_client = OllamaClient(
-                base_url=self.ollama_config.base_url,
-                model=self.ollama_config.model,
-                timeout=self.ollama_config.timeout,
-            )
-            ten_env.log_info(
-                f"[MainControlExtension] Ollama client initialized: {self.ollama_config.base_url}, model={self.ollama_config.model}"
-            )
+        # Initialize TextIntentValidator with default configuration
+        self.text_intent_validator = TextIntentValidator()
+        ten_env.log_info(
+            f"[MainControlExtension] TextIntentValidator initialized"
+        )
 
         # Now auto-register decorated methods
         for attr_name in dir(self):
@@ -158,11 +151,11 @@ class MainControlExtension(AsyncExtension):
             await self._send_transcript("user", event.text, event.final, stream_id)
             return  # 不发送给 LLM
 
-        # Semantic validation using Ollama (only on final results)
-        if event.final and self.ollama_client:
-            is_meaningful, elapsed, raw_response = await self.ollama_client.is_meaningful(event.text)
+        # Semantic validation using TextIntentValidator (only on final results)
+        if event.final and self.text_intent_validator:
+            is_meaningful, elapsed, raw_response = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
-                f"[MainControlExtension] Ollama validation: text='{_truncate_text(event.text)}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={_truncate_text(raw_response, 30)}"
+                f"[MainControlExtension] TextIntentValidator validation: text='{_truncate_text(event.text)}', is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s, response={_truncate_text(raw_response, 30)}"
             )
             if not is_meaningful:
                 self.ten_env.log_info(
@@ -208,8 +201,8 @@ class MainControlExtension(AsyncExtension):
         ten_env.log_info("[MainControlExtension] on_stop")
         self.stopped = True
         await self.agent.stop()
-        if self.ollama_client:
-            await self.ollama_client.close()
+        if self.text_intent_validator:
+            await self.text_intent_validator.close()
 
     async def on_cmd(self, ten_env: AsyncTenEnv, cmd: Cmd):
         await self.agent.on_cmd(cmd)
