@@ -1,6 +1,16 @@
 """
-Text intent validator for semantic validation.
-Detects if ASR text is a meaningful question or just noise.
+Text intent validator for semantic validation and text correction.
+
+This module validates ASR (Automatic Speech Recognition) text by:
+1. Detecting whether the text represents a meaningful question or just noise
+2. Correcting common ASR errors (typos, word concatenation, etc.)
+
+The validation uses a two-stage approach:
+- Stage 1: Fast noise detection (minimal tokens needed)
+- Stage 2: Text correction (only if text is meaningful)
+
+This design optimizes for both speed and accuracy, avoiding the cost
+of running correction on text that would be filtered out anyway.
 """
 import asyncio
 import time
@@ -8,16 +18,29 @@ from typing import Optional
 
 import httpx
 
+
 # Module constants
 DEFAULT_BASE_URL = "http://192.168.8.233:11434"
 DEFAULT_MODEL = "qwen2.5:7b"
 DEFAULT_TIMEOUT = 5.0
 
+# Common noise words that can be filtered without LLM call
+COMMON_NOISE_WORDS = {
+    "um", "uh", "ah", "er", "hm", "hmm", "mm",
+    "嗯", "啊", "呃", "唔"
+}
+
 
 class TextIntentValidator:
     """
-    Text intent validator for semantic validation using Ollama LLM.
-    Validates if text is a meaningful interaction or just noise.
+    Text intent validator using Ollama LLM for semantic validation.
+
+    Uses two-stage validation for efficiency:
+    1. Noise check (fast, minimal output)
+    2. Correction (only if text is meaningful)
+
+    This approach avoids expensive correction on text that would be
+    filtered as noise anyway.
     """
 
     def __init__(
@@ -40,89 +63,121 @@ class TextIntentValidator:
         self._client: Optional[httpx.AsyncClient] = None
 
     async def _get_client(self) -> httpx.AsyncClient:
-        """Get or create HTTP client."""
+        """Get or create lazy-initialized HTTP client."""
         if self._client is None:
             self._client = httpx.AsyncClient(timeout=self.timeout)
         return self._client
 
-    async def close(self):
-        """Close HTTP client."""
+    async def close(self) -> None:
+        """Close HTTP client and clean up resources."""
         if self._client:
             await self._client.aclose()
             self._client = None
 
-    def _build_prompt(self, text: str) -> str:
+    def _build_check_prompt(self, text: str) -> str:
         """
-        Build prompt for semantic validation.
+        Build prompt for stage 1: noise detection.
 
-        The prompt asks the model to determine if the text is a meaningful
-        question or just noise/meaningless sounds.
+        Returns YES/NO based on whether text is meaningful. This prompt
+        is designed for fast evaluation with minimal token output.
+
+        Args:
+            text: The text to evaluate
+
+        Returns:
+            A prompt string for the LLM to evaluate noise
         """
-        return f"""你是一个ASR文本验证助手。你的任务是判断给定文本是有意义的用户交互意图还是仅仅是噪音。
+        return f"""你是一个ASR文本验证助手。请判断给定文本是否有意义。
 
-判断标准:
-- 回答 "YES" 如果文本包含有意义的问题、请求、命令或完整的交互意图
-- 回答 "NO" 如果文本只是噪音、填充词、简单的问候词或无意义的声音
+回答 "YES" 的条件（满足任一即可）：
+1. 是完整的问题：例如"今天天气怎么样?"、"讲个笑话"、"What's the weather like?"
+2. 是请求类：例如"你能帮我吗?"、"我想听音乐"、"Play some music"
+3. 是命令类：例如"¥12次方程的解法"、"把一元二次方程讲一下"
+4. 是问候+问题：例如"你好，今天天气怎么样?"
+5. 是学习相关：例如一元二次方程、数学题、编程题
+6. 是天气或新闻相关的问题
 
-噪音(NO)的例子:
-- 纯填充词/迟疑声: "um", "uh", "ah", "er", "hmm", "嗯", "啊", "呃", "唔"
-- Stuttering重复: "the the the", "I I I", "那个那个", "然后然后"
-- 简单的问候词（单独使用）: "hello", "hi", "hey", "你好"
-- 单个无意义的感叹词: "oh", "ah" 除非有上下文表明在交流
+回答 "NO" 的条件（满足任一即噪音）：
+1. 纯填充词/迟疑声："um", "uh", "嗯", "啊", "呃", "唔", "er"
+2. 重复表达："那个那个", "然后然后", "对对对", "就是就是"
+3. 简单问候（单独使用）："hello", "你好", "hi"
+4. 无意义短句（单独使用）："你说", "我问", "我之前", "之前不是", "应该是", "对", "对吧", "你在一"
+5. 说话停顿/继续："然后呢", "所以呢", "就是说", "以后呢"
+6. 表达确认："对对对", "可以可以", "是的是的", "应该会"
+7. 表达状态："我觉得应该是", "我之前用过", "你看看", "你也行", "你觉得"
+8. 说话中断/不完整："开始", "就是", "以后", "开始的勇气", "然后我以后", "那最后最后"
+9. 闲聊短句："你说什么", "我问你", "我知道", "你好老兄弟", "以后呢，在这个广告吗？"
 
-有意义(YES)的例子:
-
-问题类 (QUESTIONS):
-- "今天天气怎么样?", "What's the weather like?"
-- "what's your name", "what's yourname" (ASR打字错误)
-- "讲个笑话", "Tell me a joke"
-- "你好吗?", "How are you?"
-
-请求类 (REQUESTS/COMMANDS):
-- "你能帮我吗?", "Can you help me?"
-- "我想听音乐", "Play some music"
-
-问候+问题组合类 (GREETING + QUESTION):
-- "Hello, how are you?"
-- "你好，今天天气怎么样?"
-- "hello， what's yourname" (混合标点和打字错误，但包含问题)
-
-注意:
-- 单独的问候词（如"hello"、"你好"）应返回NO，除非它们是完整问候语的一部分
-- 如果文本包含疑问词（what, how, why, when, where, who, 什么, 怎么, 为什么, 哪里），应倾向于YES
-- ASR识别中的打字错误、混合标点不应影响判断，应识别其真实意图
+请只回答 "YES" 或 "NO"，不要添加任何其他文字。
 
 待分析文本: "{text}"
 
-回答 (YES/NO):"""
+回答: """
 
-    async def is_meaningful(self, text: str) -> tuple[bool, float, str]:
+    def _build_correction_prompt(self, text: str) -> str:
         """
-        Check if text is meaningful or noise.
+        Build prompt for stage 2: text correction.
+
+        Corrects ASR errors in meaningful text. This prompt is more
+        expensive but only runs for text that passed the noise check.
 
         Args:
-            text: The text to validate
+            text: The text to correct
 
         Returns:
-            Tuple of (is_meaningful: bool, elapsed_time: float, raw_response: str)
+            A prompt string for the LLM to correct the text
         """
+        return f"""你是一个ASR文本纠错助手。你的任务是纠正文本中的ASR识别错误。
+
+纠错规则:
+- 中文错别字: "¥12次方程" → "一元二次方程", "2次方程" → "二次方程"
+- 英文单词粘连: "what'syourname" → "what's your name", "yourname" → "your name", "howareyou" → "how are you"
+- 重要：纠正时要保持文本的原语言类型，英文文本纠正后仍应是英文
+- 如果文本没有明显错误，请原样返回文本
+- 保持原意不变，只纠正明显的ASR错误
+
+待纠错文本: "{text}"
+
+请直接输出纠正后的文本，不要添加任何解释或额外说明: """
+
+    async def is_meaningful(self, text: str) -> tuple[bool, float, str, Optional[str]]:
+        """
+        Check if text is meaningful or noise, with optional text correction.
+
+        Uses two-stage validation for efficiency:
+        1. Fast noise check (YES/NO, minimal tokens)
+        2. Correction only if text is meaningful (more expensive)
+
+        Error handling strategy: On any error, return True (meaningful) to
+        avoid filtering valid user input. This is safer than defaulting to
+        filtering as noise, which would frustrate users.
+
+        Args:
+            text: The text to validate and correct
+
+        Returns:
+            A tuple containing:
+                - is_meaningful: Whether the text passed the noise check
+                - elapsed_time: Total time spent on validation (seconds)
+                - raw_response: The raw LLM response for stage 1 (for debugging)
+                - corrected_text: The corrected text, or None if uncorrected
+        """
+        # Handle empty or whitespace-only input
         if not text or len(text.strip()) == 0:
-            return False, 0.0, ""
+            return False, 0.0, "", None
 
-        # Fast path for very short common noise words (English and Chinese)
+        # Fast path: filter common noise words without LLM call
         text_lower = text.strip().lower()
-        common_noise = {
-            "um", "uh", "ah", "er", "hm", "hmm", "mm", "mhm", "uh-huh",
-            "嗯", "啊", "呃", "唔", "嗯嗯", "啊啊",
-        }
-        if text_lower in common_noise:
-            return False, 0.0, "FAST_PATH_NOISE"
+        if text_lower in COMMON_NOISE_WORDS:
+            return False, 0.0, "FAST_PATH_NOISE", None
 
-        # Use Ollama for semantic validation
+        total_elapsed = 0.0
+
+        # Stage 1: Noise detection
         start_time = time.time()
         try:
             client = await self._get_client()
-            prompt = self._build_prompt(text)
+            prompt = self._build_check_prompt(text)
 
             response = await client.post(
                 f"{self.base_url}/api/generate",
@@ -131,38 +186,88 @@ class TextIntentValidator:
                     "prompt": prompt,
                     "stream": False,
                     "options": {
-                        "num_predict": 3,  # Only need a few tokens for YES/NO
-                        "temperature": 0.1,  # Low temperature for consistent output
+                        "num_predict": 2,  # Minimal tokens for YES/NO
+                        "temperature": 0.1,
                     },
                 },
             )
 
-            elapsed = time.time() - start_time
+            total_elapsed = time.time() - start_time
 
-            if response.status_code == 200:
-                result = response.json()
-                response_text = result.get("response", "").strip().upper()
-                # Check if response starts with YES
-                is_meaningful = response_text.startswith("YES")
-                return is_meaningful, elapsed, response_text
-            else:
-                # On error, assume meaningful to avoid filtering valid input
-                return True, elapsed, "ERROR_DEFAULT_YES"
+            # Process stage 1 response
+            if response.status_code != 200:
+                return True, total_elapsed, "ERROR_DEFAULT_YES", None
+
+            result = response.json()
+            response_text = result.get("response", "").strip().upper()
+            is_meaningful = response_text.startswith("YES")
+
+            # Stage 2: Text correction (only if meaningful)
+            corrected_text = None
+            if is_meaningful:
+                corrected_text = await self._correct_text(client, text)
+                total_elapsed += self._last_correction_elapsed
+
+            return is_meaningful, total_elapsed, response_text, corrected_text
 
         except asyncio.TimeoutError:
-            elapsed = time.time() - start_time
-            return True, elapsed, "TIMEOUT_DEFAULT_YES"
+            return True, total_elapsed, "TIMEOUT_DEFAULT_YES", None
         except Exception as e:
-            elapsed = time.time() - start_time
-            # On error, assume meaningful to avoid filtering valid input
-            return True, elapsed, f"ERROR_DEFAULT_YES: {e}"
+            return True, total_elapsed, f"ERROR: {e}", None
+
+    # Track elapsed time for correction stage
+    _last_correction_elapsed: float = 0.0
+
+    async def _correct_text(
+        self,
+        client: httpx.AsyncClient,
+        text: str,
+    ) -> Optional[str]:
+        """
+        Correct ASR errors in meaningful text.
+
+        Args:
+            client: The HTTP client to use
+            text: The text to correct
+
+        Returns:
+            Corrected text, or None if no correction was needed
+        """
+        start_time = time.time()
+        correction_prompt = self._build_correction_prompt(text)
+
+        response = await client.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model,
+                "prompt": correction_prompt,
+                "stream": False,
+                "options": {
+                    "num_predict": 25,
+                    "temperature": 0.1,
+                },
+            },
+        )
+
+        self._last_correction_elapsed = time.time() - start_time
+
+        if response.status_code != 200:
+            return None
+
+        result = response.json()
+        corrected_text = result.get("response", "").strip()
+
+        # Return None if no correction was needed (text unchanged)
+        return None if corrected_text == text else corrected_text
 
 
 # Test function for standalone testing
 async def test_text_intent_validator():
     """
     Test the TextIntentValidator with sample inputs (English + Chinese).
-    Run this module directly to test: python -m agent.text_intent_validator
+
+    Run this module directly to test:
+        python -m agent.text_intent_validator
     """
     validator = TextIntentValidator(
         base_url="http://192.168.8.233:11434",
@@ -170,51 +275,103 @@ async def test_text_intent_validator():
         timeout=10.0,
     )
 
+    # Test cases: (text, expected_is_meaningful, expected_correction)
     test_cases = [
-        # English test cases
-        ("What's the weather like?", True),
-        ("Tell me a joke", True),
-        ("um", False),
-        ("uh-huh", False),
-        ("the the the", False),
-        ("Hello, how are you?", True),
-        ("Can you help me with something?", True),
-        ("ah", False),
-        ("hmm", False),
-        # Chinese test cases
-        ("今天天气怎么样?", True),
-        ("讲个笑话", True),
-        ("你好吗?", True),
-        ("你能帮我吗?", True),
-        ("嗯", False),
-        ("啊", False),
-        ("呃", False),
-        ("那个那个那个", False),
-        ("然后然后", False),
+        # Meaningful questions - Complete questions
+        ("今天天气怎么样?", True, None),
+        ("讲个笑话", True, None),
+        ("What's the weather like?", True, None),
+
+        # Meaningful questions - Request type
+        ("你能帮我吗?", True, None),
+        ("我想听音乐", True, None),
+        ("Play some music", True, None),
+
+        # Meaningful questions - Command/learning related
+        ("¥12次方程的解法", True, "一元二次方程的解法"),
+        ("把一元二次方程讲一下", True, None),
+
+        # Meaningful questions - Greeting + question
+        ("你好，今天天气怎么样?", True, None),
+        ("Hello, how are you?", True, None),
+
+        # Correction tests
+        ("what'syourname", True, "what's your name"),
+        ("howareyou", True, "how are you"),
+        ("yourname", False, "your name"),  # Single word concatenation, not meaningful
+
+        # Noise cases from actual logs
+        ("然后我以后就是就是我现在我现在想", False, None),
+        ("然后呢，就是那个会议室有一点", False, None),
+        ("开始的勇气。对我就是", False, None),
+        ("我说我就不要了", False, None),
+        ("你在一", False, None),
+        ("之前不是已经已经那个了，就是说", False, None),
+        ("然后呢", False, None),
+
+        # Common noise
+        ("你好", False, None),  # Standalone greeting
+        ("嗯", False, None),
+        ("ah", False, None),
+        ("嗯嗯", False, None),
+        ("然后然后", False, None),
+        ("我知道", False, None),
+        ("你看看", False, None),
+        ("你觉得", False, None),
+        ("开始", False, None),
+        ("就是", False, None),
     ]
 
     print("=" * 70)
-    print("Testing TextIntentValidator Semantic Validation (English + Chinese)")
+    print("Testing TextIntentValidator - Two Stage Validation")
     print("=" * 70)
 
     results = []
-    for text, expected in test_cases:
-        is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
-        status = "✓" if is_meaningful == expected else "✗"
+    for text, expected_meaningful, expected_correction in test_cases:
+        is_meaningful, elapsed, raw_response, corrected_text = await validator.is_meaningful(text)
+
+        # Check if result matches expectation
+        status = "✓" if is_meaningful == expected_meaningful else "✗"
+        if expected_correction is not None:
+            correction_status = "✓" if corrected_text == expected_correction else "✗"
+        else:
+            correction_status = "-"
+
         results.append(
             {
                 "text": text,
                 "is_meaningful": is_meaningful,
-                "expected": expected,
+                "expected": expected_meaningful,
                 "elapsed": elapsed,
                 "raw_response": raw_response,
                 "status": status,
+                "corrected_text": corrected_text,
+                "correction_status": correction_status,
             }
         )
-        print(f"{status} '{text}' -> {is_meaningful} ({elapsed:.3f}s) [response: {raw_response}]")
 
-    # Summary stats
+        # Print result
+        print(f"{status} '{text}' -> {is_meaningful} ({elapsed:.3f}s)")
+        if corrected_text and corrected_text != text:
+            print(f"  Correction: '{text}' -> '{corrected_text}' {correction_status}")
+        elif expected_correction is not None:
+            print(f"  Correction: (no change) {correction_status}")
+
+    # Print summary statistics
     print("=" * 70)
+    _print_summary_stats(results)
+    print("=" * 70)
+
+    await validator.close()
+
+
+def _print_summary_stats(results: list[dict]) -> None:
+    """
+    Print summary statistics for test results.
+
+    Args:
+        results: List of test result dictionaries
+    """
     correct = sum(1 for r in results if r["status"] == "✓")
     total = len(results)
     accuracy = correct / total * 100
@@ -222,59 +379,18 @@ async def test_text_intent_validator():
 
     print(f"Accuracy: {correct}/{total} ({accuracy:.1f}%)")
     print(f"Average response time: {avg_time:.3f}s")
-    print("=" * 70)
 
-    await validator.close()
+    # Separate statistics for noise vs meaningful text
+    noise_times = [r["elapsed"] for r in results if not r["is_meaningful"]]
+    meaningful_times = [r["elapsed"] for r in results if r["is_meaningful"]]
 
-
-async def test_is_meaningful_detailed():
-    """
-    Detailed test for is_meaningful function.
-    Shows raw response from Ollama for each test case.
-    """
-    validator = TextIntentValidator(
-        base_url="http://192.168.8.233:11434",
-        model="qwen2.5:7b",
-        timeout=10.0,
-    )
-
-    print("\n" + "=" * 70)
-    print("Detailed Test: is_meaningful() with raw responses")
-    print("=" * 70)
-
-    test_texts = [
-        # Meaningful questions
-        "今天天气怎么样?",
-        "What's the weather like?",
-        "你好",
-        "Hello",
-        "hello， what's yourname",
-        "讲个笑话",
-        # Noise/fillers
-        "嗯",
-        "啊",
-        "呃",
-        "um",
-        "uh",
-        # Edge cases
-        "那个那个那个",
-        "然后然后",
-        "问你"
-    ]
-
-    for text in test_texts:
-        is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
-        result_str = "✓ 有意义" if is_meaningful else "✗ 噪音"
-        print(f"\n文本: '{text}'")
-        print(f"结果: {result_str}")
-        print(f"耗时: {elapsed:.3f}s")
-        print(f"原始回复: {raw_response}")
-
-    print("\n" + "=" * 70)
-    await validator.close()
+    if noise_times:
+        noise_avg = sum(noise_times) / len(noise_times)
+        print(f"Noise avg time: {noise_avg:.3f}s")
+    if meaningful_times:
+        meaningful_avg = sum(meaningful_times) / len(meaningful_times)
+        print(f"Meaningful avg time: {meaningful_avg:.3f}s")
 
 
 if __name__ == "__main__":
-    # Run both tests
-    # asyncio.run(test_text_intent_validator())
-    asyncio.run(test_is_meaningful_detailed())
+    asyncio.run(test_text_intent_validator())
