@@ -290,8 +290,11 @@ class LocalSpeechSynthesizer:
             finally:
                 self.ws = None
 
+        # WebSocket thread is a daemon thread, will terminate naturally after ws.close()
+        # No need to block and wait for thread termination
         if self.ws_thread and self.ws_thread.is_alive():
-            self.ws_thread.join(timeout=2)
+            # Thread will exit run_forever() loop shortly
+            pass
 
     def reset(self):
         """Reset the synthesizer, close old connection and prepare for new one"""
@@ -303,6 +306,21 @@ class LocalSpeechSynthesizer:
         self.current_task_id = None
         self.ws = None
         self.ws_thread = None
+
+    def wait(self, timeout_seconds: float = 2.0):
+        """
+        Wait for WebSocket thread to terminate gracefully.
+        This is optional - thread will be cleaned up automatically as a daemon.
+        Only use this when you need to ensure resources are fully cleaned up.
+
+        Args:
+            timeout_seconds: Maximum time to wait (default: 2.0)
+        """
+        if self.ws_thread and self.ws_thread.is_alive():
+            self.ws_thread.join(timeout=timeout_seconds)
+            if self.ws_thread.is_alive():
+                # Thread still running, but that's OK for daemon thread
+                pass
 
     def get_last_request_id(self) -> Optional[str]:
         """Get the last request ID"""
