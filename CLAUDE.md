@@ -104,6 +104,35 @@ task test                         # Run all tests
 task test-extension EXTENSION=... # Test specific extension
 ```
 
+### AI Agents 调试命令
+
+**重要提示**：
+- API 服务器部署在服务器上的容器内部，不能在本地直接访问 `http://localhost:8082`
+- 所有调试操作需要在容器内部进行
+
+```bash
+# 进入开发容器
+docker compose exec -it ten_agent_dev bash
+
+# 容器内：切换到语音助手示例目录
+cd agents/examples/voice-assistant
+
+# 设置日志路径
+export LOG_PATH=/var/log
+
+# 构建 API 服务器
+task build-api-server
+
+# 后台运行并查看日志
+nohup task run > info.log 2>&1 &
+
+# 实时查看日志
+tail -n1 -f info.log
+
+# 过滤特定内容的日志（如 test_channel）
+tail -n1 -f info.log|grep test_channel
+```
+
 ## TypeScript/JavaScript Tooling
 
 The root `package.json` provides commands for TS/JS files (mainly playground and server):

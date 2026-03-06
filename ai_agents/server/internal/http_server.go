@@ -83,6 +83,11 @@ type VectorDocumentUpload struct {
 	File        *multipart.FileHeader `form:"file" binding:"required"`
 }
 
+type InterruptReq struct {
+	RequestId   string `json:"request_id,omitempty"`
+	ChannelName string `json:"channel_name,omitempty"`
+}
+
 func NewHttpServer(httpServerConfig *HttpServerConfig) *HttpServer {
 	return &HttpServer{
 		config: httpServerConfig,
@@ -501,6 +506,85 @@ func (s *HttpServer) handlerVectorDocumentUpload(c *gin.Context) {
 	s.output(c, codeSuccess, map[string]any{"channel_name": req.ChannelName, "collection": collection, "file_name": fileName})
 }
 
+func (s *HttpServer) handlerInterrupt(c *gin.Context) {
+	var req InterruptReq
+
+	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+		slog.Error("handlerInterrupt params invalid", "err", err, logTag)
+		s.output(c, codeErrParamsInvalid, http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("handlerInterrupt start", "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+
+	if strings.TrimSpace(req.ChannelName) == "" {
+		slog.Error("handlerInterrupt channel empty", "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrChannelEmpty, http.StatusBadRequest)
+		return
+	}
+
+	if !workers.Contains(req.ChannelName) {
+		slog.Error("handlerInterrupt channel not existed", "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrChannelNotExisted, http.StatusBadRequest)
+		return
+	}
+
+	// Get worker to find its property.json file path
+	worker := workers.Get(req.ChannelName).(*Worker)
+	propertyJsonPath := worker.PropertyJsonFile
+
+	// Read the current property.json file
+	content, err := os.ReadFile(propertyJsonPath)
+	if err != nil {
+		slog.Error("handlerInterrupt read property.json failed", "err", err, "path", propertyJsonPath, "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrReadFileFailed, http.StatusInternalServerError)
+		return
+	}
+
+	// Parse the JSON content
+	var propertyJson map[string]interface{}
+	err = json.Unmarshal(content, &propertyJson)
+	if err != nil {
+		slog.Error("handlerInterrupt parse property.json failed", "err", err, "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrParseJsonFailed, http.StatusInternalServerError)
+		return
+	}
+
+	// Get the _ten section and add interrupt mark there
+	tenSection, ok := propertyJson["ten"].(map[string]interface{})
+	if !ok {
+		slog.Error("Invalid format: _ten section missing in property.json", "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrParseJsonFailed, http.StatusInternalServerError)
+		return
+	}
+
+	// Add interrupt mark under ten section with timestamp
+	if tenSection["interrupt"] == nil {
+		tenSection["interrupt"] = make(map[string]interface{})
+	}
+	tenSection["interrupt"].(map[string]interface{})["action"] = "flush"
+	tenSection["interrupt"].(map[string]interface{})["timestamp"] = time.Now().Unix()
+
+	// Marshal the modified JSON back
+	modifiedContent, err := json.Marshal(propertyJson)
+	if err != nil {
+		slog.Error("handlerInterrupt marshal modified JSON failed", "err", err, "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrParseJsonFailed, http.StatusInternalServerError)
+		return
+	}
+
+	// Write back to file
+	err = os.WriteFile(propertyJsonPath, modifiedContent, 0644)
+	if err != nil {
+		slog.Error("handlerInterrupt write property.json failed", "err", err, "path", propertyJsonPath, "channelName", req.ChannelName, "requestId", req.RequestId, logTag)
+		s.output(c, codeErrSaveFileFailed, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("handlerInterrupt end", "channelName", req.ChannelName, "requestId", req.RequestId, "timestamp", tenSection["interrupt"].(map[string]interface{})["timestamp"], "path", propertyJsonPath, "content", string(modifiedContent), logTag)
+	s.output(c, codeSuccess, nil)
+}
+
 func (s *HttpServer) output(c *gin.Context, code *Code, data any, httpStatus ...int) {
 	if len(httpStatus) == 0 {
 		httpStatus = append(httpStatus, http.StatusOK)
@@ -828,6 +912,7 @@ func (s *HttpServer) Start() {
 	r.POST("/start", s.handlerStart)
 	r.POST("/stop", s.handlerStop)
 	r.POST("/ping", s.handlerPing)
+	r.POST("/interrupt", s.handlerInterrupt)
 	r.GET("/graphs", s.handleGraphs)
 	r.GET("/dev-tmp/addons/default-properties", s.handleAddonDefaultProperties)
 	r.POST("/token/generate", s.handlerGenerateToken)

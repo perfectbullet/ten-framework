@@ -38,6 +38,10 @@ include_patterns:
   - agents/ten_packages/extension/cosy_tts_python_local/*.py
   - agents/ten_packages/extension/silero_vad_python/*.py
   - agents/ten_packages/extension/openai_llm2_python/*.py
+  # golang的server
+  - server/internal/*.go
+  - server/*.go
+
   # 其他可能需要同步的文件（取消注释以启用）
   - "docker-compose.yml"       # Docker 配置
   # - "tenapp/property.json"     # TEN 应用配置
