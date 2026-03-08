@@ -90,23 +90,32 @@ class TextIntentValidator:
         return f"""你是一个ASR文本验证助手。请判断给定文本是否有意义。
 
 回答 "YES" 的条件（满足任一即可）：
-1. 是完整的问题：例如"今天天气怎么样?"、"讲个笑话"、"What's the weather like?"
-2. 是请求类：例如"你能帮我吗?"、"我想听音乐"、"Play some music"
+1. 是完整的问题（中英文）：例如"今天天气怎么样?"、"讲个笑话"、"What's the weather like?"、"How are you?"
+2. 是请求类（中英文）：例如"你能帮我吗?"、"我想听音乐"、"Play some music"、"Help me"
 3. 是命令类：例如"¥12次方程的解法"、"把一元二次方程讲一下"
-4. 是问候+问题：例如"你好，今天天气怎么样?"
-5. 是学习相关：例如一元二次方程、数学题、编程题
-6. 是天气或新闻相关的问题
+4. 是问候+问题（中英文）：例如"你好，今天天气怎么样?"、"Hello, how are you?"、"Hi, what's your name?"
+5. 是问候+其他内容：例如"hello， how areyou"、"hello, what'syourname"（粘连的英文问候或询问）
+6. 是学习相关：例如一元二次方程、数学题、编程题
+7. 是天气或新闻相关的问题
+8. 粘连在一起的英文（有实际含义）：例如"what'syourname"（询问名字）、"howareyou"（问候）、"what's yourname"（询问名字）
 
 回答 "NO" 的条件（满足任一即噪音）：
-1. 纯填充词/迟疑声："um", "uh", "嗯", "啊", "呃", "唔", "er"
+1. 纯填充词/迟疑声："um", "uh", "嗯", "啊", "呃", "唔", "er", "ah"
 2. 重复表达："那个那个", "然后然后", "对对对", "就是就是"
-3. 简单问候（单独使用）："hello", "你好", "hi"
+3. 单独的简单问候（仅一个词）："hello", "你好", "hi", "hey"（如果后面有其他内容则为YES）
 4. 无意义短句（单独使用）："你说", "我问", "我之前", "之前不是", "应该是", "对", "对吧", "你在一"
 5. 说话停顿/继续："然后呢", "所以呢", "就是说", "以后呢"
 6. 表达确认："对对对", "可以可以", "是的是的", "应该会"
 7. 表达状态："我觉得应该是", "我之前用过", "你看看", "你也行", "你觉得"
 8. 说话中断/不完整："开始", "就是", "以后", "开始的勇气", "然后我以后", "那最后最后"
 9. 闲聊短句："你说什么", "我问你", "我知道", "你好老兄弟", "以后呢，在这个广告吗？"
+10. 单独的粘连单词："yourname"（只有一个词，即使粘连）
+
+重要说明：
+- 英文标准问候语如 "Hello, how are you?"、"How are you?" 应该回答 YES
+- 粘连但有实际含义的英文如 "what'syourname"、"howareyou" 应该回答 YES
+- 只有单独一个词的问候或粘连词如 "hello"、"yourname" 才是噪音
+- 如果问候语或询问后面有任何内容，都应该回答 YES
 
 请只回答 "YES" 或 "NO"，不要添加任何其他文字。
 
@@ -132,6 +141,7 @@ class TextIntentValidator:
 纠错规则:
 - 中文错别字: "¥12次方程" → "一元二次方程", "2次方程" → "二次方程"
 - 英文单词粘连: "what'syourname" → "what's your name", "yourname" → "your name", "howareyou" → "how are you"
+- 英文标点修正: "hello， how areyou" → "hello, how are you"（中文逗号改为英文逗号，粘连分开）
 - 重要：纠正时要保持文本的原语言类型，英文文本纠正后仍应是英文
 - 如果文本没有明显错误，请原样返回文本
 - 保持原意不变，只纠正明显的ASR错误
@@ -297,7 +307,7 @@ async def test_text_intent_validator():
 
         # Correction tests
         ("what'syourname", True, "what's your name"),
-        ("howareyou", True, "how are you"),
+        ("hello， how areyou", True, "hello， how are you"),
         ("yourname", False, "your name"),  # Single word concatenation, not meaningful
 
         # Noise cases from actual logs
