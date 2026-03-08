@@ -127,8 +127,7 @@ if __name__ == "__main__":
     print("example for Funasr_websocket_recognizer")
     import wave
 
-    # wav_path = "/Users/zhifu/Downloads/modelscope_models/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/example/asr_example.wav"
-    wav_path = "/mnt/d/zenking_work/funasr_work/workspace/FunASR/runtime/funasr_api/asr_example.wav"
+    wav_path = "zj-1.wav"
     with wave.open(wav_path, "rb") as wav_file:
         params = wav_file.getparams()
         frames = wav_file.readframes(wav_file.getnframes())
