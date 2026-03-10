@@ -38,6 +38,14 @@ include_patterns:
   - agents/ten_packages/extension/cosy_tts_python_local/*.py
   - agents/ten_packages/extension/silero_vad_python/*.py
   - agents/ten_packages/extension/openai_llm2_python/*.py
+  - agents/ten_packages/extension/streamid_adapter/*.py
+  - agents/examples/voice-assistant/tenapp/scripts/*.sh
+  - agents/examples/voice-assistant/tenapp/main.go
+  - agents/examples/voice-assistant/tenapp/go.mod
+  - agents/examples/voice-assistant/tenapp/go.sum
+  - agents/examples/voice-assistant/tenapp/manifest.json
+  - agents/ten_packages/extension/silero_vad_python/property.json
+  - agents/ten_packages/extension/streamid_adapter/extension.py
   # golang的server
   - server/internal/*.go
   - server/*.go

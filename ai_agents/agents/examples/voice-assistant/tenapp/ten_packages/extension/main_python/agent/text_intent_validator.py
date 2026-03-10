@@ -27,7 +27,7 @@ DEFAULT_TIMEOUT = 5.0
 # Common noise words that can be filtered without LLM call
 COMMON_NOISE_WORDS = {
     "um", "uh", "ah", "er", "hm", "hmm", "mm",
-    "嗯", "啊", "呃", "唔"
+    "嗯", "啊", "呃", "唔", "对", "好"
 }
 
 
@@ -179,6 +179,10 @@ class TextIntentValidator:
         # Fast path: filter common noise words without LLM call
         text_lower = text.strip().lower()
         if text_lower in COMMON_NOISE_WORDS:
+            return False, 0.0, "FAST_PATH_NOISE", None
+
+        # 短文本被过滤掉
+        if len(text_lower) <= 2:
             return False, 0.0, "FAST_PATH_NOISE", None
 
         total_elapsed = 0.0
