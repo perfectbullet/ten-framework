@@ -81,6 +81,7 @@ exclude_patterns:
   # - "models"                   # Models directory (模型目录)
   # - "sftp_sync"                # SFTP sync tool directory (SFTP同步工具目录)
   - "sftp_sync_config.yaml"  # This config file itself (此配置文件本身)
+  - agents/examples/voice-assistant/tenapp/ten_packages/system
 
 # Synchronization options (同步选项)
 delete_remote: false           # Delete remote files not in local (删除远程不存在于本地的文件)

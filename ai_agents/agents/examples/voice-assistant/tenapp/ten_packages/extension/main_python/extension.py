@@ -81,9 +81,9 @@ class MainControlExtension(AsyncExtension):
         text_clean = text.strip().strip(string.punctuation + "，。！？、；：""''《》【】")
         text_lower = text_clean.lower()
 
-        # 检查是否包含打断短语
+        # 检查是否包含打断短语（只检查短语是否在输入文本中）
         for phrase in self._interrupt_phrases:
-            if phrase.lower() in text_lower or text_lower in phrase.lower():
+            if phrase.lower() in text_lower:
                 return True
 
         # 检查重复的打断意图字符（如：停停停、等等等、别别别、stopstop）
@@ -172,7 +172,7 @@ class MainControlExtension(AsyncExtension):
                 )
                 return
 
-        if event.final or len(event.text) > 2:
+        if event.final and len(event.text) > 8:
             self.ten_env.log_info(
                 f"[MainControlExtension] Calling _interrupt() due to ASR result (final={event.final}, text_len={len(event.text)})"
             )
@@ -315,7 +315,7 @@ class MainControlExtension(AsyncExtension):
             self.ten_env, "tts_flush", "tts", {"flush_id": str(uuid.uuid4())}
         )
         await _send_cmd(self.ten_env, "flush", "agora_rtc")
-        self.ten_env.log_info("[MainControlExtension] Interrupt signal sent")
+        self.ten_env.log_info("[MainControlExtension] Interrupt signal sent............................")
 
     async def _check_interrupt_file(self):
         """定期检查 property.json 中的 interrupt 标记"""
