@@ -97,7 +97,7 @@ async def test_local_service():
         synthesizer.streaming_call(test_text)
 
         # Wait for completion (timeout: 30 seconds)
-        timeout = 30
+        timeout = 300
         for i in range(timeout * 10):
             if callback.is_complete:
                 break
@@ -145,7 +145,8 @@ async def test_local_service():
             print(f"  TTFB: {ttfb:.2f}ms")
 
         # Optionally save audio to file
-        save_audio = input("\nSave audio to file? (y/n): ").strip().lower()
+        # save_audio = input("\nSave audio to file? (y/n): ").strip().lower()
+        save_audio = "y"
         if save_audio == "y":
             import wave
 
