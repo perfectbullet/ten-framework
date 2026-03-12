@@ -153,7 +153,7 @@ class MainControlExtension(AsyncExtension):
                 f"[MainControlExtension] Interrupt phrase detected: '{_truncate_text(event.text)}', calling _interrupt()"
             )
             await self._interrupt()
-            await self._send_transcript("user", event.text, event.final, stream_id)
+            # await self._send_transcript("user", event.text, event.final, stream_id)
             return  # 不发送给 LLM
 
         # Semantic validation using TextIntentValidator (only on final results)
