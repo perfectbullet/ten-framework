@@ -158,6 +158,30 @@
                       "extension": "stt"
                     }
                   ]
+                },
+                {
+                  "name": "tts_audio_start",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                },
+                {
+                  "name": "tts_audio_end",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                },
+                {
+                  "name": "tts_flush_end",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
                 }
               ]
             },

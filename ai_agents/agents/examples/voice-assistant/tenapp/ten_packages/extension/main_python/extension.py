@@ -70,6 +70,11 @@ class MainControlExtension(AsyncExtension):
         # Track last processed interrupt timestamp to avoid duplicate processing
         self._last_interrupt_timestamp: int = 0
 
+        # 状态标志：用于感知当前系统状态
+        self.is_llm_streaming: bool = False  # LLM 是否正在流式输出
+        self.is_tts_playing: bool = False     # TTS 是否正在播报
+        self.current_tts_request_id: str | None = None  # 当前 TTS 请求 ID（用于追踪）
+
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
 
@@ -140,6 +145,13 @@ class MainControlExtension(AsyncExtension):
 
     @agent_event_handler(ASRResultEvent)
     async def _on_asr_result(self, event: ASRResultEvent):
+        # 打印当前状态
+        self.ten_env.log_info(
+            f"[MainControlExtension] Current state: "
+            f"LLM streaming={self.is_llm_streaming}, "
+            f"TTS playing={self.is_tts_playing}"
+        )
+
         self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
         if not event.text:
@@ -191,12 +203,18 @@ class MainControlExtension(AsyncExtension):
 
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
+        self.ten_env.log_info(f"[MainControlExtension] _on_llm_response event.type={event.type}")
+
+        # 流式输出开始
         if not event.is_final and event.type == "message":
+            self.is_llm_streaming = True
             sentences = self.sentence_buffer.feed(event.delta)
             for s in sentences:
                 await self._send_to_tts(s, False)
 
+        # 流式输出结束
         if event.is_final and event.type == "message":
+            self.is_llm_streaming = False
             remaining_text = self.sentence_buffer.flush()
             await self._send_to_tts(remaining_text, True)
 
@@ -234,7 +252,30 @@ class MainControlExtension(AsyncExtension):
         await self.agent.on_cmd(cmd)
 
     async def on_data(self, ten_env: AsyncTenEnv, data: Data):
-        await self.agent.on_data(data)
+        data_name = data.get_name()
+        self.ten_env.log_info(f"[MainControlExtension] on_data received: {data_name}")
+
+        # 处理 TTS 音频开始事件
+        if data_name == "tts_audio_start":
+            self.is_tts_playing = True
+            request_id, _ = data.get_property_string("request_id")
+            self.current_tts_request_id = request_id
+            self.ten_env.log_info(f"[MainControlExtension] TTS audio started: request_id={request_id}")
+
+        # 处理 TTS 音频结束事件
+        elif data_name == "tts_audio_end":
+            self.is_tts_playing = False
+            request_id, _ = data.get_property_string("request_id")
+            self.ten_env.log_info(f"[MainControlExtension] TTS audio ended: request_id={request_id}")
+
+        # 处理 TTS 刷新结束事件（打断时触发）
+        elif data_name == "tts_flush_end":
+            self.is_tts_playing = False
+            self.ten_env.log_info("[MainControlExtension] TTS flush ended")
+
+        # 其他数据事件（非 TTS 事件）传递给 agent 处理
+        elif data_name != "tts_audio_start" and data_name != "tts_audio_end" and data_name != "tts_flush_end":
+            await self.agent.on_data(data)
 
     # === helpers ===
     async def _send_transcript(
