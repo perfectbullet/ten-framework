@@ -29,6 +29,8 @@ from .config import MainControlConfig  # assume extracted from your base model
 
 import uuid
 
+# 是否支持打断短语
+ENABLE_INTERRUPT_PHRASE  = False
 
 def _truncate_text(text: str, max_len: int = 50) -> str:
     """截断文本用于日志显示，保留开头和结尾"""
@@ -148,7 +150,7 @@ class MainControlExtension(AsyncExtension):
         )
 
         # 检查是否是打断短语（在语义验证之前）
-        if event.final and self._is_interrupt_phrase(event.text):
+        if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
             self.ten_env.log_info(
                 f"[MainControlExtension] Interrupt phrase detected: '{_truncate_text(event.text)}', calling _interrupt()"
             )
@@ -179,12 +181,13 @@ class MainControlExtension(AsyncExtension):
             await self._interrupt()
             self.ten_env.log_info("[MainControlExtension] _interrupt() completed")
 
-        if event.final:
             self.turn_id += 1
             # Use corrected text for LLM if available
             llm_text = corrected_text if corrected_text else event.text
             await self.agent.queue_llm_input(llm_text)
-        await self._send_transcript("user", event.text, event.final, stream_id)
+
+            # 只在有意义文本且已打断后发送转录
+            await self._send_transcript("user", event.text, event.final, stream_id)
 
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
