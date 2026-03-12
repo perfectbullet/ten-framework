@@ -335,8 +335,6 @@ class MainControlExtension(AsyncExtension):
                     cmdline = f.read()
                 # 过滤特殊字符，替换为空格
                 cmdline = re.sub(r'[\x00-\x1F\x7F-\x9F]', ' ', cmdline)
-                # length_msg = f"[MainControlExtension] Cmdline content length: {cmdline}"
-                # self.ten_env.log_info(length_msg)
             except (FileNotFoundError, PermissionError) as e:
                 # /proc 文件系统在某些环境中可能不可用
                 error_msg = f"[MainControlExtension] Failed to read cmdline: {e}"
@@ -351,8 +349,6 @@ class MainControlExtension(AsyncExtension):
                 return
 
             property_path = match.group(1)
-            found_path_msg = f"[MainControlExtension] Found property path: {property_path}"
-            self.ten_env.log_info(found_path_msg)
 
             if not os.path.exists(property_path):
                 not_found_msg = f"[MainControlExtension] Property file not found: {property_path}"
