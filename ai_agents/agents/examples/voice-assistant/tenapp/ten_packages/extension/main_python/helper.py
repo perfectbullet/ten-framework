@@ -62,5 +62,5 @@ async def _send_data(
     data.set_dests([loc])
     if payload is not None:
         data.set_property_from_json(None, json.dumps(payload))
-    ten_env.log_debug(f"send_data: data_name {data_name}, dest {dest}")
+    ten_env.log_info(f"send_data: data_name {data_name}, dest {dest}")
     return await ten_env.send_data(data)

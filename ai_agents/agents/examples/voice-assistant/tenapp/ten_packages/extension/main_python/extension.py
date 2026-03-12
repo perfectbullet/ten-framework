@@ -260,6 +260,7 @@ class MainControlExtension(AsyncExtension):
                 },
             )
         elif data_type == "reasoning":
+            # 应该
             await _send_data(
                 self.ten_env,
                 "message",
@@ -322,8 +323,8 @@ class MainControlExtension(AsyncExtension):
         try:
             # 获取 property.json 文件路径（通过读取父进程的命令行参数）
             parent_pid = os.getppid()
-            pid_msg = f"[MainControlExtension] Parent PID: {parent_pid}"
-            self.ten_env.log_info(pid_msg)
+            # pid_msg = f"[MainControlExtension] Parent PID: {parent_pid}"
+            # self.ten_env.log_info(pid_msg)
 
             cmdline_path = f'/proc/{parent_pid}/cmdline'
             path_msg = f"[MainControlExtension] Reading cmdline from: {cmdline_path}"
@@ -334,8 +335,8 @@ class MainControlExtension(AsyncExtension):
                     cmdline = f.read()
                 # 过滤特殊字符，替换为空格
                 cmdline = re.sub(r'[\x00-\x1F\x7F-\x9F]', ' ', cmdline)
-                length_msg = f"[MainControlExtension] Cmdline content length: {cmdline}"
-                self.ten_env.log_info(length_msg)
+                # length_msg = f"[MainControlExtension] Cmdline content length: {cmdline}"
+                # self.ten_env.log_info(length_msg)
             except (FileNotFoundError, PermissionError) as e:
                 # /proc 文件系统在某些环境中可能不可用
                 error_msg = f"[MainControlExtension] Failed to read cmdline: {e}"
