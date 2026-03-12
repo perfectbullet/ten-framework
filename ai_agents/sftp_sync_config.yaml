@@ -46,6 +46,7 @@ include_patterns:
   - agents/examples/voice-assistant/tenapp/manifest.json
   - agents/ten_packages/extension/silero_vad_python/property.json
   - agents/ten_packages/extension/streamid_adapter/extension.py
+
   # golang的server
   - server/internal/*.go
   - server/*.go
@@ -82,6 +83,11 @@ exclude_patterns:
   # - "sftp_sync"                # SFTP sync tool directory (SFTP同步工具目录)
   - "sftp_sync_config.yaml"  # This config file itself (此配置文件本身)
   - agents/examples/voice-assistant/tenapp/ten_packages/system
+  - agents/examples/voice-assistant/tenapp/property-待修改.json
+  - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extension copy.py
+  - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extension copy.py
+  - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
+  - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
 
 # Synchronization options (同步选项)
 delete_remote: false           # Delete remote files not in local (删除远程不存在于本地的文件)
