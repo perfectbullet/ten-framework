@@ -161,6 +161,12 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
         )
 
+        if self.is_tts_playing or self.is_llm_streaming:
+            self.ten_env.log_info(
+                f"[MainControlExtension] tts is playing='{self.is_tts_playing}', llm is streaming={self.is_llm_streaming}"
+            )
+            return
+
         # 检查是否是打断短语（在语义验证之前）
         if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
             self.ten_env.log_info(
