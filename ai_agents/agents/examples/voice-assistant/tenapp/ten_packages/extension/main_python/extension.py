@@ -72,8 +72,7 @@ class MainControlExtension(AsyncExtension):
 
         # 状态标志：用于感知当前系统状态
         self.is_llm_streaming: bool = False  # LLM 是否正在流式输出
-        self.is_tts_playing: bool = False     # TTS 是否正在播报
-        self.current_tts_request_id: str | None = None  # 当前 TTS 请求 ID（用于追踪）
+        self.is_tts_busy: bool = False  # TTS 是否处于忙碌状态（有音频输出或处理中）
 
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
@@ -149,7 +148,7 @@ class MainControlExtension(AsyncExtension):
         self.ten_env.log_info(
             f"[MainControlExtension] Current state: "
             f"LLM streaming={self.is_llm_streaming}, "
-            f"TTS playing={self.is_tts_playing}"
+            f"TTS busy={self.is_tts_busy}"
         )
 
         self.session_id = event.metadata.get("session_id", "100")
@@ -161,9 +160,10 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
         )
 
-        if self.is_tts_playing or self.is_llm_streaming:
+        if self.is_tts_busy:
             self.ten_env.log_info(
-                f"[MainControlExtension] tts is playing='{self.is_tts_playing}', llm is streaming={self.is_llm_streaming}"
+                f"[MainControlExtension] Skipping ASR result due to TTS being busy: "
+                f"LLM streaming={self.is_llm_streaming}, TTS busy={self.is_tts_busy}"
             )
             return
 
@@ -221,6 +221,7 @@ class MainControlExtension(AsyncExtension):
         # 流式输出结束
         if event.is_final and event.type == "message":
             self.is_llm_streaming = False
+            # 注意：不在这里设置 is_tts_busy，因为 TTS 音频输出是异步的
             remaining_text = self.sentence_buffer.flush()
             await self._send_to_tts(remaining_text, True)
 
@@ -264,6 +265,7 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
             self.is_tts_playing = True
+            self.is_tts_busy = True  # 有音频输出，TTS 处于忙碌状态
             request_id, _ = data.get_property_string("request_id")
             self.current_tts_request_id = request_id
             self.ten_env.log_info(f"[MainControlExtension] TTS audio started: request_id={request_id}")
@@ -276,8 +278,8 @@ class MainControlExtension(AsyncExtension):
 
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
-            self.is_tts_playing = False
-            self.ten_env.log_info("[MainControlExtension] TTS flush ended")
+            self.is_tts_busy = False  # TTS 不再忙碌
+            self.ten_env.log_info("[MainControlExtension] TTS flush ended - TTS is now idle")
 
         # 其他数据事件（非 TTS 事件）传递给 agent 处理
         elif data_name != "tts_audio_start" and data_name != "tts_audio_end" and data_name != "tts_flush_end":
