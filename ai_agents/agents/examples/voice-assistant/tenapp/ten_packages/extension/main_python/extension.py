@@ -160,9 +160,9 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
         )
 
-        if self.is_tts_busy:
+        if self.is_llm_streaming or self.is_tts_busy:
             self.ten_env.log_info(
-                f"[MainControlExtension] Skipping ASR result due to TTS being busy: "
+                f"[MainControlExtension] Skipping ASR result due to "
                 f"LLM streaming={self.is_llm_streaming}, TTS busy={self.is_tts_busy}"
             )
             return
@@ -273,6 +273,9 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 音频结束事件
         elif data_name == "tts_audio_end":
             self.is_tts_playing = False
+            # 注意：不在这里重置 is_tts_busy，因为 tts_audio_end 不可靠
+            # 空文本或短文本也会触发，导致状态错误重置
+            # 只在 tts_flush_end 中重置 is_tts_busy
             request_id, _ = data.get_property_string("request_id")
             self.ten_env.log_info(f"[MainControlExtension] TTS audio ended: request_id={request_id}")
 
