@@ -154,26 +154,18 @@ class MainControlExtension(AsyncExtension):
             f"LLM streaming={self.is_llm_streaming}, "
             f"TTS busy={is_tts_busy}, "
             f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
+            f"TTS busy={is_tts_busy}"
+            f"ASR result: text='{event.text}'"
+            f"event.final={event.final}"
         )
         self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
-        if not event.text:
+        if not event.text or not event.final:
             return
-
-        self.ten_env.log_info(
-            f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
-        )
 
         # 检查 TTS 是否忙碌
         if is_tts_busy or self.is_llm_streaming:
-            self.ten_env.log_info(
-                f"[MainControlExtension] Skipping ASR result due to LLM streaming={self.is_llm_streaming}, TTS busy={is_tts_busy}"
-            )
             return
-        else:
-            self.ten_env.log_info(
-                f"[MainControlExtension] ASR result due to LLM streaming={self.is_llm_streaming}, TTS busy={is_tts_busy}"
-            )
 
         # 检查是否是打断短语（在语义验证之前）
         if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
@@ -186,8 +178,8 @@ class MainControlExtension(AsyncExtension):
 
         # Semantic validation using TextIntentValidator (only on final results)
         corrected_text = None
-        if event.final and self.text_intent_validator:
-            is_meaningful, elapsed, raw_response, corrected_text = await self.text_intent_validator.is_meaningful(event.text)
+        if self.text_intent_validator:
+            is_meaningful, elapsed, _, corrected_text = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
                 f"[MainControlExtension] TextIntentValidator: "
                 f"original='{_truncate_text(event.text)}', "
@@ -200,13 +192,11 @@ class MainControlExtension(AsyncExtension):
                 )
                 return
 
-        if event.final and len(event.text) > 8:
+        if len(event.text) > 8:
             self.ten_env.log_info(
                 f"[MainControlExtension] Calling _interrupt() due to ASR result (final={event.final}, text_len={len(event.text)})"
             )
             await self._interrupt()
-            self.ten_env.log_info("[MainControlExtension] _interrupt() completed")
-
             self.turn_id += 1
             # Use corrected text for LLM if available
             llm_text = corrected_text if corrected_text else event.text
