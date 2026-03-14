@@ -72,7 +72,8 @@ class MainControlExtension(AsyncExtension):
 
         # 状态标志：用于感知当前系统状态
         self.is_llm_streaming: bool = False  # LLM 是否正在流式输出
-        self.is_tts_busy: bool = False  # TTS 是否处于忙碌状态（有音频输出或处理中）
+
+        self._tts_audio_end_time: float = 0.0  # 音频应该结束的时间（Unix 时间，秒）
 
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
@@ -144,13 +145,14 @@ class MainControlExtension(AsyncExtension):
 
     @agent_event_handler(ASRResultEvent)
     async def _on_asr_result(self, event: ASRResultEvent):
+        is_tts_busy = time.time() < self._tts_audio_end_time
         # 打印当前状态
         self.ten_env.log_info(
             f"[MainControlExtension] Current state: "
             f"LLM streaming={self.is_llm_streaming}, "
-            f"TTS busy={self.is_tts_busy}"
+            f"TTS busy={is_tts_busy}, "
+            f"_tts_audio_end_time={self._tts_audio_end_time:.2f}"
         )
-
         self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
         if not event.text:
@@ -160,12 +162,17 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] ASR result: text='{_truncate_text(event.text)}', final={event.final}, len={len(event.text)}"
         )
 
-        if self.is_llm_streaming or self.is_tts_busy:
+        # 检查 TTS 是否忙碌
+        if is_tts_busy or self.is_llm_streaming:
             self.ten_env.log_info(
-                f"[MainControlExtension] Skipping ASR result due to "
-                f"LLM streaming={self.is_llm_streaming}, TTS busy={self.is_tts_busy}"
+                f"[MainControlExtension] Skipping ASR result due to LLM streaming={self.is_llm_streaming}, TTS busy={is_tts_busy}"
             )
             return
+        else:
+            self.ten_env.log_info(
+                f"[MainControlExtension] ASR result due to LLM streaming={self.is_llm_streaming}, TTS busy={is_tts_busy}"
+            )
+            self._tts_audio_end_time = 0.0
 
         # 检查是否是打断短语（在语义验证之前）
         if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
@@ -214,6 +221,8 @@ class MainControlExtension(AsyncExtension):
         # 流式输出开始
         if not event.is_final and event.type == "message":
             self.is_llm_streaming = True
+            # 注意：不在这里初始化播放完成时间，将在 tts_audio_start 时记录开始时间
+
             sentences = self.sentence_buffer.feed(event.delta)
             for s in sentences:
                 await self._send_to_tts(s, False)
@@ -221,7 +230,7 @@ class MainControlExtension(AsyncExtension):
         # 流式输出结束
         if event.is_final and event.type == "message":
             self.is_llm_streaming = False
-            # 注意：不在这里设置 is_tts_busy，因为 TTS 音频输出是异步的
+            # 注意：不在这里设置播放完成时间，因为 TTS 音频输出是异步的
             remaining_text = self.sentence_buffer.flush()
             await self._send_to_tts(remaining_text, True)
 
@@ -248,7 +257,7 @@ class MainControlExtension(AsyncExtension):
 
     async def on_cmd(self, ten_env: AsyncTenEnv, cmd: Cmd):
         cmd_name = cmd.get_name()
-
+        self.ten_env.log_info(f"[MainControlExtension] on_cmd received: {cmd_name}")
         # Handle interrupt command directly
         if cmd_name == "interrupt":
             ten_env.log_info("[MainControlExtension] Received interrupt command")
@@ -264,28 +273,39 @@ class MainControlExtension(AsyncExtension):
 
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
-            self.is_tts_playing = True
-            self.is_tts_busy = True  # 有音频输出，TTS 处于忙碌状态
             request_id, _ = data.get_property_string("request_id")
-            self.current_tts_request_id = request_id
-            self.ten_env.log_info(f"[MainControlExtension] TTS audio started: request_id={request_id}")
-
+            # 记录音频开始播放时间（第一次 tts_audio_start 时）
+            if self._tts_audio_end_time == 0.0:
+                # 加入两秒是为了抵消延迟带来的影响
+                # duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
+                self._tts_audio_end_time = time.time() + 3
+                self.ten_env.log_info(
+                    f"[MainControlExtension] TTS audio started: request_id={request_id}, "
+                    f"_tts_audio_end_time={self._tts_audio_end_time:.2f}"
+                )
         # 处理 TTS 音频结束事件
         elif data_name == "tts_audio_end":
-            self.is_tts_playing = False
-            # 注意：不在这里重置 is_tts_busy，因为 tts_audio_end 不可靠
-            # 空文本或短文本也会触发，导致状态错误重置
-            # 只在 tts_flush_end 中重置 is_tts_busy
             request_id, _ = data.get_property_string("request_id")
-            self.ten_env.log_info(f"[MainControlExtension] TTS audio ended: request_id={request_id}")
+            # 获取音频时长（毫秒）
+            duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
+            # 累计音频时长（转换为秒）
+            if duration_ms and duration_ms > 0:
+                # 更新音频完成时间戳
+                self._tts_audio_end_time += duration_ms / 1000.0
+            self.ten_env.log_info(
+                f"[MainControlExtension] TTS audio ended: request_id={request_id}, "
+                f"duration={duration_ms}ms, _tts_audio_end_time={self._tts_audio_end_time:.2f}s"
+            )
 
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
-            self.is_tts_busy = False  # TTS 不再忙碌
+            # 打断时，重置所有 _tts_audio_end_time 状态
+            self._tts_audio_end_time = 0.0
             self.ten_env.log_info("[MainControlExtension] TTS flush ended - TTS is now idle")
 
         # 其他数据事件（非 TTS 事件）传递给 agent 处理
         elif data_name != "tts_audio_start" and data_name != "tts_audio_end" and data_name != "tts_flush_end":
+            self.ten_env.log_info(f"[MainControlExtension] not a tts event on_data received: {data_name}")
             await self.agent.on_data(data)
 
     # === helpers ===

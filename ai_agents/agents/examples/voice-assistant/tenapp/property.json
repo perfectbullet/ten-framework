@@ -58,11 +58,11 @@
                 "api_key": "ollama2",
                 "frequency_penalty": 0.9,
                 "model": "deepseek-chat",
-                "max_tokens": 512,
+                "max_tokens": 4096,
                 "prompt": "",
                 "proxy_url": "no_proxy",
-                "greeting": " You are a helpful assistant.    ",
-                "max_memory_length": 10
+                "greeting": "",
+                "max_memory_length": 20
               }
             },
             {
