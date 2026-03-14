@@ -181,6 +181,7 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
         self.audio_processor_task: asyncio.Task | None = None
         # Flag indicating if the first chunk has been processed
         self.first_chunk: bool = True
+        # Flag indicating if tts_audio_end has been sent for current request
         # Count of audio chunks received
         self.chunk_count: int = 0
         # Flag indicating if the first request is being processed
@@ -482,9 +483,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                             chunk_duration_ms = self._calculate_audio_duration(
                                 len(audio_chunk), self.config.sample_rate
                             )
-                            self.ten_env.log_debug(
-                                f"receive_audio: duration: {chunk_duration_ms}ms of request_id: {self.current_request_id}",
-                                category=LOG_CATEGORY_VENDOR,
+                            self.ten_env.log_info(
+                                f"receive_audio: duration: {chunk_duration_ms}ms, bytes: {len(audio_chunk)}, total_audio_bytes: {self.total_audio_bytes + len(audio_chunk)} of request_id: {self.current_request_id}",
                             )
 
                             # Send TTS audio start on first chunk
@@ -522,10 +522,13 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                             f"Received cancel message from client: {data}"
                         )
 
-                    # Handle TTS audio end - current request done, continue for next
+                    # Handle TTS audio end - send tts_audio_end on each done=True
+                    # Cosy TTS may send done=True multiple times in streaming mode
                     if done:
                         self.ten_env.log_info(
-                            f"Current request done (request_id: {self.current_request_id}), ready for next request"
+                            f"Received done=True from TTS service, sending tts_audio_end. "
+                            f"current_request_id: {self.current_request_id}, "
+                            f"total_audio_bytes: {self.total_audio_bytes}"
                         )
                         await self._handle_tts_audio_end()
 
@@ -711,11 +714,10 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
             await self.send_usage_metrics(self.current_request_id)
 
             self.ten_env.log_info(
-                f"KEYPOINT Sent TTS audio end event, interval: {request_event_interval}ms, duration: {self.request_total_audio_duration_ms}ms, request_id: {self.current_request_id}"
+                f"KEYPOINT Sent TTS audio end event, interval: {request_event_interval}ms, duration: {self.request_total_audio_duration_ms}ms (total_audio_bytes: {self.total_audio_bytes}), request_id: {self.current_request_id}"
             )
 
-            self.current_request_id = None
-            self.is_first_message_of_request = False
+            # Don't clear current_request_id here - it will be cleared on next new request
 
     async def _manage_pcm_writers(self, request_id: str) -> None:
         """

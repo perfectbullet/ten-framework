@@ -72,8 +72,10 @@ class MainControlExtension(AsyncExtension):
 
         # 状态标志：用于感知当前系统状态
         self.is_llm_streaming: bool = False  # LLM 是否正在流式输出
-
-        self._tts_audio_end_time: float = 0.0  # 音频应该结束的时间（Unix 时间，秒）
+        # tts_audio_start_time 作为音频开始播放时间
+        self.tts_audio_start_time: float = time.time()
+        # 当前音频流要播放累计的时间
+        self.request_total_audio_duration_ms = 3000.0
 
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
@@ -145,13 +147,13 @@ class MainControlExtension(AsyncExtension):
 
     @agent_event_handler(ASRResultEvent)
     async def _on_asr_result(self, event: ASRResultEvent):
-        is_tts_busy = time.time() < self._tts_audio_end_time
+        is_tts_busy = time.time() < (self.tts_audio_start_time + self.request_total_audio_duration_ms / 1000.0)
         # 打印当前状态
         self.ten_env.log_info(
             f"[MainControlExtension] Current state: "
             f"LLM streaming={self.is_llm_streaming}, "
             f"TTS busy={is_tts_busy}, "
-            f"_tts_audio_end_time={self._tts_audio_end_time:.2f}"
+            f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
         )
         self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
@@ -172,7 +174,6 @@ class MainControlExtension(AsyncExtension):
             self.ten_env.log_info(
                 f"[MainControlExtension] ASR result due to LLM streaming={self.is_llm_streaming}, TTS busy={is_tts_busy}"
             )
-            self._tts_audio_end_time = 0.0
 
         # 检查是否是打断短语（在语义验证之前）
         if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
@@ -274,33 +275,27 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
             request_id, _ = data.get_property_string("request_id")
-            # 记录音频开始播放时间（第一次 tts_audio_start 时）
-            if self._tts_audio_end_time == 0.0:
-                # 加入两秒是为了抵消延迟带来的影响
-                # duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
-                self._tts_audio_end_time = time.time() + 3
-                self.ten_env.log_info(
-                    f"[MainControlExtension] TTS audio started: request_id={request_id}, "
-                    f"_tts_audio_end_time={self._tts_audio_end_time:.2f}"
-                )
+            # tts_audio_start_time 作为音频开始播放事件
+            self.tts_audio_start_time = time.time()
+            self.request_total_audio_duration_ms = 3000.0
+            self.ten_env.log_info(
+                f"[MainControlExtension] TTS audio started: request_id={request_id}, "
+                f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
+            )
         # 处理 TTS 音频结束事件
         elif data_name == "tts_audio_end":
             request_id, _ = data.get_property_string("request_id")
-            # 获取音频时长（毫秒）
-            duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
-            # 累计音频时长（转换为秒）
-            if duration_ms and duration_ms > 0:
-                # 更新音频完成时间戳
-                self._tts_audio_end_time += duration_ms / 1000.0
+            # 获取累计的音频播放时长
+            self.request_total_audio_duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
+
             self.ten_env.log_info(
                 f"[MainControlExtension] TTS audio ended: request_id={request_id}, "
-                f"duration={duration_ms}ms, _tts_audio_end_time={self._tts_audio_end_time:.2f}s"
+                f"self.request_total_audio_duration_ms={self.request_total_audio_duration_ms}ms"
             )
-
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
-            # 打断时，重置所有 _tts_audio_end_time 状态
-            self._tts_audio_end_time = 0.0
+            # 打断时，重置所有 tts_audio_start_time 状态
+            self.tts_audio_start_time = time.time()
             self.ten_env.log_info("[MainControlExtension] TTS flush ended - TTS is now idle")
 
         # 其他数据事件（非 TTS 事件）传递给 agent 处理
