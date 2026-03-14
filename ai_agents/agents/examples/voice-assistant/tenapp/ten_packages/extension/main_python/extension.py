@@ -75,7 +75,7 @@ class MainControlExtension(AsyncExtension):
         # tts_audio_start_time 作为音频开始播放时间
         self.tts_audio_start_time: float = time.time()
         # 当前音频流要播放累计的时间
-        self.request_total_audio_duration_ms = 3000.0
+        self.request_total_audio_duration_ms = 2000.0
 
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
@@ -277,7 +277,7 @@ class MainControlExtension(AsyncExtension):
             request_id, _ = data.get_property_string("request_id")
             # tts_audio_start_time 作为音频开始播放事件
             self.tts_audio_start_time = time.time()
-            self.request_total_audio_duration_ms = 3000.0
+            self.request_total_audio_duration_ms = 2000.0
             self.ten_env.log_info(
                 f"[MainControlExtension] TTS audio started: request_id={request_id}, "
                 f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
@@ -294,8 +294,9 @@ class MainControlExtension(AsyncExtension):
             )
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
-            # 打断时，重置所有 tts_audio_start_time 状态
+            # 打断时，重置所有 TTS 状态为空闲
             self.tts_audio_start_time = time.time()
+            self.request_total_audio_duration_ms = 2000.0
             self.ten_env.log_info("[MainControlExtension] TTS flush ended - TTS is now idle")
 
         # 其他数据事件（非 TTS 事件）传递给 agent 处理
@@ -380,6 +381,10 @@ class MainControlExtension(AsyncExtension):
         中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。
         该操作通常在检测到用户语音时触发。
         """
+        # tts_audio_start_time 作为音频开始播放时间
+        self.tts_audio_start_time: float = time.time()
+        # 当前音频流要播放累计的时间
+        self.request_total_audio_duration_ms = 2000.0
 
         await self.agent.flush_llm()
         await _send_data(
