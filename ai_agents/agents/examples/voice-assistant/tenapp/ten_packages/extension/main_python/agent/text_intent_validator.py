@@ -21,7 +21,7 @@ import httpx
 
 # Module constants
 DEFAULT_BASE_URL = "http://192.168.8.233:11434"
-DEFAULT_MODEL = "qwen2.5:7b"
+DEFAULT_MODEL = "qwen2.5:14b"
 DEFAULT_TIMEOUT = 5.0
 
 # Common noise words that can be filtered without LLM call
