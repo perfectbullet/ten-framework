@@ -153,5 +153,12 @@
         ]
       }
     ]
-  }
+  },
+  "python-envs.pythonProjects": [
+    {
+      "path": "ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/system/ten_ai_base/interface/ten_ai_base",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }
