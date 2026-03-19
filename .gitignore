@@ -171,3 +171,4 @@ ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_pyt
 ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
 ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
 .vscode/settings.json
+ai_agents/agents/examples/voice-assistant/tenapp/.env

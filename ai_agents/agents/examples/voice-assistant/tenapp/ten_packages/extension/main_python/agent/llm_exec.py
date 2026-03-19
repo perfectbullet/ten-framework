@@ -166,7 +166,7 @@ class LLMExec:
             messages=new_single_message,
             model="qwen-max",
             streaming=True,
-            parameters={"temperature": 0.7},
+            parameters={"temperature": 0.1},
             tools=available_tools,
         )
         input_json = llm_input.model_dump()

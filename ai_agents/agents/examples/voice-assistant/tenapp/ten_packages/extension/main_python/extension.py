@@ -191,17 +191,13 @@ class MainControlExtension(AsyncExtension):
                     f"[MainControlExtension] Skipping noise text: '{_truncate_text(event.text)}'"
                 )
                 return
-
-        if len(event.text) > 8:
-            self.ten_env.log_info(
-                f"[MainControlExtension] Calling _interrupt() due to ASR result (final={event.final}, text_len={len(event.text)})"
-            )
+        self.ten_env.log_info(f"[MainControlExtension] text_len={len(event.text)}")
+        if len(event.text) > 4:
             await self._interrupt()
             self.turn_id += 1
             # Use corrected text for LLM if available
             llm_text = corrected_text if corrected_text else event.text
             await self.agent.queue_llm_input(llm_text)
-
             # 只在有意义文本且已打断后发送转录
             await self._send_transcript("user", event.text, event.final, stream_id)
 
