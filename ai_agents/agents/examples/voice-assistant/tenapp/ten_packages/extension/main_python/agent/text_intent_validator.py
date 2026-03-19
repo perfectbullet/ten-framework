@@ -87,9 +87,7 @@ class TextIntentValidator:
         Returns:
             A prompt string for the LLM to evaluate noise
         """
-        return f"""你是一个ASR文本验证助手。请严格判断给定文本是否有意义。
-
-⚠️ 重要：优先判断是否为噪音，避免误判为有意义。
+        return f"""你是一个ASR文本验证助手。请判断给定文本是否有意义。
 
 回答 "NO" 的条件（满足任一即为噪音）：
 1. 单词重复：同一词语连续重复，如"这个这个"、"那个那个"、"然后然后"、"对对对"、"就是就是"、"嗯嗯"、"啊啊"
@@ -103,16 +101,18 @@ class TextIntentValidator:
 9. 闲聊短句："你说什么", "我问你", "我知道", "以后呢，在这个广告吗？"
 10. 单独的粘连单词："yourname"（只有一个词）
 
-回答 "YES" 的条件（必须同时满足以下标准）：
+回答 "YES" 的条件（满足以下任一标准即可）：
 1. 完整的问题：有明确的疑问语气或问号，如"今天天气怎么样?"、"讲个笑话"、"What's the weather like?"
 2. 明确的请求：有明确的请求意图，如"你能帮我吗?"、"我想听音乐"、"Play some music"、"Help me"
 3. 具体的命令：有明确的命令意图，如"把一元二次方程讲一下"
 4. 问候+完整内容：问候后面有完整的问题或请求，如"你好，今天天气怎么样?"、"Hello, how are you?"
+5. 包含实际内容的英文粘连词："what'syourname"、"howareyou"、"hello， how areyou"
+6. 包含ASR错误但有明确意图："¥12次方程"、"2次方程"（虽然识别错误，但语义明确）
 
 ✅ 判断原则：
-- 优先识别噪音：如果文本有重复词、填充词、不完整表达，直接回答 "NO"
-- 英文粘连词如"what'syourname"、"howareyou"（有实际含义）回答 "YES"
-- 但单独一个词如"hello"、"yourname" 回答 "NO"
+- 如果文本包含明确的语义意图（即使有ASR错误），回答 "YES"
+- 英文粘连词如果有实际含义，回答 "YES"；单独一个无意义词回答 "NO"
+- 优先识别真正的噪音（重复、填充词、不完整表达），不要误判有实际内容的文本
 
 请只回答 "YES" 或 "NO"，不要添加任何其他文字。
 
@@ -136,16 +136,35 @@ class TextIntentValidator:
         return f"""你是一个ASR文本纠错助手。你的任务是纠正文本中的ASR识别错误。
 
 纠错规则:
-- 中文错别字: "¥12次方程" → "一元二次方程", "2次方程" → "二次方程"
-- 英文单词粘连: "what'syourname" → "what's your name", "yourname" → "your name", "howareyou" → "how are you"
-- 英文标点修正: "hello， how areyou" → "hello, how are you"（中文逗号改为英文逗号，粘连分开）
-- 重要：纠正时要保持文本的原语言类型，英文文本纠正后仍应是英文
-- 如果文本没有明显错误，请原样返回文本
-- 保持原意不变，只纠正明显的ASR错误
+1. 中文错别字识别：
+   - "¥12" → "一元二次"
+   - "2次方程" → "二次方程"
+   - "12次方程" → "二次方程"（注意：¥符号可能被误识别为1）
+   - "12次方程组" → "二次方程组" 或 "一元二次方程组"
+
+2. 英文单词粘连：
+   - "what'syourname" → "what's your name"
+   - "yourname" → "your name"（即使是单独一个粘连词也要纠正）
+   - "howareyou" → "how are you"
+
+3. 英文标点修正：
+   - "hello， how areyou" → "hello, how are you"（中文逗号改为英文逗号，粘连分开）
+   - 将中文标点（，。、）改为对应的英文标点（,.?）
+
+4. 语言保持：
+   - 纠正时要保持文本的原语言类型
+   - 英文文本纠正后仍应是英文
+   - 中文文本纠正后仍应是中文
+
+5. 纠错原则：
+   - 如果文本没有明显错误，请原样返回文本
+   - 保持原意不变，只纠正明显的ASR错误
+   - 纠正后的文本应该语法正确、标点规范
+   - 对于粘连的英文单词，务必正确分割
 
 待纠错文本: "{text}"
 
-请直接输出纠正后的文本，不要添加任何解释或额外说明: """
+请直接输出纠正后的文本，不要添加任何解释、引号或额外说明: """
 
     async def is_meaningful(self, text: str) -> tuple[bool, float, str, Optional[str]]:
         """
@@ -284,11 +303,7 @@ async def test_text_intent_validator():
     Run this module directly to test:
         python -m agent.text_intent_validator
     """
-    validator = TextIntentValidator(
-        base_url="http://192.168.8.233:11434",
-        model="qwen2.5:7b",
-        timeout=10.0,
-    )
+    validator = TextIntentValidator()
 
     # Test cases: (text, expected_is_meaningful, expected_correction)
     test_cases = [
@@ -304,6 +319,7 @@ async def test_text_intent_validator():
 
         # Meaningful questions - Command/learning related
         ("¥12次方程的解法", True, "一元二次方程的解法"),
+        ("什么是¥12次方程组", True, "什么是一元二次方程组"),
         ("把一元二次方程讲一下", True, None),
 
         # Meaningful questions - Greeting + question
