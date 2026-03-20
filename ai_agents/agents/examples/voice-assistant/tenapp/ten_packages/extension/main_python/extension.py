@@ -30,7 +30,7 @@ from .config import MainControlConfig  # assume extracted from your base model
 import uuid
 
 # 是否支持打断短语
-ENABLE_INTERRUPT_PHRASE  = False
+ENABLE_INTERRUPT_PHRASE  = True
 
 def _truncate_text(text: str, max_len: int = 50) -> str:
     """截断文本用于日志显示，保留开头和结尾"""
@@ -163,18 +163,17 @@ class MainControlExtension(AsyncExtension):
         if not event.text or not event.final:
             return
 
-        # 检查 TTS 是否忙碌
-        if is_tts_busy or self.is_llm_streaming:
-            return
-
         # 检查是否是打断短语（在语义验证之前）
-        if ENABLE_INTERRUPT_PHRASE and event.final and self._is_interrupt_phrase(event.text):
+        if ENABLE_INTERRUPT_PHRASE and self._is_interrupt_phrase(event.text):
             self.ten_env.log_info(
                 f"[MainControlExtension] Interrupt phrase detected: '{_truncate_text(event.text)}', calling _interrupt()"
             )
             await self._interrupt()
-            # await self._send_transcript("user", event.text, event.final, stream_id)
             return  # 不发送给 LLM
+
+        # 检查 TTS 是否忙碌
+        if is_tts_busy or self.is_llm_streaming:
+            return
 
         # Semantic validation using TextIntentValidator (only on final results)
         corrected_text = None
