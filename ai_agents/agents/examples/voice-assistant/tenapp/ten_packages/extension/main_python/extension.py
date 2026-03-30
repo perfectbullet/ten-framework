@@ -30,7 +30,7 @@ from .config import MainControlConfig  # assume extracted from your base model
 import uuid
 
 # 是否支持打断短语
-ENABLE_INTERRUPT_PHRASE  = True
+ENABLE_INTERRUPT_PHRASE  = False
 
 def _truncate_text(text: str, max_len: int = 50) -> str:
     """截断文本用于日志显示，保留开头和结尾"""
