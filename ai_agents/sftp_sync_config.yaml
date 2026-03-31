@@ -34,6 +34,7 @@ include_patterns:
   - agents/examples/voice-assistant/*.py
   - agents/examples/voice-assistant/*.json
   - agents/examples/voice-assistant/*.yml
+  - agents/examples/voice-assistant/*.sh
   - agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/*.py
   - agents/ten_packages/extension/cosy_tts_python_local/*.py
   - agents/ten_packages/extension/silero_vad_python/*.py
