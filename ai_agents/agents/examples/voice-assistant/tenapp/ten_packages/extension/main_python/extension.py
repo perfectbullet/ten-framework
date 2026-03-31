@@ -172,7 +172,7 @@ class MainControlExtension(AsyncExtension):
             return  # 不发送给 LLM
 
         # 检查 TTS 是否忙碌
-        if is_tts_busy or self.is_llm_streaming:
+        if is_tts_busy:
             return
 
         # Semantic validation using TextIntentValidator (only on final results)
