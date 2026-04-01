@@ -172,3 +172,5 @@ ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_pyt
 ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
 .vscode/settings.json
 ai_agents/agents/examples/voice-assistant/tenapp/.env
+ai_agents/vad_speech_2_20260401_103647_28608ms.wav
+ai_agents/vad_speech_*.wav
