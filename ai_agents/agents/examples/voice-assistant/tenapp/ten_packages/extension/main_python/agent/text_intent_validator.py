@@ -13,15 +13,47 @@ This design optimizes for both speed and accuracy, avoiding the cost
 of running correction on text that would be filtered out anyway.
 """
 import asyncio
+import os
 import time
 from typing import Optional
 
 import httpx
 
 
+def _get_base_url() -> str:
+    """Get base URL from OPENAI_API_BASE environment variable.
+
+    Removes /v1 suffix if present. Raises error if not configured.
+    """
+    base_url = os.environ.get("OPENAI_API_BASE")
+    if not base_url:
+        raise ValueError(
+            "OPENAI_API_BASE environment variable is not set. "
+            "Please configure it in .env file."
+        )
+    # Remove /v1 suffix if present
+    if base_url.endswith("/v1"):
+        base_url = base_url[:-3]
+    return base_url
+
+
+def _get_model() -> str:
+    """Get model name from OPENAI_MODEL environment variable.
+
+    Raises error if not configured.
+    """
+    model = os.environ.get("OPENAI_MODEL")
+    if not model:
+        raise ValueError(
+            "OPENAI_MODEL environment variable is not set. "
+            "Please configure it in .env file."
+        )
+    return model
+
+
 # Module constants
-DEFAULT_BASE_URL = "http://192.168.8.233:11434"
-DEFAULT_MODEL = "qwen2.5:14b"
+DEFAULT_BASE_URL = _get_base_url()
+DEFAULT_MODEL = _get_model()
 DEFAULT_TIMEOUT = 5.0
 
 # Common noise words that can be filtered without LLM call

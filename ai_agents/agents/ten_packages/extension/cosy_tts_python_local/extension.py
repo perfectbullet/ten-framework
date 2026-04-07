@@ -786,7 +786,7 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
 
     async def _get_voice_from_employee_api(self, employee_id: str, ten_env: AsyncTenEnv) -> str:
         """从员工API获取gender和tone，组合成voice值"""
-        api_base_url = os.getenv("EMPLOYEE_API_BASE_URL", "http://192.168.8.233:8100")
+        api_base_url = os.getenv("EMPLOYEE_API_BASE_URL", "http://192.168.8.234:8100")
         url = f"{api_base_url}/api/employee/detail/{employee_id}"
         default_voice = "hutao"
 
