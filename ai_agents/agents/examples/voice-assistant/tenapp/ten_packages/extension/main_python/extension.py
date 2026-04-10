@@ -72,10 +72,12 @@ class MainControlExtension(AsyncExtension):
 
         # 状态标志：用于感知当前系统状态
         self.is_llm_streaming: bool = False  # LLM 是否正在流式输出
-        # tts_audio_start_time 作为音频开始播放时间
-        self.tts_audio_start_time: float = time.time()
-        # 当前音频流要播放累计的时间
-        self.request_total_audio_duration_ms = 2000.0
+        # tts_audio_start_time 作为音频开始播放时间（在第一个 tts_audio_end 时校正）
+        self.tts_audio_start_time: float = 0.0
+        # 累计音频时长：所有已生成音频的总时长
+        self.accumulated_audio_duration_ms: int = 0
+        # 标记是否已校正过 tts_audio_start_time（避免重复校正）
+        self._tts_start_time_calibrated: bool = False
 
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
@@ -147,14 +149,16 @@ class MainControlExtension(AsyncExtension):
 
     @agent_event_handler(ASRResultEvent)
     async def _on_asr_result(self, event: ASRResultEvent):
-        is_tts_busy = time.time() < (self.tts_audio_start_time + self.request_total_audio_duration_ms / 1000.0)
+        # 使用累计时长计算是否忙碌
+        is_tts_busy = (self.accumulated_audio_duration_ms > 0 and
+                       time.time() < (self.tts_audio_start_time +
+                                       self.accumulated_audio_duration_ms / 1000.0))
         # 打印当前状态
         self.ten_env.log_info(
             f"[MainControlExtension] Current state: "
             f"LLM streaming={self.is_llm_streaming}, "
             f"TTS busy={is_tts_busy}, "
-            f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
-            f"TTS busy={is_tts_busy}"
+            f"accumulated_duration={self.accumulated_audio_duration_ms}ms"
             f"ASR result: text='{event.text}'"
             f"event.final={event.final}"
         )
@@ -260,29 +264,46 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
             request_id, _ = data.get_property_string("request_id")
-            # tts_audio_start_time 作为音频开始播放事件
-            self.tts_audio_start_time = time.time()
-            self.request_total_audio_duration_ms = 2000.0
+            # 新的 TTS 请求开始，重置状态
+            self.tts_audio_start_time = 0.0  # 将在第一个 tts_audio_end 时校正
+            self.accumulated_audio_duration_ms = 0
+            self._tts_start_time_calibrated = False
             self.ten_env.log_info(
                 f"[MainControlExtension] TTS audio started: request_id={request_id}, "
-                f"tts_audio_start_time={self.tts_audio_start_time:.2f}"
+                f"will calibrate start_time on first audio_end"
             )
         # 处理 TTS 音频结束事件
         elif data_name == "tts_audio_end":
             request_id, _ = data.get_property_string("request_id")
-            # 获取累计的音频播放时长
-            self.request_total_audio_duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
+            duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
+            reason, _ = data.get_property_int("reason")
+
+            # 只累加正常完成的音频（reason=1 是 REQUEST_END）
+            # reason=2 是 INTERRUPTED，不应该累加
+            if reason == 1:
+                self.accumulated_audio_duration_ms += duration_ms
+                # 第一次收到正常完成的音频时，校正 tts_audio_start_time
+                # 这样计算出的播放结束时间更准确
+                if not self._tts_start_time_calibrated:
+                    self.tts_audio_start_time = time.time() - (duration_ms / 1000.0)
+                    self._tts_start_time_calibrated = True
+                    self.ten_env.log_info(
+                        f"[MainControlExtension] Calibrated tts_audio_start_time to {self.tts_audio_start_time:.2f} "
+                        f"(based on first audio_end with duration={duration_ms}ms)"
+                    )
 
             self.ten_env.log_info(
                 f"[MainControlExtension] TTS audio ended: request_id={request_id}, "
-                f"self.request_total_audio_duration_ms={self.request_total_audio_duration_ms}ms"
+                f"duration_ms={duration_ms}, reason={reason}, "
+                f"accumulated={self.accumulated_audio_duration_ms}ms"
             )
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
-            # 打断时，重置所有 TTS 状态为空闲
-            self.tts_audio_start_time = time.time()
-            self.request_total_audio_duration_ms = 2000.0
-            self.ten_env.log_info("[MainControlExtension] TTS flush ended - TTS is now idle")
+            # 打断时清空累计时长和校准标记，表示没有待播放音频
+            self.accumulated_audio_duration_ms = 0
+            self._tts_start_time_calibrated = False
+            # 保持 tts_audio_start_time 不变
+            self.ten_env.log_info("[MainControlExtension] TTS flush ended - cleared accumulated duration")
 
         # 其他数据事件（非 TTS 事件）传递给 agent 处理
         elif data_name != "tts_audio_start" and data_name != "tts_audio_end" and data_name != "tts_flush_end":
@@ -366,17 +387,17 @@ class MainControlExtension(AsyncExtension):
         中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。
         该操作通常在检测到用户语音时触发。
         """
-        # tts_audio_start_time 作为音频开始播放时间
-        self.tts_audio_start_time: float = time.time()
-        # 当前音频流要播放累计的时间
-        self.request_total_audio_duration_ms = 2000.0
+        # 打断时清空累计时长和校准标记
+        self.accumulated_audio_duration_ms = 0
+        self._tts_start_time_calibrated = False
+        # 保持 tts_audio_start_time 不变
 
         await self.agent.flush_llm()
         await _send_data(
             self.ten_env, "tts_flush", "tts", {"flush_id": str(uuid.uuid4())}
         )
         await _send_cmd(self.ten_env, "flush", "agora_rtc")
-        self.ten_env.log_info("[MainControlExtension] Interrupt signal sent............................")
+        self.ten_env.log_info("[MainControlExtension] Interrupt signal sent")
 
     async def _check_interrupt_file(self):
         """定期检查 property.json 中的 interrupt 标记"""
