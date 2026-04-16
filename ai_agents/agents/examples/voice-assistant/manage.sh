@@ -28,7 +28,20 @@ print_error() {
 
 # 获取运行中的进程 PID
 get_running_pid() {
-    pgrep -f "task run" | head -1
+    # 检查通过 tman/task run 启动的进程
+    # 优先查找 bin/main 进程（实际运行的服务）
+    local pid=$(pgrep -f "bin/main.*voice-assistant" | head -1)
+
+    # 如果没找到，尝试其他可能的模式
+    if [ -z "$pid" ]; then
+        pid=$(pgrep -f "tman run start" | head -1)
+    fi
+
+    if [ -z "$pid" ]; then
+        pid=$(pgrep -f "task run" | head -1)
+    fi
+
+    echo "$pid"
 }
 
 # 检查服务是否正在运行
