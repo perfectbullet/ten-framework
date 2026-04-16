@@ -21,6 +21,7 @@ from ten_ai_base.message import (
 from ten_runtime import (
     AsyncTenEnv,
     AudioFrame,
+    Data
 )
 from ten_ai_base.const import (
     LOG_CATEGORY_VENDOR,
@@ -31,41 +32,27 @@ from ten_ai_base.dumper import Dumper
 from .reconnect_manager import ReconnectManager
 from .config import AliyunASRBigmodelConfig
 
-# Dashscope (cloud) imports
-import dashscope
-from dashscope.audio.asr import (
-    Recognition as DashscopeRecognition,
-    RecognitionCallback as DashscopeRecognitionCallback,
-    RecognitionResult as DashscopeRecognitionResult,
-    VocabularyService,
-)
-
-# FunASR (local) imports
+# FunASR (local server) imports
 from .funasr_adapter import (
     FunASRRecognition,
     FunASRRecognitionCallback,
     FunASRRecognitionResult,
 )
 
-# Type aliases for compatibility
-RecognitionCallback = DashscopeRecognitionCallback
-RecognitionResult = DashscopeRecognitionResult
-Recognition = DashscopeRecognition
 
+class FunASRCallback(FunASRRecognitionCallback):
+    """FunASR 回调处理类，桥接到扩展的异步事件循环"""
 
-class AliyunRecognitionCallback(RecognitionCallback):
-    """Aliyun ASR Recognition Callback Class"""
-
-    def __init__(self, extension_instance: "AliyunASRBigmodelExtension"):
+    def __init__(self, extension: "AliyunASRBigmodelExtension"):
         super().__init__()
-        self.extension = extension_instance
-        self.ten_env = extension_instance.ten_env
+        self.extension = extension
+        self.ten_env = extension.ten_env
         self.loop = asyncio.get_event_loop()
 
     def on_open(self) -> None:
         """Callback when connection is established"""
         self.ten_env.log_info(
-            "vendor_status_changed: on_open",
+            "FunASR connection opened",
             category=LOG_CATEGORY_VENDOR,
         )
         asyncio.run_coroutine_threadsafe(
@@ -78,19 +65,19 @@ class AliyunRecognitionCallback(RecognitionCallback):
             self.extension.on_asr_complete(), self.loop
         )
 
-    def on_error(self, result: RecognitionResult) -> None:
+    def on_error(self, result: FunASRRecognitionResult) -> None:
         """Error handling callback"""
         self.ten_env.log_error(
-            f"vendor_error: code: {result.status_code}, reason: {result.message}",
+            f"FunASR error: {result.message}",
             category=LOG_CATEGORY_VENDOR,
         )
         asyncio.run_coroutine_threadsafe(
             self.extension.on_asr_error(result), self.loop
         )
 
-    def on_event(self, result: RecognitionResult) -> None:
+    def on_event(self, result: FunASRRecognitionResult) -> None:
         """Recognition result event callback"""
-        self.ten_env.log_info(f"Aliyun ASR result event: {result}")
+        self.ten_env.log_debug(f"FunASR result event: {result}")
         asyncio.run_coroutine_threadsafe(
             self.extension.on_asr_event(result), self.loop
         )
@@ -98,7 +85,7 @@ class AliyunRecognitionCallback(RecognitionCallback):
     def on_close(self) -> None:
         """Callback when connection is closed"""
         self.ten_env.log_info(
-            "vendor_status_changed: on_close",
+            "FunASR connection closed",
             category=LOG_CATEGORY_VENDOR,
         )
         asyncio.run_coroutine_threadsafe(
@@ -112,19 +99,20 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     def __init__(self, name: str):
         super().__init__(name)
         self.connected: bool = False
-        self.recognition = None  # Can be DashscopeRecognition or FunASRRecognition
+        self.recognition: FunASRRecognition | None = None
         self.config: AliyunASRBigmodelConfig | None = None
         self.audio_dumper: Dumper | None = None
         self.sent_user_audio_duration_ms_before_last_reset: int = 0
         self.last_finalize_timestamp: int = 0
-        # Vocabulary service (Dashscope only)
-        self.service: VocabularyService = VocabularyService()
 
         # Reconnection manager
         self.reconnect_manager: ReconnectManager | None = None
 
-        # Callback instance (can be Aliyun or FunASR)
-        self.recognition_callback = None
+        # Callback instance
+        self.recognition_callback: FunASRCallback | None = None
+
+        # Flag to track if connection close is expected (e.g., after finalize)
+        self._closing_intentionally: bool = False
 
     @override
     async def on_deinit(self, ten_env: AsyncTenEnv) -> None:
@@ -135,11 +123,22 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             self.audio_dumper = None
 
     @override
+    async def on_data(self, ten_env: AsyncTenEnv, data: Data) -> None:
+        """Handle incoming data"""
+        data_name = data.get_name()
+        ten_env.log_info(f"asr on_data: data_name {data_name}")
+        # Handle end_of_audio message from test
+        if data_name == "end_of_audio":
+            self.ten_env.log_info("Received end_of_audio, calling finalize")
+            await self.finalize(session_id=None)
+            return
+        # Call parent's on_data for other messages
+        await super().on_data(ten_env, data)
+
+    @override
     def vendor(self) -> str:
-        """Get ASR vendor name"""
-        if self.config and self.config.asr_backend == "funasr":
-            return "funasr_local"
-        return "aliyun_bigmodel"
+        """获取 ASR 厂商名称"""
+        return "funasr_local"
 
     @override
     async def on_init(self, ten_env: AsyncTenEnv) -> None:
@@ -155,25 +154,12 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 config_json
             )
 
-            if temp_config.model == "":
-                temp_config.model = "paraformer-realtime-v2"
-
             self.config = temp_config
             self.config.update(self.config.params)
             ten_env.log_info(
-                f"Aliyun ASR config: {self.config.to_json(sensitive_handling=True)}",
+                f"FunASR ASR config: {self.config.to_json()}",
                 category=LOG_CATEGORY_KEY_POINT,
             )
-            # Initialize Dashscope with API key
-            dashscope.api_key = self.config.api_key
-
-            # Initialize vocabulary service
-            if len(self.config.vocabulary_list) > 0:
-                self.config.vocabulary_id = self.service.create_vocabulary(
-                    prefix=self.config.vocabulary_prefix,
-                    target_model=self.config.vocabulary_target_model,
-                    vocabulary=self.config.vocabulary_list,
-                )
 
             if self.config.dump:
                 dump_file_path = os.path.join(
@@ -182,7 +168,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 self.audio_dumper = Dumper(dump_file_path)
 
         except Exception as e:
-            ten_env.log_error(f"Invalid Aliyun ASR config: {e}")
+            ten_env.log_error(f"Invalid FunASR ASR config: {e}")
             self.config = AliyunASRBigmodelConfig.model_validate_json("{}")
             await self.send_asr_error(
                 ModuleError(
@@ -194,32 +180,22 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
     @override
     async def start_connection(self) -> None:
-        """Start ASR connection (supports both Dashscope and FunASR backends)"""
+        """启动 FunASR ASR 连接"""
         assert self.config is not None
-        
-        backend = self.config.asr_backend
-        self.ten_env.log_info(f"Starting ASR connection with backend: {backend}")
 
         try:
-            # Stop existing connection
             await self.stop_connection()
 
-            # Start audio dumper
             if self.audio_dumper:
                 await self.audio_dumper.start()
 
-            if backend == "funasr":
-                # FunASR local server backend
-                await self._start_funasr_connection()
-            else:
-                # Dashscope cloud backend (default)
-                await self._start_dashscope_connection()
-                
-            self.ten_env.log_info(f"ASR connection started successfully with {backend}")
+            await self._start_funasr_connection()
+
+            self.ten_env.log_info("FunASR ASR connection started successfully")
 
         except Exception as e:
             self.ten_env.log_error(
-                f"Failed to start ASR connection with {backend}: {e}"
+                f"Failed to start FunASR connection: {e}"
             )
             await self.send_asr_error(
                 ModuleError(
@@ -229,99 +205,10 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 ),
             )
 
-    async def _start_dashscope_connection(self) -> None:
-        """Start Dashscope (Aliyun Cloud) ASR connection"""
-        # Check API key
-        if not self.config.api_key or self.config.api_key.strip() == "":
-            error_msg = (
-                "Aliyun API key is required but not provided or is empty"
-            )
-            self.ten_env.log_error(error_msg)
-            await self.send_asr_error(
-                ModuleError(
-                    module=MODULE_NAME_ASR,
-                    code=ModuleErrorCode.FATAL_ERROR.value,
-                    message=error_msg,
-                ),
-            )
-            return
-
-        # Create callback instance
-        self.recognition_callback = AliyunRecognitionCallback(self)
-
-        # Create recognition instance
-        self.recognition = DashscopeRecognition(
-            model=self.config.model,
-            format="pcm",
-            language_hints=self.config.language_hints,
-            sample_rate=self.config.sample_rate,
-            disfluency_removal_enabled=self.config.disfluency_removal_enabled,
-            semantic_punctuation_enabled=self.config.semantic_punctuation_enabled,
-            multi_threshold_mode_enabled=self.config.multi_threshold_mode_enabled,
-            punctuation_prediction_enabled=self.config.punctuation_prediction_enabled,
-            inverse_text_normalization_enabled=self.config.inverse_text_normalization_enabled,
-            heartbeat=self.config.heartbeat,
-            max_sentence_silence=self.config.max_sentence_silence,
-            vocabulary_id=self.config.vocabulary_id,
-            callback=self.recognition_callback,
-        )
-
-        # Start recognition
-        self.recognition.start()
-
     async def _start_funasr_connection(self) -> None:
-        """Start FunASR (Local Server) ASR connection"""
-        # Create FunASR callback adapter
-        class FunASRCallbackAdapter(FunASRRecognitionCallback):
-            """Adapter to bridge FunASR callbacks to extension methods"""
-            def __init__(self, extension):
-                super().__init__()
-                self.extension = extension
-                self.ten_env = extension.ten_env
-                self.loop = asyncio.get_event_loop()
+        """启动 FunASR WebSocket ASR 连接"""
+        self.recognition_callback = FunASRCallback(self)
 
-            def on_open(self) -> None:
-                self.ten_env.log_info(
-                    "vendor_status_changed: on_open (FunASR)",
-                    category=LOG_CATEGORY_VENDOR,
-                )
-                asyncio.run_coroutine_threadsafe(
-                    self.extension.on_asr_open(), self.loop
-                )
-
-            def on_complete(self) -> None:
-                asyncio.run_coroutine_threadsafe(
-                    self.extension.on_asr_complete(), self.loop
-                )
-
-            def on_error(self, result: FunASRRecognitionResult) -> None:
-                self.ten_env.log_error(
-                    f"vendor_error (FunASR): {result.message}",
-                    category=LOG_CATEGORY_VENDOR,
-                )
-                asyncio.run_coroutine_threadsafe(
-                    self.extension.on_asr_error(result), self.loop
-                )
-
-            def on_event(self, result: FunASRRecognitionResult) -> None:
-                self.ten_env.log_info(f"FunASR result event: {result}")
-                asyncio.run_coroutine_threadsafe(
-                    self.extension.on_asr_event(result), self.loop
-                )
-
-            def on_close(self) -> None:
-                self.ten_env.log_info(
-                    "vendor_status_changed: on_close (FunASR)",
-                    category=LOG_CATEGORY_VENDOR,
-                )
-                asyncio.run_coroutine_threadsafe(
-                    self.extension.on_asr_close(), self.loop
-                )
-
-        # Create callback instance
-        self.recognition_callback = FunASRCallbackAdapter(self)
-
-        # Create FunASR recognition instance
         self.recognition = FunASRRecognition(
             host=self.config.funasr_host,
             port=self.config.funasr_port,
@@ -338,12 +225,11 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             itn=self.config.funasr_itn,
         )
 
-        # Start recognition
         self.recognition.start()
 
     async def on_asr_open(self) -> None:
         """Handle callback when connection is established"""
-        self.ten_env.log_info("Aliyun ASR connection opened")
+        self.ten_env.log_info("FunASR ASR connection opened")
         self.connected = True
         # Reset timeline and audio duration
         self.sent_user_audio_duration_ms_before_last_reset += (
@@ -353,11 +239,11 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
     async def on_asr_complete(self) -> None:
         """Handle callback when recognition is completed"""
-        self.ten_env.log_info("Aliyun ASR recognition completed")
+        self.ten_env.log_info("FunASR ASR recognition completed")
 
-    async def on_asr_error(self, result: RecognitionResult) -> None:
+    async def on_asr_error(self, result: FunASRRecognitionResult) -> None:
         """Handle error callback"""
-        self.ten_env.log_error(f"Aliyun ASR error: {result.message}")
+        self.ten_env.log_error(f"FunASR ASR error: {result.message}")
         # Send error information
         await self.send_asr_error(
             ModuleError(
@@ -376,60 +262,53 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             ),
         )
 
-    async def on_asr_event(self, result: RecognitionResult) -> None:
-        """Handle recognition result event callback"""
+    async def on_asr_event(self, result: FunASRRecognitionResult) -> None:
+        """处理识别结果事件回调"""
         try:
-            # Notify reconnect manager of successful connection
+            # 通知重连管理器连接成功
             if self.reconnect_manager and self.connected:
                 self.reconnect_manager.mark_connection_successful()
 
             self.ten_env.log_debug(
-                f"vendor_result: on_event: {result}",
+                f"FunASR result: {result}",
                 category=LOG_CATEGORY_VENDOR,
             )
 
             sentence = result.get_sentence()
-            if (
-                isinstance(sentence, dict)
-                and "text" in sentence
-                and sentence["text"]
-            ):
+            if isinstance(sentence, dict) and "text" in sentence and sentence["text"]:
                 text = sentence["text"]
-                is_final = RecognitionResult.is_sentence_end(sentence)
+                is_final = FunASRRecognitionResult.is_sentence_end(sentence)
 
-                # Calculate timestamps
+                # 从 stamp_sents 提取时间戳（仅最终结果有此字段）
                 start_ms = int(sentence.get("begin_time", 0) or 0)
                 end_ms = int(sentence.get("end_time", 0) or 0)
 
-                # If end_time is 0 or None, get end_time from the last word
+                # 如果有词级时间戳，从最后一个词获取结束时间
                 if end_ms == 0 and "words" in sentence and sentence["words"]:
-                    words = sentence["words"]
-                    if words and len(words) > 0:
-                        last_word = words[-1]
-                        if "end_time" in last_word and last_word["end_time"]:
-                            end_ms = int(last_word["end_time"])
-                            self.ten_env.log_debug(
-                                f"Using last word end_time: {end_ms} as sentence end_time"
-                            )
+                    last_word = sentence["words"][-1]
+                    if "end_time" in last_word and last_word["end_time"]:
+                        end_ms = int(last_word["end_time"])
+                        self.ten_env.log_debug(
+                            f"Using last word end_time: {end_ms} as sentence end_time"
+                        )
 
                 duration_ms = end_ms - start_ms if end_ms > start_ms else 0
 
-                # Calculate actual start time (only if valid timestamps available)
+                # 计算实际起始时间（映射到全局时间轴）
                 if start_ms > 0:
                     actual_start_ms = int(
                         self.audio_timeline.get_audio_duration_before_time(start_ms)
                         + self.sent_user_audio_duration_ms_before_last_reset
                     )
                 else:
-                    # No valid timestamps, use 0 as fallback
                     actual_start_ms = 0
 
                 self.ten_env.log_debug(
-                    f"Aliyun ASR result: {text}, is_final: {is_final}, "
+                    f"FunASR result: {text}, is_final: {is_final}, "
                     f"start_ms: {actual_start_ms}, duration_ms: {duration_ms}"
                 )
 
-                # Process ASR result
+                # 处理 ASR 结果
                 if self.config is not None:
                     await self._handle_asr_result(
                         text=text,
@@ -444,18 +323,22 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                     )
 
         except Exception as e:
-            self.ten_env.log_error(f"Error processing Aliyun ASR result: {e}")
+            self.ten_env.log_error(f"Error processing FunASR result: {e}")
 
     async def on_asr_close(self) -> None:
         """Handle callback when connection is closed"""
-        self.ten_env.log_debug("Aliyun ASR connection closed")
+        self.ten_env.log_debug("FunASR ASR connection closed")
         self.connected = False
 
-        if not self.stopped:
+        # Only reconnect if this was an unexpected close (not intentional)
+        if not self._closing_intentionally and not self.stopped:
             self.ten_env.log_warn(
-                "Aliyun ASR connection closed unexpectedly. Reconnecting..."
+                "FunASR ASR connection closed unexpectedly. Reconnecting..."
             )
             await self._handle_reconnect()
+        else:
+            # Reset the intentional close flag for next connection
+            self._closing_intentionally = False
 
     @override
     async def finalize(self, session_id: str | None) -> None:
@@ -464,14 +347,12 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         self.last_finalize_timestamp = int(datetime.now().timestamp() * 1000)
         self.ten_env.log_info(
-            f"vendor_cmd: finalize start at {self.last_finalize_timestamp}",
+            f"FunASR finalize start at {self.last_finalize_timestamp}",
             category=LOG_CATEGORY_VENDOR,
         )
 
-        if self.config.finalize_mode == "disconnect":
-            await self._handle_finalize_disconnect()
-        elif self.config.finalize_mode == "mute_pkg":
-            await self._handle_finalize_mute_pkg()
+        # FunASR uses send_audio_frame with is_speaking: false to finalize
+        await self._handle_finalize_funasr()
 
     def _clean_leading_punctuation(self, text: str) -> str:
         """Remove leading punctuation from ASR result text."""
@@ -509,27 +390,17 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         await self.send_asr_result(asr_result)
 
-    async def _handle_finalize_disconnect(self):
-        """Handle disconnect mode finalization"""
-        if self.recognition:
-            if self.is_connected():
-                self.recognition.stop()
-            else:
-                self.ten_env.log_debug(
-                    "Aliyun ASR finalize disconnect completed, but not connected"
-                )
-
-    async def _handle_finalize_mute_pkg(self):
-        """Handle mute package mode finalization"""
-        # Send silence package
-        if self.recognition and self.config:
-            mute_pkg_duration_ms = self.config.mute_pkg_duration_ms
-            silence_duration = mute_pkg_duration_ms / 1000.0
-            silence_samples = int(self.config.sample_rate * silence_duration)
-            silence_data = b"\x00" * (silence_samples * 2)  # 16-bit samples
-            self.audio_timeline.add_silence_audio(mute_pkg_duration_ms)
-            self.recognition.send_audio_frame(silence_data)
-            self.ten_env.log_debug("Aliyun ASR finalize mute package sent")
+    async def _handle_finalize_funasr(self):
+        """Handle FunASR finalization by sending is_speaking: false"""
+        if self.recognition and self.recognition.is_running():
+            self.ten_env.log_debug("FunASR finalize: waiting for queue to drain before sending stop")
+            self.ten_env.log_debug("FunASR finalize: sending is_speaking: false")
+            # Set flag to indicate intentional close, so on_asr_close won't try to reconnect
+            self._closing_intentionally = True
+            # 发送结束标记
+            self.recognition.stop()
+        else:
+            self.ten_env.log_debug("FunASR finalize: recognition not running")
 
     async def _handle_reconnect(self):
         """Handle reconnection"""
@@ -571,7 +442,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             timestamp = int(datetime.now().timestamp() * 1000)
             latency = timestamp - self.last_finalize_timestamp
             self.ten_env.log_debug(
-                f"Aliyun ASR finalize end at {timestamp}, latency: {latency}ms"
+                f"FunASR finalize end at {timestamp}, latency: {latency}ms"
             )
             self.last_finalize_timestamp = 0
             await self.send_asr_finalize_end()
@@ -585,10 +456,10 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
             self.recognition_callback = None
             self.connected = False
-            self.ten_env.log_info("Aliyun ASR connection stopped")
+            self.ten_env.log_info("FunASR ASR connection stopped")
 
         except Exception as e:
-            self.ten_env.log_error(f"Error stopping Aliyun ASR connection: {e}")
+            self.ten_env.log_error(f"Error stopping FunASR connection: {e}")
 
     @override
     def is_connected(self) -> bool:
@@ -615,9 +486,10 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         """Send audio data"""
         assert self.config is not None
 
-        if not self.recognition:
+        if not self.recognition or not self.connected:
             return False
 
+        buf = None
         try:
             buf = frame.lock_buf()
             audio_data = bytes(buf)
@@ -631,24 +503,23 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 int(len(audio_data) / (self.config.sample_rate / 1000 * 2))
             )
 
-            # self.ten_env.log_info(f"Sending audio data: {len(audio_data)} bytes")
-
-            # Send audio data to recognition service
+            # Send audio data to FunASR recognition service
             try:
                 self.recognition.send_audio_frame(audio_data)
-                # self.ten_env.log_info("Audio frame sent successfully")
             except Exception as e:
-                self.ten_env.log_error(f"Error in send_audio_frame: {e}")
+                # 如果是 WebSocket 已关闭相关的错误，静默处理
+                error_msg = str(e)
+                if "WebSocket" in error_msg or "closed" in error_msg.lower() or "not running" in error_msg.lower():
+                    self.ten_env.log_debug("WebSocket closed, discarding audio frame")
+                else:
+                    self.ten_env.log_error(f"Error in send_audio_frame: {e}")
                 return False
 
             frame.unlock_buf(buf)
-            # self.ten_env.log_info("Audio frame successfully processed, returning True")
             return True
 
         except Exception as e:
-            self.ten_env.log_error(f"Error sending audio to Aliyun ASR: {e}")
-            frame.unlock_buf(buf)
-            self.ten_env.log_error(
-                "Failed to process audio frame, returning False"
-            )
+            self.ten_env.log_error(f"Error sending audio to FunASR: {e}")
+            if buf is not None:
+                frame.unlock_buf(buf)
             return False

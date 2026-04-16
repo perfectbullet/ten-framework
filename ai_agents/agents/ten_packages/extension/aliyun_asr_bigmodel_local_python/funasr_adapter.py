@@ -15,10 +15,12 @@ import json
 import ssl
 import threading
 import time
-import traceback
+import wave
 from queue import Queue, Empty
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from websocket import ABNF, create_connection
+from pathlib import Path
+from datetime import datetime
 
 
 class FunASRRecognitionResult:
@@ -27,7 +29,7 @@ class FunASRRecognitionResult:
     def __init__(self, message: Dict[str, Any]):
         """
         Initialize from FunASR WebSocket message.
-        
+
         Args:
             message: Raw message from FunASR WebSocket
                 Example interim: {'is_final': False, 'mode': '2pass-online', 'text': '家来', 'wav_name': 'default'}
@@ -38,7 +40,7 @@ class FunASRRecognitionResult:
         self.request_id = message.get("wav_name", "default")
         self.code = None
         self.message = ""
-        
+
         # Build output structure compatible with Dashscope
         self.output = self._build_output(message)
 
@@ -47,29 +49,30 @@ class FunASRRecognitionResult:
         text = message.get("text", "")
         mode = message.get("mode", "")
         is_final = message.get("is_final", False) or mode == "2pass-offline"
-        
+
         # Build sentence structure
         sentence = {
             "text": text,
             "begin_time": 0,
             "end_time": 0,
-            "words": []
+            "words": [],
+            "final": is_final
         }
-        
+
         # Extract timing information from stamp_sents if available (final results)
         if "stamp_sents" in message and message["stamp_sents"]:
             stamp_sent = message["stamp_sents"][0]  # Use first sentence
             sentence["begin_time"] = stamp_sent.get("start", 0)
             sentence["end_time"] = stamp_sent.get("end", 0)
-            
+
             # Build words list with timestamps from ts_list
             text_seg = stamp_sent.get("text_seg", "")
             ts_list = stamp_sent.get("ts_list", [])
-            
+
             if text_seg and ts_list:
                 # Split text_seg by spaces to get individual words
                 words_text = [w for w in text_seg.split() if w]
-                
+
                 # Match words with timestamps
                 for i, word_text in enumerate(words_text):
                     if i < len(ts_list):
@@ -79,7 +82,7 @@ class FunASRRecognitionResult:
                             "end_time": ts_list[i][1]
                         }
                         sentence["words"].append(word_info)
-        
+
         return {
             "sentence": sentence,
             "final": is_final
@@ -126,7 +129,7 @@ class FunASRRecognitionCallback:
 class FunASRRecognition:
     """
     FunASR WebSocket Recognition client with Dashscope-compatible interface.
-    
+
     This class adapts the FunASR WebSocket API to match Dashscope's Recognition interface,
     enabling drop-in replacement in the TEN Framework extension.
     """
@@ -150,7 +153,7 @@ class FunASRRecognition:
     ):
         """
         Initialize FunASR WebSocket recognition client.
-        
+
         Args:
             host: FunASR server host
             port: FunASR server port
@@ -177,13 +180,13 @@ class FunASRRecognition:
         self.sample_rate = sample_rate
         self.format = format
         self.kwargs = kwargs
-        
+
         # Connection state
         self.websocket = None
-        self._running = False
         self._thread_recv = None
         self.msg_queue = Queue()
-        
+        self._offline_msg_done = False  # 跟踪是否收到最终结果（is_final == True）
+
         # Asyncio event loop for thread-safe callbacks
         self.loop: Optional[asyncio.AbstractEventLoop] = None
         try:
@@ -192,24 +195,53 @@ class FunASRRecognition:
             # No event loop in current thread
             pass
 
+        # Message counter for JSON file naming
+        self._msg_counter = 0
+        self._json_output_dir = Path("msg_dict_json")
+        self._json_output_dir.mkdir(exist_ok=True)
+
+        # Audio data buffer for debugging (collects all sent audio data)
+        self._audio_data_buffer: List[bytes] = []
+        self._audio_dump_dir = Path("send_audio_save")
+        self._audio_dump_enabled: bool = True
+
+    def _save_msg_dict_to_json(self, msg_dict: Dict[str, Any]) -> None:
+        """
+        Save msg_dict to a JSON file with timestamp.
+
+        Args:
+            msg_dict: The message dictionary to save
+        """
+        try:
+            self._msg_counter += 1
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Remove last 3 digits of microseconds
+            filename = f"msg_{self._msg_counter:04d}_{timestamp}.json"
+            filepath = self._json_output_dir / filename
+
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(msg_dict, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            # Silently fail to avoid disrupting the main recognition flow
+            print(f"Failed to save msg_dict to JSON: {e}")
+
     def start(self, **kwargs) -> None:
         """
         Start WebSocket connection and recognition (compatible with Dashscope API).
-        
+
         Args:
             **kwargs: Additional parameters to override initialization values
         """
-        if self._running:
+        if self.websocket is not None:
             raise RuntimeError("Recognition is already running")
-        
+
         # Update parameters if provided
         self.kwargs.update(kwargs)
-        
+
         try:
             # Build WebSocket URI
             protocol = "wss" if self.is_ssl else "ws"
             uri = f"{protocol}://{self.host}:{self.port}"
-            
+
             # Create SSL context for WSS
             if self.is_ssl:
                 ssl_context = ssl.SSLContext()
@@ -219,15 +251,20 @@ class FunASRRecognition:
             else:
                 ssl_context = None
                 ssl_opt = None
-            
+
             # Establish WebSocket connection
             self.websocket = create_connection(uri, sslopt=ssl_opt, ssl=ssl_context)
-            self._running = True
-            
+            self._offline_msg_done = False  # 重置最终结果标志
+
             # Start message receiving thread
             self._thread_recv = threading.Thread(target=self._thread_receive_messages, daemon=True)
             self._thread_recv.start()
-            
+
+            # Create audio dump directory if enabled
+            if self._audio_dump_enabled:
+                self._audio_dump_dir.mkdir(exist_ok=True)
+                print(f"[Audio Dump] Audio dump enabled, saving to: {self._audio_dump_dir.absolute()}")
+
             # Send initialization message
             chunk_size_list = [int(x) for x in self.chunk_size.split(",")]
             init_message = {
@@ -238,24 +275,24 @@ class FunASRRecognition:
                 "is_speaking": True,
                 "itn": self.kwargs.get("itn", True),
             }
-            
+
             # Add hotwords if provided
             if "hotwords" in self.kwargs:
                 init_message["hotwords"] = self.kwargs["hotwords"]
-            
+
             # Add other FunASR-specific parameters
             for key in ["encoder_chunk_look_back", "decoder_chunk_look_back"]:
                 if key in self.kwargs:
                     init_message[key] = self.kwargs[key]
-            
+
             self.websocket.send(json.dumps(init_message))
-            
+
             # Trigger on_open callback
             if self.callback:
                 self._safe_callback(self.callback.on_open)
-            
+
         except Exception as e:
-            self._running = False
+            self.websocket = None
             error_result = FunASRRecognitionResult({
                 "text": "",
                 "error": str(e),
@@ -263,7 +300,7 @@ class FunASRRecognition:
             })
             error_result.status_code = 500
             error_result.message = f"Failed to connect to FunASR server: {e}"
-            
+
             if self.callback:
                 self._safe_callback(self.callback.on_error, error_result)
             raise
@@ -271,26 +308,36 @@ class FunASRRecognition:
     def _thread_receive_messages(self) -> None:
         """Background thread to receive WebSocket messages and trigger callbacks."""
         try:
-            while self._running:
+            while self.websocket is not None:
                 try:
                     msg = self.websocket.recv()
                     if msg is None or len(msg) == 0:
                         continue
-                    
+
                     # Parse JSON message
                     msg_dict = json.loads(msg)
+
+                    # 检测最终结果，设置标志（参考 funasr_wss_client.py 第 255-256 行）
+                    is_final = msg_dict.get("is_final", False) or msg_dict.get("mode") == "2pass-offline"
+                    if is_final:
+                        self._offline_msg_done = True
+
+                    # Save msg_dict to JSON file
+                    self._save_msg_dict_to_json(msg_dict)
+
                     result = FunASRRecognitionResult(msg_dict)
-                    
+
                     # Queue the message for potential synchronous access
                     self.msg_queue.put(msg_dict)
-                    
+
                     # Trigger on_event callback
                     if self.callback:
                         self._safe_callback(self.callback.on_event, result)
-                    
+
                 except Exception as e:
-                    if self._running:
-                        # Only report errors if we're still supposed to be running
+                    # WebSocket 关闭或其他异常
+                    if self.websocket is not None:
+                        # 只有在 websocket 还存在时才报告错误
                         error_result = FunASRRecognitionResult({
                             "text": "",
                             "error": str(e),
@@ -298,7 +345,7 @@ class FunASRRecognition:
                         })
                         error_result.status_code = 500
                         error_result.message = f"Error receiving message: {e}"
-                        
+
                         if self.callback:
                             self._safe_callback(self.callback.on_error, error_result)
                     break
@@ -310,7 +357,7 @@ class FunASRRecognition:
     def _safe_callback(self, callback_func, *args) -> None:
         """
         Safely invoke callback function in asyncio event loop context.
-        
+
         This ensures thread-safe callback execution when callbacks are coroutines
         or need to interact with asyncio-based code.
         """
@@ -327,63 +374,127 @@ class FunASRRecognition:
     def send_audio_frame(self, audio_data: bytes) -> None:
         """
         Send audio frame to FunASR server (compatible with Dashscope API).
-        
+
         Args:
             audio_data: Raw audio bytes (PCM format)
         """
-        if not self._running or not self.websocket:
-            raise RuntimeError("Recognition is not running")
-        
+        if self.websocket is None:
+            # WebSocket 已关闭，静默返回而不是抛出异常
+            return
+
         try:
+            # Collect audio data for debugging
+            if self._audio_dump_enabled:
+                self._audio_data_buffer.append(audio_data)
+
             self.websocket.send(audio_data, ABNF.OPCODE_BINARY)
         except Exception as e:
-            error_result = FunASRRecognitionResult({
-                "text": "",
-                "error": str(e),
-                "is_final": False
-            })
-            error_result.status_code = 500
-            error_result.message = f"Error sending audio frame: {e}"
-            
-            if self.callback:
-                self._safe_callback(self.callback.on_error, error_result)
-            raise
+            # 连接已关闭或其他错误，不是致命问题
+            # 静默处理，让调用方决定是否重试
+            pass
 
-    def stop(self, timeout: float = 1.0) -> None:
+    def _save_as_wav(self, pcm_data: bytes, wav_path: Path, sample_rate: int) -> None:
+        """
+        Save PCM data as WAV file with proper header.
+
+        Args:
+            pcm_data: Raw PCM audio data (16-bit, mono)
+            wav_path: Output WAV file path
+            sample_rate: Sample rate (e.g., 16000)
+        """
+        try:
+            with wave.open(str(wav_path), 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(2)  # 16-bit = 2 bytes
+                wav_file.setframerate(sample_rate)
+                wav_file.writeframes(pcm_data)
+            print(f"[Audio Dump] WAV file saved: {wav_path}")
+        except Exception as e:
+            print(f"[Audio Dump] Failed to save WAV file: {e}")
+
+    def _save_audio_dump(self) -> None:
+        """
+        Save collected audio data to PCM and WAV files.
+        Called when WebSocket connection is closed.
+        """
+        try:
+            # Generate timestamp-based filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base_filename = f"asr_audio_dump_{timestamp}"
+
+            # Merge all audio chunks
+            combined_pcm = b"".join(self._audio_data_buffer)
+            total_bytes = len(combined_pcm)
+
+            # Calculate duration (16-bit mono PCM: 2 bytes per sample)
+            duration_seconds = total_bytes / (self.sample_rate * 2)
+
+            # Save as PCM
+            pcm_path = self._audio_dump_dir / f"{base_filename}.pcm"
+            with open(pcm_path, "wb") as f:
+                f.write(combined_pcm)
+
+            # Save as WAV (with proper header for easy playback)
+            wav_path = self._audio_dump_dir / f"{base_filename}.wav"
+            self._save_as_wav(combined_pcm, wav_path, self.sample_rate)
+
+            print(f"[Audio Dump] Audio dump saved:")
+            print(f"[Audio Dump]   - PCM: {pcm_path}")
+            print(f"[Audio Dump]   - WAV: {wav_path}")
+            print(f"[Audio Dump]   - Total bytes: {total_bytes}")
+            print(f"[Audio Dump]   - Duration: ~{duration_seconds:.1f} seconds @ {self.sample_rate}Hz 16bit mono")
+
+            # Clear buffer for next session
+            self._audio_data_buffer.clear()
+
+        except Exception as e:
+            print(f"[Audio Dump] Failed to save audio dump: {e}")
+
+    def stop(self, timeout: float = 2.0) -> None:
         """
         Stop recognition and close WebSocket connection (compatible with Dashscope API).
-        
+
         Args:
-            timeout: Time to wait for final results before closing
+            timeout: Base time to wait before checking for final results
         """
-        if not self._running:
-            return
-        
+        if self.websocket is None:
+            return  # 已经停止
+
         try:
             # Send end-of-speech message
-            if self.websocket:
-                end_message = json.dumps({"is_speaking": False})
-                self.websocket.send(end_message)
-                
-                # Wait for final results
-                time.sleep(timeout)
-                
-                # Close WebSocket
-                self.websocket.close()
-        except Exception as e:
+            end_message = json.dumps({"is_speaking": False})
+            self.websocket.send(end_message)
+
+            # Wait base time (参考 funasr_wss_client.py 第 226 行)
+            time.sleep(timeout)
+
+            # 循环等待最终结果（参考 funasr_wss_client.py 第 231-232 行）
+            # 最多等待 10 秒，避免无限等待
+            for _ in range(10):
+                if self._offline_msg_done:
+                    break
+                time.sleep(1)
+
+            # Close WebSocket
+            self.websocket.close()
+        except Exception:
             # Log error but continue cleanup
             pass
         finally:
-            self._running = False
+            # 先关闭 websocket，这样残留的 send_audio_frame 会自然失败
             self.websocket = None
-            
+
+            # Save audio dump if enabled and data was collected
+            if self._audio_dump_enabled and self._audio_data_buffer:
+                self._save_audio_dump()
+
             # Trigger on_complete callback
             if self.callback:
                 self._safe_callback(self.callback.on_complete)
 
     def is_running(self) -> bool:
         """Check if recognition is currently running."""
-        return self._running
+        return self.websocket is not None and self._thread_recv is not None and self._thread_recv.is_alive()
 
     def get_last_message(self) -> Optional[Dict[str, Any]]:
         """Get the last message from queue (for synchronous usage patterns)."""

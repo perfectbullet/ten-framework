@@ -177,3 +177,13 @@ ai_agents/vad_speech_*.wav
 ai_agents/agents/examples/voice-assistant/tenapp/property.json
 ai_agents/agents/examples/voice-assistant/tenapp/property-233-配置-20260402.json
 ai_agents/agents/examples/voice-assistant/tenapp/property.json
+
+msg_dict_json
+aliyun_asr_bigmodel_local_python-bak
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/no-asyncio的影响.txt
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/docs/测试点记录.txt
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/send_audio_save/asr_audio_dump_20260416_141015.wav
+
+ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/send_audio_save
+
+ai_agents/agents/examples/voice-assistant/tenapp/send_audio_save

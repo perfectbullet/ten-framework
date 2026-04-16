@@ -1,18 +1,15 @@
 {
     "params": {
-        "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|}",
         "asr_backend": "funasr",
-        "funasr_host": "192.168.8.230",
-        "funasr_port": "30095",
+        "funasr_host": "192.168.8.233",
+        "funasr_port": "10095",
         "funasr_is_ssl": false,
         "funasr_chunk_size": "5,10,5",
         "funasr_chunk_interval": 10,
         "funasr_mode": "2pass",
         "funasr_hotwords": "",
         "funasr_itn": true,
-        "language_hints": [
-            "zh"
-        ],
+        "language_hints": ["zh"],
         "sample_rate": 16000
     }
 }

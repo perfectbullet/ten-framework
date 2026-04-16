@@ -23,26 +23,11 @@
                         "asr_backend": {
                             "type": "string"
                         },
-                        "api_key": {
-                            "type": "string"
-                        },
                         "language_hints": {
                             "type": "array",
                             "items": {
                                 "type": "string"
                             }
-                        },
-                        "model": {
-                            "type": "string"
-                        },
-                        "finalize_mode": {
-                            "type": "string"
-                        },
-                        "mute_pkg_duration_ms": {
-                            "type": "int64"
-                        },
-                        "max_sentence_silence": {
-                            "type": "int64"
                         },
                         "sample_rate": {
                             "type": "int64"
@@ -70,6 +55,12 @@
                         },
                         "funasr_itn": {
                             "type": "bool"
+                        },
+                        "dump": {
+                            "type": "bool"
+                        },
+                        "dump_path": {
+                            "type": "string"
                         }
                     }
                 }

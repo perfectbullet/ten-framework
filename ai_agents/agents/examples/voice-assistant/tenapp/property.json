@@ -33,8 +33,8 @@
                   "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|no_api_key}",
                   "asr_backend": "funasr",
                   "funasr_host": "192.168.8.233",
-                  "funasr_port": "30095",
-                  "funasr_is_ssl": true,
+                  "funasr_port": "10095",
+                  "funasr_is_ssl": false,
                   "funasr_chunk_size": "5,10,5",
                   "funasr_chunk_interval": 10,
                   "funasr_mode": "offline",
@@ -180,6 +180,19 @@
                   "source": [
                     {
                       "extension": "tts"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "stt",
+              "data": [
+                {
+                  "name": "asr_finalize",
+                  "source": [
+                    {
+                      "extension": "main_control"
                     }
                   ]
                 }
