@@ -90,7 +90,10 @@ class FunASRRecognitionResult:
 
     def get_sentence(self) -> Dict[str, Any]:
         """Get the sentence structure (compatible with Dashscope API)."""
-        return self.output.get("sentence", {})
+        sentence = self.output.get("sentence", {}).copy()
+        # Add final field to sentence for compatibility with is_sentence_end()
+        sentence["final"] = self.output.get("final", False)
+        return sentence
 
     @staticmethod
     def is_sentence_end(sentence: Dict[str, Any]) -> bool:

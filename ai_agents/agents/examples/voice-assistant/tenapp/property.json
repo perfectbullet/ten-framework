@@ -117,6 +117,7 @@
                 "min_silence_duration_ms": 1000,
                 "speech_pad_ms": 30,
                 "chunk_size": 512,
+                "passthrough": true,
                 "dump": true,
                 "dump_path": "./vad_dump",
                 "enable_asr": false
@@ -236,10 +237,20 @@
                   "name": "pcm_frame",
                   "dest": [
                     {
-                      "extension": "stt"
-                    },
-                    {
                       "extension": "vad"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "vad",
+              "audio_frame": [
+                {
+                  "name": "pcm_frame",
+                  "dest": [
+                    {
+                      "extension": "stt"
                     }
                   ]
                 }

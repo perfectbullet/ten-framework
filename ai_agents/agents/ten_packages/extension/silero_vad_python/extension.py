@@ -394,8 +394,8 @@ class SileroVADPythonExtension(AsyncExtension):
         frame_buf = audio_frame.get_buf()
         self._dump_audio_if_needed(frame_buf, "in")
 
-        # Optional passthrough - forward audio unchanged if enabled
-        if self.config.passthrough:
+        # Optional passthrough - forward audio ONLY when speech is detected
+        if self.config.passthrough and self.is_speech_active:
             await self._send_audio_frame(ten_env, frame_buf)
 
         # Cache audio for speech segment saving
