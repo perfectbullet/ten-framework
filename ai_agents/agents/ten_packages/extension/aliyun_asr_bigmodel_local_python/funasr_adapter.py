@@ -499,6 +499,7 @@ class FunASRRecognition:
         """
         Send end-of-speech marker without closing the connection.
         This allows continuous speech recognition sessions.
+        Also saves audio dump if enabled.
         """
         if self.websocket is None:
             return
@@ -506,6 +507,10 @@ class FunASRRecognition:
         try:
             end_message = json.dumps({"is_speaking": False})
             self.websocket.send(end_message)
+
+            # Save audio dump if enabled and data was collected
+            if self._audio_dump_enabled and self._audio_data_buffer:
+                self._save_audio_dump()
         except Exception as e:
             print(f"[FunASR] Failed to send end-of-speech: {e}")
 
