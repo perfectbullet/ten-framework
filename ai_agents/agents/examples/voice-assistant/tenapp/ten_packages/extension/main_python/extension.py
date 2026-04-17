@@ -175,8 +175,11 @@ class MainControlExtension(AsyncExtension):
             await self._interrupt()
             return  # 不发送给 LLM
 
-        # 检查 TTS 是否忙碌
-        if is_tts_busy and self.is_llm_streaming:
+        # 检查 TTS 或 LLM 是否忙碌（在播报期间不处理新的 ASR 结果）
+        if is_tts_busy or self.is_llm_streaming:
+            self.ten_env.log_info(
+                "[MainControlExtension] Skipping ASR result: TTS/LLM is busy"
+            )
             return
 
         # Semantic validation using TextIntentValidator (only on final results)
