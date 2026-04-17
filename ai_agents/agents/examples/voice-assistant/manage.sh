@@ -29,8 +29,18 @@ print_error() {
 # 获取运行中的进程 PID
 get_running_pid() {
     # 检查通过 tman/task run 启动的进程
-    # 优先查找 bin/main 进程（实际运行的服务）
-    local pid=$(pgrep -f "bin/main.*voice-assistant" | head -1)
+    # 优先查找 bin/api 进程（实际运行的 API 服务器）
+    local pid=$(pgrep -f "bin/api.*voice-assistant" | head -1)
+
+    # 如果没找到，尝试查找 bin/main 进程
+    if [ -z "$pid" ]; then
+        pid=$(pgrep -f "bin/main.*voice-assistant" | head -1)
+    fi
+
+    # 如果没找到，尝试匹配 tenapp 目录路径
+    if [ -z "$pid" ]; then
+        pid=$(pgrep -f "tenapp_dir=.*voice-assistant" | head -1)
+    fi
 
     # 如果没找到，尝试其他可能的模式
     if [ -z "$pid" ]; then
@@ -83,7 +93,8 @@ stop_service() {
     # 如果还没结束，强制杀死
     if is_running; then
         print_warn "服务未响应，强制终止..."
-        pkill -9 -f "task run" 2>/dev/null
+        pkill -f "task run" 2>/dev/null
+        pkill -f "./bin/api" 2>/dev/null
         sleep 1
     fi
 
@@ -163,22 +174,25 @@ start_service() {
     # 后台启动
     print_info "启动服务..."
     nohup task run > "$LOG_FILE" 2>&1 &
-    local pid=$!
+    local bg_pid=$!
 
-    # 保存 PID
-    echo "$pid" > "$PID_FILE"
+    # 保存后台进程 PID（用于追踪）
+    echo "$bg_pid" > "$PID_FILE"
 
-    # 等待并检查进程是否成功启动
-    sleep 2
+    # 等待服务启动
+    print_info "等待服务启动..."
+    sleep 3
 
-    # 验证进程是否还在运行
-    if ps -p "$pid" > /dev/null 2>&1; then
+    # 使用 get_running_pid 获取实际服务进程的 PID
+    local service_pid=$(get_running_pid)
+
+    if [ -n "$service_pid" ]; then
         print_info "服务已成功启动"
         echo ""
         echo "====================================="
         echo "服务信息"
         echo "====================================="
-        echo "  PID:        $pid"
+        echo "  服务 PID:   $service_pid"
         echo "  日志文件:   $LOG_FILE"
         echo "  查看日志:   tail -f $LOG_FILE"
         echo ""

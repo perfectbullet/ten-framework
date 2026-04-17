@@ -84,10 +84,13 @@ class FunASRCallback(FunASRRecognitionCallback):
 
     def on_close(self) -> None:
         """Callback when connection is closed"""
-        self.ten_env.log_info(
-            "FunASR connection closed",
+        self.ten_env.log_warn(
+            "FunASR connection closed (callback)",
             category=LOG_CATEGORY_VENDOR,
         )
+        # Immediately mark connection as closed (thread-safe)
+        self.extension.connected = False
+        # Schedule the full close handler for reconnection logic
         asyncio.run_coroutine_threadsafe(
             self.extension.on_asr_close(), self.loop
         )
@@ -110,9 +113,6 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         # Callback instance
         self.recognition_callback: FunASRCallback | None = None
-
-        # Flag to track if connection close is expected (e.g., after finalize)
-        self._closing_intentionally: bool = False
 
     @override
     async def on_deinit(self, ten_env: AsyncTenEnv) -> None:
@@ -229,7 +229,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
     async def on_asr_open(self) -> None:
         """Handle callback when connection is established"""
-        self.ten_env.log_info("FunASR ASR connection opened")
+        self.ten_env.log_warn("FunASR ASR connection opened")
         self.connected = True
         # Reset timeline and audio duration
         self.sent_user_audio_duration_ms_before_last_reset += (
@@ -327,18 +327,18 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
     async def on_asr_close(self) -> None:
         """Handle callback when connection is closed"""
-        self.ten_env.log_debug("FunASR ASR connection closed")
+        self.ten_env.log_warn("FunASR ASR connection closed")
         self.connected = False
 
-        # Only reconnect if this was an unexpected close (not intentional)
-        if not self._closing_intentionally and not self.stopped:
+        # Always try to reconnect unless the extension is stopped
+        # (FunASR server closes connection after finalize, which is expected behavior)
+        if not self.stopped:
             self.ten_env.log_warn(
-                "FunASR ASR connection closed unexpectedly. Reconnecting..."
+                f"FunASR ASR connection closed. Reconnecting... (stopped={self.stopped})"
             )
             await self._handle_reconnect()
         else:
-            # Reset the intentional close flag for next connection
-            self._closing_intentionally = False
+            self.ten_env.log_info("Extension stopped, not reconnecting")
 
     @override
     async def finalize(self, session_id: str | None) -> None:
@@ -393,17 +393,15 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     async def _handle_finalize_funasr(self):
         """Handle FunASR finalization by sending is_speaking: false"""
         if self.recognition and self.recognition.is_running():
-            self.ten_env.log_debug("FunASR finalize: waiting for queue to drain before sending stop")
-            self.ten_env.log_debug("FunASR finalize: sending is_speaking: false")
-            # Set flag to indicate intentional close, so on_asr_close won't try to reconnect
-            self._closing_intentionally = True
-            # 发送结束标记
-            self.recognition.stop()
+            self.ten_env.log_info("FunASR finalize: sending is_speaking: false (keeping connection)")
+            # Only send end-of-speech marker, don't close the connection
+            self.recognition.send_end_of_speech()
         else:
-            self.ten_env.log_debug("FunASR finalize: recognition not running")
+            self.ten_env.log_warn("FunASR finalize: recognition not running")
 
     async def _handle_reconnect(self):
         """Handle reconnection"""
+        self.ten_env.log_info("Starting reconnection process...")
         if not self.reconnect_manager:
             self.ten_env.log_error("ReconnectManager not initialized")
             return
@@ -421,18 +419,19 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             return
 
         # Attempt reconnection
+        self.ten_env.log_info("Attempting reconnection...")
         success = await self.reconnect_manager.handle_reconnect(
             connection_func=self.start_connection,
             error_handler=self.send_asr_error,
         )
 
         if success:
-            self.ten_env.log_debug(
+            self.ten_env.log_info(
                 "Reconnection attempt initiated successfully"
             )
         else:
             info = self.reconnect_manager.get_attempts_info()
-            self.ten_env.log_debug(
+            self.ten_env.log_warn(
                 f"Reconnection attempt failed. Status: {info}"
             )
 
@@ -486,8 +485,25 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         """Send audio data"""
         assert self.config is not None
 
+        # Auto-reconnect if connection was lost (max 3 attempts)
         if not self.recognition or not self.connected:
-            return False
+            for attempt in range(1, 4):
+                self.ten_env.log_warn(f"ASR connection lost, reconnect attempt {attempt}/3...")
+                await self.start_connection()
+                await asyncio.sleep(0.5)
+                if self.connected:
+                    self.ten_env.log_info(f"Reconnected successfully on attempt {attempt}")
+                    break
+                if attempt == 3:
+                    self.ten_env.log_error("Failed to reconnect after 3 attempts, discarding audio frame")
+                    await self.send_asr_error(
+                        ModuleError(
+                            module=MODULE_NAME_ASR,
+                            code=ModuleErrorCode.FATAL_ERROR.value,
+                            message="ASR connection lost and reconnection failed after 3 attempts"
+                        )
+                    )
+                    return False
 
         buf = None
         try:

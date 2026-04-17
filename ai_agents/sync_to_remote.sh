@@ -53,6 +53,7 @@ RSYNC_INCLUDES=(
     # ========================================
     # 在这里添加更多要同步的文件/目录
     # ========================================
+    "--include=agents/examples/voice-assistant/manage.sh"
     #
     # 示例:
     # "--include=*.json"              # 同步所有 JSON 文件

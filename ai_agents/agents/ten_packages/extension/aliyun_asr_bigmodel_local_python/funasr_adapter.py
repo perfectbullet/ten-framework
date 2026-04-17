@@ -495,6 +495,20 @@ class FunASRRecognition:
             if self.callback:
                 self._safe_callback(self.callback.on_complete)
 
+    def send_end_of_speech(self) -> None:
+        """
+        Send end-of-speech marker without closing the connection.
+        This allows continuous speech recognition sessions.
+        """
+        if self.websocket is None:
+            return
+
+        try:
+            end_message = json.dumps({"is_speaking": False})
+            self.websocket.send(end_message)
+        except Exception as e:
+            print(f"[FunASR] Failed to send end-of-speech: {e}")
+
     def is_running(self) -> bool:
         """Check if recognition is currently running."""
         return self.websocket is not None and self._thread_recv is not None and self._thread_recv.is_alive()
