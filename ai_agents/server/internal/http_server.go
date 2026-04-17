@@ -581,7 +581,7 @@ func (s *HttpServer) handlerInterrupt(c *gin.Context) {
 		return
 	}
 
-	slog.Info("handlerInterrupt end", "channelName", req.ChannelName, "requestId", req.RequestId, "timestamp", tenSection["interrupt"].(map[string]interface{})["timestamp"], "path", propertyJsonPath, "content", string(modifiedContent), logTag)
+	// slog.Info("handlerInterrupt end", "channelName", req.ChannelName, "requestId", req.RequestId, "timestamp", tenSection["interrupt"].(map[string]interface{})["timestamp"], "path", propertyJsonPath, "content", string(modifiedContent), logTag)
 	s.output(c, codeSuccess, nil)
 }
 

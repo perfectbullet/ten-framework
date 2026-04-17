@@ -296,7 +296,7 @@ class MainControlExtension(AsyncExtension):
             # 只累加正常完成的音频（reason=1 是 REQUEST_END）
             # reason=2 是 INTERRUPTED，不应该累加
             if reason == 1:
-                self.accumulated_audio_duration_ms += duration_ms
+                self.accumulated_audio_duration_ms = duration_ms
                 # 第一次收到正常完成的音频时，校正 tts_audio_start_time
                 # 这样计算出的播放结束时间更准确
                 if not self._tts_start_time_calibrated:
