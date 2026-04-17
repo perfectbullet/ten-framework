@@ -226,6 +226,8 @@ class MainControlExtension(AsyncExtension):
             # 注意：不在这里设置播放完成时间，因为 TTS 音频输出是异步的
             remaining_text = self.sentence_buffer.flush()
             await self._send_to_tts(remaining_text, True)
+            # LLM 完成后恢复 ASR（TTS 可能仍在播放最后的音频）
+            await _send_data(self.ten_env, "resume_asr", "stt", {})
 
         await self._send_transcript(
             "assistant",
@@ -282,6 +284,8 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
             request_id, _ = data.get_property_string("request_id")
+            # 暂停 ASR 识别
+            await _send_data(self.ten_env, "pause_asr", "stt", {})
             # 新的 TTS 请求开始，重置状态
             self.tts_audio_start_time = 0.0  # 将在第一个 tts_audio_end 时校正
             self.accumulated_audio_duration_ms = 0
@@ -317,6 +321,8 @@ class MainControlExtension(AsyncExtension):
             )
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
+            # 打断时恢复 ASR
+            await _send_data(self.ten_env, "resume_asr", "stt", {})
             # 打断时清空累计时长和校准标记，表示没有待播放音频
             self.accumulated_audio_duration_ms = 0
             self._tts_start_time_calibrated = False

@@ -114,6 +114,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         # Callback instance
         self.recognition_callback: FunASRCallback | None = None
 
+        # Pause/resume state for ASR during TTS playback
+        self.is_paused: bool = False
+
     @override
     async def on_deinit(self, ten_env: AsyncTenEnv) -> None:
         await super().on_deinit(ten_env)
@@ -127,6 +130,18 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         """Handle incoming data"""
         data_name = data.get_name()
         ten_env.log_info(f"asr on_data: data_name {data_name}")
+
+        # Handle pause_asr command from main_control
+        if data_name == "pause_asr":
+            self.is_paused = True
+            ten_env.log_info("ASR paused - will ignore audio frames")
+            return
+        # Handle resume_asr command from main_control
+        elif data_name == "resume_asr":
+            self.is_paused = False
+            ten_env.log_info("ASR resumed - processing audio frames")
+            return
+
         # Handle end_of_audio message from test
         if data_name == "end_of_audio":
             self.ten_env.log_info("Received end_of_audio, calling finalize")
@@ -484,6 +499,10 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     ) -> bool:
         """Send audio data"""
         assert self.config is not None
+
+        # If ASR is paused, drop the audio frame
+        if self.is_paused:
+            return True
 
         # Auto-reconnect if connection was lost (max 3 attempts)
         if not self.recognition or not self.connected:

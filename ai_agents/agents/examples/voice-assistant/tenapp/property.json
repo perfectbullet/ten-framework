@@ -196,6 +196,22 @@
                       "extension": "main_control"
                     }
                   ]
+                },
+                {
+                  "name": "pause_asr",
+                  "source": [
+                    {
+                      "extension": "main_control"
+                    }
+                  ]
+                },
+                {
+                  "name": "resume_asr",
+                  "source": [
+                    {
+                      "extension": "main_control"
+                    }
+                  ]
                 }
               ]
             },
