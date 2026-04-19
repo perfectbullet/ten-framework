@@ -89,6 +89,9 @@ exclude_patterns:
   - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extension copy.py
   - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
   - agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extensionv1.py
+  - "agents/examples/voice-assistant/tenapp/msg_dict_json/*"
+  - "agents/examples/voice-assistant/tenapp/send_audio_save/*"
+  - "agents/examples/voice-assistant/tenapp/vad_dump/*"
 
 # Synchronization options (同步选项)
 delete_remote: false           # Delete remote files not in local (删除远程不存在于本地的文件)

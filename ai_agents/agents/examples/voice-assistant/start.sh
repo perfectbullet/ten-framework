@@ -51,6 +51,7 @@ pkill -f "task run" 2>/dev/null
 pkill -f "./bin/api" 2>/dev/null
 sleep 1
 
+
 # 设置环境变量
 echo "[3/4] 设置环境变量..."
 export AGORA_APP_ID=c51a83813c654291981c09ff195b38a0

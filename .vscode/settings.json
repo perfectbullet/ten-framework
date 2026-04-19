@@ -10,7 +10,7 @@
     "editor.wordWrapColumn": 80
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "biome.configurationPath": "biome.json",
   "biome.enabled": true,
@@ -34,7 +34,8 @@
     "./core/src/ten_runtime/binding/python/interface",
     "./core/ten_gn/.gnfiles",
     "./ai_agents/agents/ten_packages/system/ten_ai_base/interface",
-    "./ai_agents/agents/ten_packages/system/ten_ai_base/lib"
+    "./ai_agents/agents/ten_packages/system/ten_ai_base/lib",
+    "./ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/system/ten_ai_base/interface"
   ],
   "cursorpyright.analysis.typeCheckingMode": "recommended",
   "debug.allowBreakpointsEverywhere": true,
