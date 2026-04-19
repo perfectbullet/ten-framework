@@ -77,7 +77,7 @@ class FunASRCallback(FunASRRecognitionCallback):
 
     def on_event(self, result: FunASRRecognitionResult) -> None:
         """Recognition result event callback"""
-        self.ten_env.log_debug(f"FunASR result event: {result}")
+        self.ten_env.log_info(f"FunASR result event: {result}")
         asyncio.run_coroutine_threadsafe(
             self.extension.on_asr_event(result), self.loop
         )
@@ -111,8 +111,6 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         # Reconnection manager
         self.reconnect_manager: ReconnectManager | None = None
 
-        # Callback instance
-        self.recognition_callback: FunASRCallback | None = None
 
         # Pause/resume state for ASR during TTS playback
         self.is_paused: bool = False
@@ -222,7 +220,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
     async def _start_funasr_connection(self) -> None:
         """启动 FunASR WebSocket ASR 连接"""
-        self.recognition_callback = FunASRCallback(self)
+        recognition_callback = FunASRCallback(self)
 
         self.recognition = FunASRRecognition(
             host=self.config.funasr_host,
@@ -232,7 +230,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             chunk_interval=self.config.funasr_chunk_interval,
             mode=self.config.funasr_mode,
             wav_name="default",
-            callback=self.recognition_callback,
+            callback=recognition_callback,
             sample_rate=self.config.sample_rate,
             format="pcm",
             language_hints=self.config.language_hints,
@@ -284,7 +282,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             if self.reconnect_manager and self.connected:
                 self.reconnect_manager.mark_connection_successful()
 
-            self.ten_env.log_debug(
+            self.ten_env.log_info(
                 f"FunASR result: {result}",
                 category=LOG_CATEGORY_VENDOR,
             )
@@ -303,7 +301,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                     last_word = sentence["words"][-1]
                     if "end_time" in last_word and last_word["end_time"]:
                         end_ms = int(last_word["end_time"])
-                        self.ten_env.log_debug(
+                        self.ten_env.log_info(
                             f"Using last word end_time: {end_ms} as sentence end_time"
                         )
 
@@ -318,7 +316,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 else:
                     actual_start_ms = 0
 
-                self.ten_env.log_debug(
+                self.ten_env.log_info(
                     f"FunASR result: {text}, is_final: {is_final}, "
                     f"start_ms: {actual_start_ms}, duration_ms: {duration_ms}"
                 )
@@ -369,14 +367,6 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         # FunASR uses send_audio_frame with is_speaking: false to finalize
         await self._handle_finalize_funasr()
 
-    def _clean_leading_punctuation(self, text: str) -> str:
-        """Remove leading punctuation from ASR result text."""
-        # Common Chinese and English punctuation marks at the beginning
-        leading_punct = '，,。.！!？?；;：:、\t\n\r '
-        while text and text[0] in leading_punct:
-            text = text[1:]
-        return text
-
     async def _handle_asr_result(
         self,
         text: str,
@@ -385,25 +375,25 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         duration_ms: int = 0,
         language: str = "",
     ):
-        """Process ASR recognition result"""
+        """
+        Process ASR recognition result
+        只发送完成识别的 asrresult
+        """
         assert self.config is not None
-
-        # Clean leading punctuation from ASR result
-        text = self._clean_leading_punctuation(text)
 
         if final:
             await self._finalize_end()
 
-        asr_result = ASRResult(
-            text=text,
-            final=final,
-            start_ms=start_ms,
-            duration_ms=duration_ms,
-            language=language,
-            words=[],
-        )
+            asr_result = ASRResult(
+                text=text,
+                final=final,
+                start_ms=start_ms,
+                duration_ms=duration_ms,
+                language=language,
+                words=[],
+            )
 
-        await self.send_asr_result(asr_result)
+            await self.send_asr_result(asr_result)
 
     async def _handle_finalize_funasr(self):
         """Handle FunASR finalization by sending is_speaking: false"""
@@ -455,7 +445,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         if self.last_finalize_timestamp != 0:
             timestamp = int(datetime.now().timestamp() * 1000)
             latency = timestamp - self.last_finalize_timestamp
-            self.ten_env.log_debug(
+            self.ten_env.log_info(
                 f"FunASR finalize end at {timestamp}, latency: {latency}ms"
             )
             self.last_finalize_timestamp = 0
@@ -468,7 +458,6 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 self.recognition.stop()
                 self.recognition = None
 
-            self.recognition_callback = None
             self.connected = False
             self.ten_env.log_info("FunASR ASR connection stopped")
 
@@ -479,7 +468,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     def is_connected(self) -> bool:
         """Check connection status"""
         is_connected = self.connected and self.recognition is not None
-        # self.ten_env.log_debug(f"Aliyun ASR is_connected: {is_connected}")
+        # self.ten_env.log_info(f"Aliyun ASR is_connected: {is_connected}")
         return is_connected
 
     @override
@@ -545,7 +534,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                 # 如果是 WebSocket 已关闭相关的错误，静默处理
                 error_msg = str(e)
                 if "WebSocket" in error_msg or "closed" in error_msg.lower() or "not running" in error_msg.lower():
-                    self.ten_env.log_debug("WebSocket closed, discarding audio frame")
+                    self.ten_env.log_info("WebSocket closed, discarding audio frame")
                 else:
                     self.ten_env.log_error(f"Error in send_audio_frame: {e}")
                 return False
