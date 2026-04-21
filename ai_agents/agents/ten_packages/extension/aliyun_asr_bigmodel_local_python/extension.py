@@ -317,7 +317,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                     actual_start_ms = 0
 
                 self.ten_env.log_info(
-                    f"FunASR result: {text}, is_final: {is_final}, "
+                    f"[ASR] Result: '{text}', final={is_final}, "
                     f"start_ms: {actual_start_ms}, duration_ms: {duration_ms}"
                 )
 
@@ -491,6 +491,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         # If ASR is paused, drop the audio frame
         if self.is_paused:
+            if not hasattr(self, '_pause_drop_logged'):
+                self.ten_env.log_info("[ASR] Audio frame DROPPED - ASR is paused")
+                self._pause_drop_logged = True
             return True
 
         # Auto-reconnect if connection was lost (max 3 attempts)
@@ -517,6 +520,13 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         try:
             buf = frame.lock_buf()
             audio_data = bytes(buf)
+
+            # Log first audio frame
+            if not hasattr(self, '_audio_frame_count'):
+                self._audio_frame_count = 0
+            self._audio_frame_count += 1
+            if self._audio_frame_count == 1:
+                self.ten_env.log_info(f"[ASR] First audio frame received: {len(audio_data)} bytes")
 
             # Dump audio data
             if self.audio_dumper:

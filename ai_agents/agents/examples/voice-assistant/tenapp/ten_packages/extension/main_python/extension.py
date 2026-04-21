@@ -30,7 +30,7 @@ from .config import MainControlConfig  # assume extracted from your base model
 import uuid
 
 # 是否支持打断短语
-ENABLE_INTERRUPT_PHRASE = False
+ENABLE_INTERRUPT_PHRASE = True
 
 
 def _truncate_text(text: str, max_len: int = 50) -> str:
@@ -206,18 +206,15 @@ class MainControlExtension(AsyncExtension):
             return
 
         # Semantic validation using TextIntentValidator (only on final results)
-        corrected_text = None
         if self.text_intent_validator:
             (
                 is_meaningful,
                 elapsed,
                 _,
-                corrected_text,
+                _,
             ) = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
                 f"[MainControlExtension] TextIntentValidator: "
-                f"original='{_truncate_text(event.text)}', "
-                f"corrected='{_truncate_text(corrected_text) if corrected_text else 'N/A'}', "
                 f"is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s"
             )
             if not is_meaningful:
@@ -229,9 +226,7 @@ class MainControlExtension(AsyncExtension):
         if len(event.text) > 4:
             await self._interrupt()
             self.turn_id += 1
-            # Use corrected text for LLM if available
-            llm_text = corrected_text if corrected_text else event.text
-            await self.agent.queue_llm_input(llm_text)
+            await self.agent.queue_llm_input(event.text)
             # 只在有意义文本且已打断后发送转录
             await self._send_transcript("user", event.text, event.final, stream_id)
 

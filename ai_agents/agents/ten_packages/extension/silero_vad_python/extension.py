@@ -18,9 +18,9 @@ from .funasr_model import get_asr_wrapper
 
 import numpy as np
 import os
-import asyncio
 import json
-from typing import Dict, List, Optional
+import time
+from typing import Dict, List
 
 BYTES_PER_SAMPLE = 2
 
@@ -49,7 +49,7 @@ class SileroVADPythonExtension(AsyncExtension):
         self.interruption_keywords: Dict[str, List[str]] = {
             "high_priority": [],
             "medium_priority": [],
-            "low_priority": []
+            "low_priority": [],
         }
 
         # Speech segment buffer for saving detected speech segments as WAV
@@ -63,8 +63,12 @@ class SileroVADPythonExtension(AsyncExtension):
 
         # Validate sampling rate
         if self.config.sampling_rate not in (8000, 16000):
-            ten_env.log_error(f"Invalid sampling_rate: {self.config.sampling_rate}. Must be 8000 or 16000")
-            raise ValueError(f"sampling_rate must be 8000 or 16000, got {self.config.sampling_rate}")
+            ten_env.log_error(
+                f"Invalid sampling_rate: {self.config.sampling_rate}. Must be 8000 or 16000"
+            )
+            raise ValueError(
+                f"sampling_rate must be 8000 or 16000, got {self.config.sampling_rate}"
+            )
 
         ten_env.log_info(
             f"Silero VAD config: threshold={self.config.threshold}, "
@@ -80,7 +84,9 @@ class SileroVADPythonExtension(AsyncExtension):
         try:
             from silero_vad import load_silero_vad, VADIterator
         except ImportError:
-            ten_env.log_error("silero-vad is not installed. Install with: pip install silero-vad torch torchaudio")
+            ten_env.log_error(
+                "silero-vad is not installed. Install with: pip install silero-vad torch torchaudio"
+            )
             raise ImportError("silero-vad package is required")
 
         ten_env.log_info(f"Loading Silero VAD model (ONNX: {self.config.use_onnx})...")
@@ -89,7 +95,9 @@ class SileroVADPythonExtension(AsyncExtension):
             self.model = load_silero_vad(onnx=self.config.use_onnx)
         except Exception as e:
             if self.config.use_onnx:
-                ten_env.log_warn(f"Failed to load ONNX model: {e}. Falling back to JIT model...")
+                ten_env.log_warn(
+                    f"Failed to load ONNX model: {e}. Falling back to JIT model..."
+                )
                 self.model = load_silero_vad(onnx=False)
             else:
                 raise
@@ -114,8 +122,7 @@ class SileroVADPythonExtension(AsyncExtension):
         try:
             ten_env.log_info(f"Loading FunASR model from: {self.config.asr_model_dir}")
             self.asr_model = get_asr_wrapper(
-                model_dir=self.config.asr_model_dir,
-                quantize=self.config.asr_quantize
+                model_dir=self.config.asr_model_dir, quantize=self.config.asr_quantize
             )
             ten_env.log_info("FunASR model loaded successfully")
         except Exception as e:
@@ -133,12 +140,18 @@ class SileroVADPythonExtension(AsyncExtension):
             keywords_file = os.path.join(extension_dir, keywords_file)
 
         try:
-            with open(keywords_file, 'r', encoding='utf-8') as f:
+            with open(keywords_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                keywords = data.get('keywords', {})
-                self.interruption_keywords['high_priority'] = keywords.get('high_priority', {}).get('keywords', [])
-                self.interruption_keywords['medium_priority'] = keywords.get('medium_priority', {}).get('keywords', [])
-                self.interruption_keywords['low_priority'] = keywords.get('low_priority', {}).get('keywords', [])
+                keywords = data.get("keywords", {})
+                self.interruption_keywords["high_priority"] = keywords.get(
+                    "high_priority", {}
+                ).get("keywords", [])
+                self.interruption_keywords["medium_priority"] = keywords.get(
+                    "medium_priority", {}
+                ).get("keywords", [])
+                self.interruption_keywords["low_priority"] = keywords.get(
+                    "low_priority", {}
+                ).get("keywords", [])
 
             ten_env.log_info(
                 f"Loaded interruption keywords: "
@@ -186,9 +199,7 @@ class SileroVADPythonExtension(AsyncExtension):
     async def on_data(self, ten_env: AsyncTenEnv, data: Data) -> None:
         pass
 
-    async def _send_audio_frame(
-        self, ten_env: AsyncTenEnv, audio_data: bytes
-    ) -> None:
+    async def _send_audio_frame(self, ten_env: AsyncTenEnv, audio_data: bytes) -> None:
         """Helper function to create and send an audio frame with given data."""
 
         # Dump output audio if needed
@@ -213,25 +224,22 @@ class SileroVADPythonExtension(AsyncExtension):
         if not self.config.dump_path:
             return
 
-        dump_file = os.path.join(
-            self.config.dump_path, f"{self.name}_{suffix}.pcm"
-        )
+        dump_file = os.path.join(self.config.dump_path, f"{self.name}_{suffix}.pcm")
         # Create directory if it doesn't exist
         os.makedirs(self.config.dump_path, exist_ok=True)
         with open(dump_file, "ab") as f:
             f.write(buf)
 
-    async def _process_vad_result(
-        self, ten_env: AsyncTenEnv, result: dict
-    ) -> None:
+    async def _process_vad_result(self, ten_env: AsyncTenEnv, result: dict) -> None:
         """Process VAD detection result and send appropriate commands."""
 
-        if 'start' in result:
+        if "start" in result:
             # Speech start detected
             if not self.is_speech_active:
                 self.is_speech_active = True
-                self.current_start_ms = result['start']
-                ten_env.log_info(f"Speech start detected at {result['start']}ms")
+                self.current_start_ms = result["start"]
+                self._speech_start_time = time.time() * 1000  # 记录实际时间
+                ten_env.log_info("[VAD] Speech START")
 
                 # Clear speech segment buffer for new segment
                 self.speech_segment_buffer = bytearray()
@@ -239,27 +247,30 @@ class SileroVADPythonExtension(AsyncExtension):
                 # Send start_of_sentence command
                 await ten_env.send_cmd(Cmd.create("start_of_sentence"))
 
-        elif 'end' in result:
+        elif "end" in result:
             # Speech end detected
             if self.is_speech_active:
                 self.is_speech_active = False
-                duration_ms = result['end'] - self.current_start_ms
+                # 使用实际时间计算时长
+                actual_duration_ms = int(time.time() * 1000 - self._speech_start_time)
+                vad_duration_ms = result["end"] - self.current_start_ms
                 ten_env.log_info(
-                    f"Speech end detected at {result['end']}ms "
-                    f"(duration: {duration_ms}ms)"
+                    f"[VAD] Speech END (actual: {actual_duration_ms}ms, vad: {vad_duration_ms}ms)"
                 )
 
                 # Send end_of_sentence command
                 await ten_env.send_cmd(Cmd.create("end_of_sentence"))
 
                 # Save speech segment as WAV file
-                self._save_speech_segment_as_wav(ten_env, duration_ms)
+                self._save_speech_segment_as_wav(ten_env, actual_duration_ms)
 
                 # Trigger ASR if enabled and speech buffer has data
                 if self.config.enable_asr and self.asr_model is not None:
                     await self._process_asr_interruption(ten_env)
 
-    def _save_speech_segment_as_wav(self, ten_env: AsyncTenEnv, duration_ms: int) -> None:
+    def _save_speech_segment_as_wav(
+        self, ten_env: AsyncTenEnv, duration_ms: int
+    ) -> None:
         """Save detected speech segment to a WAV file."""
         if not self.config.dump:
             return
@@ -281,13 +292,15 @@ class SileroVADPythonExtension(AsyncExtension):
         os.makedirs(self.config.dump_path, exist_ok=True)
 
         # Write WAV file
-        with wave.open(dump_file, 'wb') as wav_file:
+        with wave.open(dump_file, "wb") as wav_file:
             wav_file.setnchannels(1)  # Mono
             wav_file.setsampwidth(2)  # 16-bit
             wav_file.setframerate(self.config.sampling_rate)
             wav_file.writeframes(bytes(self.speech_segment_buffer))
 
-        ten_env.log_info(f"Saved speech segment: {filename} ({len(self.speech_segment_buffer)} bytes)")
+        ten_env.log_info(
+            f"Saved speech segment: {filename} ({len(self.speech_segment_buffer)} bytes)"
+        )
         self.speech_segment_count += 1
         self.speech_segment_buffer = bytearray()
 
@@ -303,7 +316,7 @@ class SileroVADPythonExtension(AsyncExtension):
                 - detected: bool - Whether interruption was detected
                 - priority: str - The priority level (high/medium/low)
                 - matched_keyword: str - The matched keyword
-                
+
         """
         if not text:
             return {"detected": False, "priority": None, "matched_keyword": None}
@@ -328,7 +341,7 @@ class SileroVADPythonExtension(AsyncExtension):
                     return {
                         "detected": True,
                         "priority": priority.replace("_priority", ""),
-                        "matched_keyword": keyword
+                        "matched_keyword": keyword,
                     }
 
         return {"detected": False, "priority": None, "matched_keyword": None}
@@ -371,7 +384,9 @@ class SileroVADPythonExtension(AsyncExtension):
                     cmd = Cmd.create("interruption_detected")
                     cmd.set_property_string("text", text)
                     cmd.set_property_string("priority", interruption["priority"])
-                    cmd.set_property_string("matched_keyword", interruption["matched_keyword"])
+                    cmd.set_property_string(
+                        "matched_keyword", interruption["matched_keyword"]
+                    )
                     await ten_env.send_cmd(cmd)
                 else:
                     ten_env.log_debug("No interruption keywords detected")
@@ -392,10 +407,28 @@ class SileroVADPythonExtension(AsyncExtension):
             return
 
         frame_buf = audio_frame.get_buf()
+        frame_size_ms = len(frame_buf) / (self.config.sampling_rate * 2) * 1000
+
+        # Log frame size info occasionally
+        if self.total_samples_processed % 1000 < len(frame_buf) // 2:
+            ten_env.log_info(
+                f"[VAD] Audio frame: {len(frame_buf)} bytes, {frame_size_ms:.1f}ms, "
+                f"sample_rate={self.config.sampling_rate}, is_speech_active={self.is_speech_active}"
+            )
+        self.total_samples_processed += len(frame_buf) // 2
+
+        frame_buf = audio_frame.get_buf()
         self._dump_audio_if_needed(frame_buf, "in")
 
         # Optional passthrough - forward audio ONLY when speech is detected
         if self.config.passthrough and self.is_speech_active:
+            if not hasattr(self, '_forwarded_frame_count'):
+                self._forwarded_frame_count = 0
+            self._forwarded_frame_count += 1
+            if self._forwarded_frame_count == 1:
+                ten_env.log_info(f"[VAD] >>>> First frame forwarded to STT: {len(frame_buf)} bytes")
+            elif self._forwarded_frame_count % 100 == 0:
+                ten_env.log_info(f"[VAD] Forwarded {self._forwarded_frame_count} frames to STT")
             await self._send_audio_frame(ten_env, frame_buf)
 
         # Cache audio for speech segment saving
@@ -437,4 +470,3 @@ class SileroVADPythonExtension(AsyncExtension):
 
         if result:
             await self._process_vad_result(ten_env, result)
-

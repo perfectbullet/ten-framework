@@ -112,13 +112,13 @@
               "property": {
                 "use_onnx": true,
                 "sampling_rate": 16000,
-                "threshold": 0.6,
-                "min_speech_duration_ms": 800,
-                "min_silence_duration_ms": 1000,
-                "speech_pad_ms": 30,
+                "threshold": 0.75,
+                "min_speech_duration_ms": 250,
+                "min_silence_duration_ms": 800,
+                "speech_pad_ms": 60,
                 "chunk_size": 512,
                 "passthrough": true,
-                "dump": true,
+                "dump": false,
                 "dump_path": "./vad_dump",
                 "enable_asr": false
               }
