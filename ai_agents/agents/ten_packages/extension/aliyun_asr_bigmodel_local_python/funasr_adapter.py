@@ -152,6 +152,7 @@ class FunASRRecognition:
         format: str = "pcm",
         sample_rate: int = 16000,
         language_hints: List[str] = None,
+        send_buffer_size: int = 23040,  # Buffer size in bytes (default: 0.72s @ 16kHz 16-bit mono)
         **kwargs
     ):
         """
@@ -170,6 +171,7 @@ class FunASRRecognition:
             format: Audio format (default: "pcm")
             sample_rate: Audio sample rate (default: 16000)
             language_hints: Language hints (for compatibility)
+            send_buffer_size: Audio send buffer size in bytes (default: 23040 = 0.72s @ 16kHz)
             **kwargs: Additional parameters (hotwords, itn, etc.)
         """
         self.host = host
@@ -207,6 +209,10 @@ class FunASRRecognition:
         self._audio_data_buffer: List[bytes] = []
         self._audio_dump_dir = Path("send_audio_save")
         self._audio_dump_enabled: bool = True
+
+        # Audio send buffer for batch sending
+        self._send_buffer_size = send_buffer_size
+        self._send_buffer: List[bytes] = []
 
     def _save_msg_dict_to_json(self, msg_dict: Dict[str, Any]) -> None:
         """
@@ -258,6 +264,7 @@ class FunASRRecognition:
             # Establish WebSocket connection
             self.websocket = create_connection(uri, sslopt=ssl_opt, ssl=ssl_context)
             self._offline_msg_done = False  # 重置最终结果标志
+            self._send_buffer.clear()  # Clear any stale buffered data from previous session
 
             # Start message receiving thread
             self._thread_recv = threading.Thread(target=self._thread_receive_messages, daemon=True)
@@ -374,9 +381,25 @@ class FunASRRecognition:
             # No event loop or not running, call directly
             callback_func(*args)
 
+    def _flush_send_buffer(self) -> None:
+        """Send any accumulated audio data in the buffer."""
+        if not self._send_buffer:
+            return
+        if self.websocket is None:
+            self._send_buffer.clear()
+            return
+        try:
+            combined_data = b"".join(self._send_buffer)
+            self.websocket.send(combined_data, ABNF.OPCODE_BINARY)
+            self._send_buffer.clear()
+        except Exception:
+            # Connection closed or error
+            self._send_buffer.clear()
+
     def send_audio_frame(self, audio_data: bytes) -> None:
         """
         Send audio frame to FunASR server (compatible with Dashscope API).
+        Audio data is buffered until buffer_size is reached before sending.
 
         Args:
             audio_data: Raw audio bytes (PCM format)
@@ -390,11 +413,21 @@ class FunASRRecognition:
             if self._audio_dump_enabled:
                 self._audio_data_buffer.append(audio_data)
 
-            self.websocket.send(audio_data, ABNF.OPCODE_BINARY)
-        except Exception as e:
+            # Accumulate audio data in send buffer
+            self._send_buffer.append(audio_data)
+
+            # Calculate accumulated buffer size
+            buffer_size = sum(len(chunk) for chunk in self._send_buffer)
+
+            # Flush when buffer reaches threshold
+            if buffer_size >= self._send_buffer_size:
+                combined_data = b"".join(self._send_buffer)
+                self.websocket.send(combined_data, ABNF.OPCODE_BINARY)
+                self._send_buffer.clear()
+        except Exception:
             # 连接已关闭或其他错误，不是致命问题
             # 静默处理，让调用方决定是否重试
-            pass
+            self._send_buffer.clear()
 
     def _save_as_wav(self, pcm_data: bytes, wav_path: Path, sample_rate: int) -> None:
         """
@@ -464,6 +497,9 @@ class FunASRRecognition:
             return  # 已经停止
 
         try:
+            # Flush any remaining buffered audio data before sending end-of-speech
+            self._flush_send_buffer()
+
             # Send end-of-speech message
             end_message = json.dumps({"is_speaking": False})
             self.websocket.send(end_message)
@@ -487,6 +523,9 @@ class FunASRRecognition:
             # 先关闭 websocket，这样残留的 send_audio_frame 会自然失败
             self.websocket = None
 
+            # Clear send buffer
+            self._send_buffer.clear()
+
             # Save audio dump if enabled and data was collected
             if self._audio_dump_enabled and self._audio_data_buffer:
                 self._save_audio_dump()
@@ -505,6 +544,9 @@ class FunASRRecognition:
             return
 
         try:
+            # Flush any remaining buffered audio data before sending end-of-speech
+            self._flush_send_buffer()
+
             end_message = json.dumps({"is_speaking": False})
             self.websocket.send(end_message)
 
