@@ -523,13 +523,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
             # Send audio data to FunASR recognition service
             try:
-                self.ten_env.log_info(
-                    f"[ASR] recognition sent audio frame before: {audio_data_len} bytes"
-                )
                 self.recognition.send_audio_frame(audio_data)
-                self.ten_env.log_info(
-                    f"[ASR] recognition sent audio frame later: {audio_data_len} bytes"
-                )
             except Exception as e:
                 # 如果是 WebSocket 已关闭相关的错误，静默处理
                 error_msg = str(e)

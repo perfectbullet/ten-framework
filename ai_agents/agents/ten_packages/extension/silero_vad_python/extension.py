@@ -164,9 +164,7 @@ class SileroVADPythonExtension(AsyncExtension):
         buf = audio_frame.lock_buf()
         buf[:] = audio_data
         audio_frame.unlock_buf(buf)
-        ten_env.log_info("[VAD] ten_env send_audio_frame before")
         await ten_env.send_audio_frame(audio_frame)
-        ten_env.log_info("[VAD] ten_env send_audio_frame later")
 
     async def _process_vad_result(self, ten_env: AsyncTenEnv, result: dict) -> None:
         """Process VAD detection result and send appropriate commands."""
@@ -257,11 +255,7 @@ class SileroVADPythonExtension(AsyncExtension):
                 ten_env.log_info(
                     f"[VAD] Forwarded {self._forwarded_frame_count} frames to STT"
                 )
-            ten_env.log_info(
-                f"[VAD] Sending audio frame before: {len(frame_buf)} bytes"
-            )
             await self._send_audio_frame(ten_env, frame_buf)
-            ten_env.log_info(f"[VAD] Sending audio frame later: {len(frame_buf)} bytes")
 
         # Cache audio for speech segment saving
         if self.is_speech_active and self.config.dump:
