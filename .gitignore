@@ -187,3 +187,4 @@ ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/send_au
 ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/send_audio_save
 
 ai_agents/agents/examples/voice-assistant/tenapp/send_audio_save
+analyze_vad_delay.py

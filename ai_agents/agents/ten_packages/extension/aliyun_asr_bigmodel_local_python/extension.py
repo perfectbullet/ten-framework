@@ -18,11 +18,7 @@ from ten_ai_base.message import (
     ModuleErrorVendorInfo,
     ModuleErrorCode,
 )
-from ten_runtime import (
-    AsyncTenEnv,
-    AudioFrame,
-    Data
-)
+from ten_runtime import AsyncTenEnv, AudioFrame, Data
 from ten_ai_base.const import (
     LOG_CATEGORY_VENDOR,
     LOG_CATEGORY_KEY_POINT,
@@ -55,15 +51,11 @@ class FunASRCallback(FunASRRecognitionCallback):
             "FunASR connection opened",
             category=LOG_CATEGORY_VENDOR,
         )
-        asyncio.run_coroutine_threadsafe(
-            self.extension.on_asr_open(), self.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.extension.on_asr_open(), self.loop)
 
     def on_complete(self) -> None:
         """Callback when recognition is completed"""
-        asyncio.run_coroutine_threadsafe(
-            self.extension.on_asr_complete(), self.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.extension.on_asr_complete(), self.loop)
 
     def on_error(self, result: FunASRRecognitionResult) -> None:
         """Error handling callback"""
@@ -71,16 +63,12 @@ class FunASRCallback(FunASRRecognitionCallback):
             f"FunASR error: {result.message}",
             category=LOG_CATEGORY_VENDOR,
         )
-        asyncio.run_coroutine_threadsafe(
-            self.extension.on_asr_error(result), self.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.extension.on_asr_error(result), self.loop)
 
     def on_event(self, result: FunASRRecognitionResult) -> None:
         """Recognition result event callback"""
         self.ten_env.log_info(f"FunASR result event: {result}")
-        asyncio.run_coroutine_threadsafe(
-            self.extension.on_asr_event(result), self.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.extension.on_asr_event(result), self.loop)
 
     def on_close(self) -> None:
         """Callback when connection is closed"""
@@ -91,9 +79,7 @@ class FunASRCallback(FunASRRecognitionCallback):
         # Immediately mark connection as closed (thread-safe)
         self.extension.connected = False
         # Schedule the full close handler for reconnection logic
-        asyncio.run_coroutine_threadsafe(
-            self.extension.on_asr_close(), self.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.extension.on_asr_close(), self.loop)
 
 
 class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
@@ -110,7 +96,6 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         # Reconnection manager
         self.reconnect_manager: ReconnectManager | None = None
-
 
         # Pause/resume state for ASR during TTS playback
         self.is_paused: bool = False
@@ -163,9 +148,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         config_json, _ = await ten_env.get_property_to_json("")
 
         try:
-            temp_config = AliyunASRBigmodelConfig.model_validate_json(
-                config_json
-            )
+            temp_config = AliyunASRBigmodelConfig.model_validate_json(config_json)
 
             self.config = temp_config
             self.config.update(self.config.params)
@@ -175,9 +158,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             )
 
             if self.config.dump:
-                dump_file_path = os.path.join(
-                    self.config.dump_path, DUMP_FILE_NAME
-                )
+                dump_file_path = os.path.join(self.config.dump_path, DUMP_FILE_NAME)
                 self.audio_dumper = Dumper(dump_file_path)
 
         except Exception as e:
@@ -207,9 +188,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             self.ten_env.log_info("FunASR ASR connection started successfully")
 
         except Exception as e:
-            self.ten_env.log_error(
-                f"Failed to start FunASR connection: {e}"
-            )
+            self.ten_env.log_error(f"Failed to start FunASR connection: {e}")
             await self.send_asr_error(
                 ModuleError(
                     module=MODULE_NAME_ASR,
@@ -276,7 +255,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         )
 
     async def on_asr_event(self, result: FunASRRecognitionResult) -> None:
-        """处理识别结果事件回调"""
+        """
+        处理识别结果事件回调
+        """
         try:
             # 通知重连管理器连接成功
             if self.reconnect_manager and self.connected:
@@ -331,9 +312,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                         language=self.config.normalized_language,
                     )
                 else:
-                    self.ten_env.log_error(
-                        "Cannot handle ASR result: config is None"
-                    )
+                    self.ten_env.log_error("Cannot handle ASR result: config is None")
 
         except Exception as e:
             self.ten_env.log_error(f"Error processing FunASR result: {e}")
@@ -398,7 +377,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
     async def _handle_finalize_funasr(self):
         """Handle FunASR finalization by sending is_speaking: false"""
         if self.recognition and self.recognition.is_running():
-            self.ten_env.log_info("FunASR finalize: sending is_speaking: false (keeping connection)")
+            self.ten_env.log_info(
+                "FunASR finalize: sending is_speaking: false (keeping connection)"
+            )
             # Only send end-of-speech marker, don't close the connection
             self.recognition.send_end_of_speech()
         else:
@@ -431,14 +412,10 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         )
 
         if success:
-            self.ten_env.log_info(
-                "Reconnection attempt initiated successfully"
-            )
+            self.ten_env.log_info("Reconnection attempt initiated successfully")
         else:
             info = self.reconnect_manager.get_attempts_info()
-            self.ten_env.log_warn(
-                f"Reconnection attempt failed. Status: {info}"
-            )
+            self.ten_env.log_warn(f"Reconnection attempt failed. Status: {info}")
 
     async def _finalize_end(self) -> None:
         """Handle finalization end logic"""
@@ -483,15 +460,13 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         return self.config.sample_rate
 
     @override
-    async def send_audio(
-        self, frame: AudioFrame, session_id: str | None
-    ) -> bool:
+    async def send_audio(self, frame: AudioFrame, session_id: str | None) -> bool:
         """Send audio data"""
         assert self.config is not None
 
         # If ASR is paused, drop the audio frame
         if self.is_paused:
-            if not hasattr(self, '_pause_drop_logged'):
+            if not hasattr(self, "_pause_drop_logged"):
                 self.ten_env.log_info("[ASR] Audio frame DROPPED - ASR is paused")
                 self._pause_drop_logged = True
             return True
@@ -499,19 +474,25 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
         # Auto-reconnect if connection was lost (max 3 attempts)
         if not self.recognition or not self.connected:
             for attempt in range(1, 4):
-                self.ten_env.log_warn(f"ASR connection lost, reconnect attempt {attempt}/3...")
+                self.ten_env.log_warn(
+                    f"ASR connection lost, reconnect attempt {attempt}/3..."
+                )
                 await self.start_connection()
                 await asyncio.sleep(0.5)
                 if self.connected:
-                    self.ten_env.log_info(f"Reconnected successfully on attempt {attempt}")
+                    self.ten_env.log_info(
+                        f"Reconnected successfully on attempt {attempt}"
+                    )
                     break
                 if attempt == 3:
-                    self.ten_env.log_error("Failed to reconnect after 3 attempts, discarding audio frame")
+                    self.ten_env.log_error(
+                        "Failed to reconnect after 3 attempts, discarding audio frame"
+                    )
                     await self.send_asr_error(
                         ModuleError(
                             module=MODULE_NAME_ASR,
                             code=ModuleErrorCode.FATAL_ERROR.value,
-                            message="ASR connection lost and reconnection failed after 3 attempts"
+                            message="ASR connection lost and reconnection failed after 3 attempts",
                         )
                     )
                     return False
@@ -522,28 +503,41 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             audio_data = bytes(buf)
 
             # Log first audio frame
-            if not hasattr(self, '_audio_frame_count'):
+            if not hasattr(self, "_audio_frame_count"):
                 self._audio_frame_count = 0
             self._audio_frame_count += 1
             if self._audio_frame_count == 1:
-                self.ten_env.log_info(f"[ASR] First audio frame received: {len(audio_data)} bytes")
+                self.ten_env.log_info(
+                    f"[ASR] First audio frame received: {len(audio_data)} bytes"
+                )
 
             # Dump audio data
             if self.audio_dumper:
                 await self.audio_dumper.push_bytes(audio_data)
 
             # Update timeline
+            audio_data_len = len(audio_data)
             self.audio_timeline.add_user_audio(
-                int(len(audio_data) / (self.config.sample_rate / 1000 * 2))
+                int(audio_data_len / (self.config.sample_rate / 1000 * 2))
             )
 
             # Send audio data to FunASR recognition service
             try:
+                self.ten_env.log_info(
+                    f"[ASR] recognition sent audio frame before: {audio_data_len} bytes"
+                )
                 self.recognition.send_audio_frame(audio_data)
+                self.ten_env.log_info(
+                    f"[ASR] recognition sent audio frame later: {audio_data_len} bytes"
+                )
             except Exception as e:
                 # 如果是 WebSocket 已关闭相关的错误，静默处理
                 error_msg = str(e)
-                if "WebSocket" in error_msg or "closed" in error_msg.lower() or "not running" in error_msg.lower():
+                if (
+                    "WebSocket" in error_msg
+                    or "closed" in error_msg.lower()
+                    or "not running" in error_msg.lower()
+                ):
                     self.ten_env.log_info("WebSocket closed, discarding audio frame")
                 else:
                     self.ten_env.log_error(f"Error in send_audio_frame: {e}")
