@@ -210,8 +210,7 @@ class MainControlExtension(AsyncExtension):
             (
                 is_meaningful,
                 elapsed,
-                _,
-                _,
+                raw_response,
             ) = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
                 f"[MainControlExtension] TextIntentValidator: "

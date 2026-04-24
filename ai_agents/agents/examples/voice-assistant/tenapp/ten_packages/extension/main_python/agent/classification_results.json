@@ -1,0 +1,5813 @@
+{
+  "summary": {
+    "total": 967,
+    "real_question": 675,
+    "noise": 292,
+    "unknown": 0,
+    "model": "Qwen/Qwen2.5-72B-Instruct"
+  },
+  "results": [
+    {
+      "index": 1,
+      "query": "这个定期间，人家跑的多，你高安的有空间，好点。",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 2,
+      "query": "所有的所有的单元应该是一起抄的吗？",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 3,
+      "query": "好，我我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了，我知道了",
+      "label": "noise",
+      "reason": "重复填充词"
+    },
+    {
+      "index": 4,
+      "query": "是正常的嘛？",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 5,
+      "query": "我这边老出错，然后就得让我改，然后现在给的这个东西就不能用，你知道吗？",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 6,
+      "query": "什么是对数公式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 7,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 8,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 9,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 10,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 11,
+      "query": "小静同学，请帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 12,
+      "query": "速度是快了点儿。",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 13,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 14,
+      "query": "已知数列AN的前N项和SN等于N乘以四分之一加上N平方乘以三分之二加三，求通项公式AN，并判断数列是否为等差数列。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 15,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 16,
+      "query": "谁请帮我找？",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 17,
+      "query": "请问二项式定理的公式是啥？怎么样子？",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 18,
+      "query": "这个不插电的话会很卡。",
+      "label": "noise",
+      "reason": "内容不构成有效提问"
+    },
+    {
+      "index": 19,
+      "query": "什么是基本不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 20,
+      "query": "等式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 21,
+      "query": "像是定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 22,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 23,
+      "query": "对，那也也就是说是吧，我怎么找呢？那不是有一个NAS，你不用的经常不用的东西，你但是你还想要，你就放在那个NAS上嘛。",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 24,
+      "query": "但是我不定分，实际上出来就可以让每个人去自己看。",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 25,
+      "query": "相似定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 26,
+      "query": "像是定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 27,
+      "query": "项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 28,
+      "query": "等价式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 29,
+      "query": "像是定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 30,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 31,
+      "query": "项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 32,
+      "query": "走到S点的时候，我觉问她，然后她在乎我。",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 33,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 34,
+      "query": "但是全解决了一个褶子，比较卡的问题。",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 35,
+      "query": "而项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 36,
+      "query": "欧总要求的是这一周能请的次勤，我是尽量的，然后对，就是这这个区域的次勤，因为我周末都在加班，对不对？",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 37,
+      "query": "求解不得是X平方减负X加六小于零的解",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 38,
+      "query": "到时候我跟这个化简老师说一下，好吧。",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 39,
+      "query": "等价式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 40,
+      "query": "请问X平方减五X加六小于零的解集是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 41,
+      "query": "三角形的底和高斯的相等，偏移了。",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 42,
+      "query": "sine四二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 43,
+      "query": "给我两个数学公式。",
+      "label": "real_question",
+      "reason": "请求提供数学公式"
+    },
+    {
+      "index": 44,
+      "query": "等一下公式",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 45,
+      "query": "等你的公式",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 46,
+      "query": "那是定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 47,
+      "query": "等式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 48,
+      "query": "三二项式定理的公式是",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 49,
+      "query": "指向式定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 50,
+      "query": "已知函数F（X）等于X的三次方加上A乘以X平方加上BX加C在X等于一处取得极值负二，且F零的反函数等于负三，求 A、B、C的值。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 51,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 52,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 53,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯问候，无问题意图"
+    },
+    {
+      "index": 54,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 55,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 56,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯问候，无问题意图"
+    },
+    {
+      "index": 57,
+      "query": "二项式定理的公式是，那是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 58,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 59,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯问候，无问题意图"
+    },
+    {
+      "index": 60,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 61,
+      "query": "你好",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 62,
+      "query": "因为一二三四五六，你那是排的下面是竖边，二项式定理的公式是什么？对呀，按他们现在用那个算的头，然后。",
+      "label": "noise",
+      "reason": "包含无关内容"
+    },
+    {
+      "index": 63,
+      "query": "你的公式是什么？",
+      "label": "noise",
+      "reason": "问题不明确"
+    },
+    {
+      "index": 64,
+      "query": "是定理的公式是什么？",
+      "label": "noise",
+      "reason": "问题不明确"
+    },
+    {
+      "index": 65,
+      "query": "你看，比如说它的正负号不是直接除以质量乘以负吗？",
+      "label": "noise",
+      "reason": "包含无关内容"
+    },
+    {
+      "index": 66,
+      "query": "投影的，现在这个实验超时，负的，星移，这个100000000。",
+      "label": "noise",
+      "reason": "包含无关内容"
+    },
+    {
+      "index": 67,
+      "query": "已知函数F(X)等于X的三次方加上A乘以X平方加上BX加C在X等于一处取得极值负二，且F零的反函数等于负三，求A、B、C的值。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 68,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 69,
+      "query": "数列的递推公式与通项公式有什么区别？已知数列的前N项和SN如何求通项公式？AN如果数列同时满足递推公式和SN的关系，如何求解？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 70,
+      "query": "等式定理的公式是什么？",
+      "label": "noise",
+      "reason": "问题不明确"
+    },
+    {
+      "index": 71,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 72,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 73,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 74,
+      "query": "好，转一下已知双曲线X的平方除以4减去Y的平方除以5等于1，上的一点P到左交点的距离为6，求点P到右交点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 75,
+      "query": "求曲线y等于x的三次方减去3x，在点一负二处的切线方程。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 76,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 77,
+      "query": "负的值底下，啊，圈t，k的性质。",
+      "label": "noise",
+      "reason": "包含无关内容"
+    },
+    {
+      "index": 78,
+      "query": "逗你气嘛？哎，他你看他是不是挂了？他他挂了。",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 79,
+      "query": "已知数列的前N项和SN如何求通项公式？AAN如果数列同时满足递推公式和SN的关系如何求解？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 80,
+      "query": "椭圆问一下",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 81,
+      "query": "求函数F(X等于X平方乘以E的X次方的导数",
+      "label": "real_question",
+      "reason": "求导数问题"
+    },
+    {
+      "index": 82,
+      "query": "A五等于十，A十等于二十五，求A一和公差D。",
+      "label": "real_question",
+      "reason": "数列求解问题"
+    },
+    {
+      "index": 83,
+      "query": "求椭圆X平方除以25，加上Y的平方除以9等于1的焦距和离心率。",
+      "label": "real_question",
+      "reason": "椭圆参数求解"
+    },
+    {
+      "index": 84,
+      "query": "好，问一下求圆心在1负2上，半径为3的圆的标准方程，并判断点42是否在圆上。",
+      "label": "real_question",
+      "reason": "圆方程及点判断"
+    },
+    {
+      "index": 85,
+      "query": "计算向量A等于123与B等于4负6的数量积，以及向量A的模长。",
+      "label": "real_question",
+      "reason": "向量计算问题"
+    },
+    {
+      "index": 86,
+      "query": "三乘以三等于多少？",
+      "label": "real_question",
+      "reason": "简单数学问题"
+    },
+    {
+      "index": 87,
+      "query": "如果复合函数有多层嵌套，例如y等于3x的正弦的平方，应如何求导？",
+      "label": "real_question",
+      "reason": "复合函数求导"
+    },
+    {
+      "index": 88,
+      "query": "偶和函数的求导法则是什么？",
+      "label": "real_question",
+      "reason": "偶和函数求导法则"
+    },
+    {
+      "index": 89,
+      "query": "证一下，我说的重点是注",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 90,
+      "query": "如何判断一个柱点是极大值点还是极小值点？",
+      "label": "real_question",
+      "reason": "极值点判断"
+    },
+    {
+      "index": 91,
+      "query": "函数极值的定义是什么？导数为零的已点一定是极值点吗？为什么？",
+      "label": "real_question",
+      "reason": "函数极值定义及性质"
+    },
+    {
+      "index": 92,
+      "query": "导数的几何意义是什么？曲线在某点处的切线方程如何求？",
+      "label": "real_question",
+      "reason": "导数几何意义及切线方程"
+    },
+    {
+      "index": 93,
+      "query": "等一下式定理的故事是什么？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 94,
+      "query": "已知数列的前N项和SN如何求图像公式AN呢？如果数列同时满足递推公式和SN的关系，如何求解呢？",
+      "label": "real_question",
+      "reason": "数列公式求解"
+    },
+    {
+      "index": 95,
+      "query": "它的渐近线有什么特点？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 96,
+      "query": "请帮我简呃回答一下双曲线的渐近线方程如何求？",
+      "label": "real_question",
+      "reason": "双曲线渐近线方程"
+    },
+    {
+      "index": 97,
+      "query": "椭圆的离心率E的变，这个E是什么？E的取值范围是多少？E的大小如何影响椭圆的形状啊？为什么？",
+      "label": "real_question",
+      "reason": "椭圆离心率问题"
+    },
+    {
+      "index": 98,
+      "query": "直线的倾斜角阿尔法的取值范围是多少？当阿尔法等于九十度时，直线的斜角斜呃斜率存在吗？为什么直线的斜率K与倾斜角阿尔法的函数关系是什么？当阿尔法从零度增大到一百八十度时，K如何变化？",
+      "label": "real_question",
+      "reason": "直线倾斜角及斜率关系"
+    },
+    {
+      "index": 99,
+      "query": "空间向量基本定理的内容是什么？该定理与平面向量基本定理有什么联系和区别？为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "空间向量基本定理"
+    },
+    {
+      "index": 100,
+      "query": "三加三等于几？",
+      "label": "real_question",
+      "reason": "简单数学问题"
+    },
+    {
+      "index": 101,
+      "query": "附件的话，以点来填，然后勾选能够做啊，勾足一个。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 102,
+      "query": "我就问你，天梯你说什么一大堆干嘛呀？",
+      "label": "noise",
+      "reason": "情绪表达，无明确问题"
+    },
+    {
+      "index": 103,
+      "query": "知道今天北京天气怎么样吗？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 104,
+      "query": "项式定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 105,
+      "query": "这是火吗？",
+      "label": "noise",
+      "reason": "纯感叹，无明确问题"
+    },
+    {
+      "index": 106,
+      "query": "好像是定一个公式，是正吗？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 107,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 108,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 109,
+      "query": "像是定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 110,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 111,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 112,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯问候，无明确问题"
+    },
+    {
+      "index": 113,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 114,
+      "query": "一二三二阶式定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 115,
+      "query": "一二三，二项式定理的公式是什么？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 116,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 117,
+      "query": "刚才我验了一下，没货，完全没对齐。我给你指一个，我这个下边的已知。",
+      "label": "noise",
+      "reason": "旁人对话，意图不明"
+    },
+    {
+      "index": 118,
+      "query": "求解不等式X²减5X加6小于零的题",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 119,
+      "query": "求不等式X平方减五X加六小于零的解",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 120,
+      "query": "求不等式X平方减负X加六小于零的解",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 121,
+      "query": "呃，空间向量的概念是什么？",
+      "label": "real_question",
+      "reason": "请求讲解空间向量概念"
+    },
+    {
+      "index": 122,
+      "query": "三十定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学定理公式查询"
+    },
+    {
+      "index": 123,
+      "query": "竖的老师只有后边几个，所以不能写全部。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 124,
+      "query": "像是定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学定理公式查询"
+    },
+    {
+      "index": 125,
+      "query": "定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学定理公式查询"
+    },
+    {
+      "index": 126,
+      "query": "但是定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学定理公式查询"
+    },
+    {
+      "index": 127,
+      "query": "后门到底是不是违法的？",
+      "label": "real_question",
+      "reason": "法律问题查询"
+    },
+    {
+      "index": 128,
+      "query": "到学历是不是犯法的？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 129,
+      "query": "中国的十大开国元帅有哪些人？",
+      "label": "real_question",
+      "reason": "历史人物查询"
+    },
+    {
+      "index": 130,
+      "query": "角能带口吗？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 131,
+      "query": "定包含哪些？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 132,
+      "query": "为什么说圈这儿呢？",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 133,
+      "query": "对，但但我觉得有些敏感词就不是敏感词。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 134,
+      "query": "一天黄金的价格是多少？",
+      "label": "real_question",
+      "reason": "黄金价格查询"
+    },
+    {
+      "index": 135,
+      "query": "你好，今天黄金的价格是多少？",
+      "label": "real_question",
+      "reason": "黄金价格查询"
+    },
+    {
+      "index": 136,
+      "query": "今天北京天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 137,
+      "query": "大家好，请问今天北京天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 138,
+      "query": "求不等式x²减5x加6小于0的解",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 139,
+      "query": "你帮我求解负的是X平方减五X加六小于零的解。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 140,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an",
+      "label": "real_question",
+      "reason": "数学数列求解"
+    },
+    {
+      "index": 141,
+      "query": "啥现象啊？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 142,
+      "query": "我这可以下载呀，po。",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 143,
+      "query": "哪个版本下不了？",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 144,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 145,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯问候"
+    },
+    {
+      "index": 146,
+      "query": "已知数列AN的前N项和SN等于四分之一乘以N平方加上三分之二乘以N加三，求通项公式AN。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 147,
+      "query": "直线的倾斜角阿尔法的取值范围是多少？当阿尔法等于九度时，直线的斜率存在吗？为什么直线的斜率K与倾斜角阿尔法的函数关系是什么？当阿尔法从零度增大到一百八十度时，K如何变化？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 148,
+      "query": "求圆心在一负二半径为三的圆的标准方程，并判断点四二是否在圆上。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 149,
+      "query": "都经过点P为R负三，且斜率为六十度的直线方程。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 150,
+      "query": "已知等差数列A N中A一等于二，A四等于八，求公差D，通项公式A N以及前实项和S十。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 151,
+      "query": "不问了。嗯。不问了。不问了，你真的是你既然不问了。嗯。反正错了你得改。你时间都到了你还不问啊。哎呀，那几天不行了，那几天。你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你你",
+      "label": "noise",
+      "reason": "重复填充词"
+    },
+    {
+      "index": 152,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 153,
+      "query": "我介绍一下魏晋时期著名的数学家刘琨。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 154,
+      "query": "二式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 155,
+      "query": "三分之三等于几？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 156,
+      "query": "我带一个东西进去之后，我要进直方图。你带。",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 157,
+      "query": "你这还引来了哪个哪个函数呀？我也不知道。那咱现在不也没管哪个函数吗？就是登录的二项式定理的公式是什么？",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 158,
+      "query": "一个特点就是他最怕的就是他这个转轴。",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 159,
+      "query": "这一块就是你在勾角斜率的形状的关系。",
+      "label": "noise",
+      "reason": "不构成有效提问"
+    },
+    {
+      "index": 160,
+      "query": "因为我刚才试了，然后刚一换影就开始问问题，不行就问那三根一三的也出不来，我大概等了两秒左右，两秒多点对，两秒多点，然后再说问题他就能出来问题。",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 161,
+      "query": "我们是能够根据正弦定理的，就是从呃关于负一、负二、余、负三。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 162,
+      "query": "能识别出位的，你这个圆怎么识别出位？",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 163,
+      "query": "我的意思就是想让我的抛物线与",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 164,
+      "query": "这样子，就是我唤醒之后，唤醒刚唤醒的就开始计时，开始开始之后一直到我，然后结束到我开始张嘴提问题，还没有开始说字，张嘴提问题，正要结束，正要就是我中间。",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 165,
+      "query": "对，就是那个，或者边的那俩。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 166,
+      "query": "然后我再说，就是我把说问题的那个时长啊，说问题那个字的时长也给算进去了，对不对？你算不算？",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 167,
+      "query": "2和弦是我们的一个逆矩阵，对吧？这是它的面积和长度的平方。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 168,
+      "query": "因果关系，而你上弦定以后，你把那个域给它填上，再搜。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 169,
+      "query": "这个是哪里的？找题啊，嗯，然后。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 170,
+      "query": "点到七，我需要找一个。",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 171,
+      "query": "我留的那些票，您看我微信、直播间、零的那些票。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 172,
+      "query": "线的切弦角，拉它的取值范围是多少？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 173,
+      "query": "是圆，底，这是啥？",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 174,
+      "query": "边向量基本定理的内容是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 175,
+      "query": "啊，我你之前提供过那种能设备的接口吗？已。",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 176,
+      "query": "对，往你的轴上放了一个问号，然后你看到一个全部二下式。定的公式是什么？定积分，同样用积分定的，你看这个你怎么样的？",
+      "label": "noise",
+      "reason": "不完整句子，意图不明"
+    },
+    {
+      "index": 177,
+      "query": "就是是相当于就是权限就都没了，是吧？以前的那个些链接都都没了，都得重新弄那个。行，等一下到期了，你有办法直接把把我们都加进去，要不然后边后边还得再向你问你问一下都加进来了，就只有申请才能加进来了，这是我的。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 178,
+      "query": "好，对，这个好像有点问题。咱们这个是一个啊，也也不用那么扁，要不其他的设计图也都改了吗？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 179,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 180,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 181,
+      "query": "你好",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 182,
+      "query": "四加四等于几？",
+      "label": "real_question",
+      "reason": "数学问题"
+    },
+    {
+      "index": 183,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 184,
+      "query": "你好",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 185,
+      "query": "什么是失蜡铸造",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 186,
+      "query": "你好",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 187,
+      "query": "唤醒后几秒后提问才有效。",
+      "label": "noise",
+      "reason": "技术调试对话"
+    },
+    {
+      "index": 188,
+      "query": "哪个产品你直接找到对置就行？他如果行的话，那我们把那个直接挂上。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 189,
+      "query": "我想杀死你",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 190,
+      "query": "我想杀死你",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 191,
+      "query": "哦，不停了，对不对？",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 192,
+      "query": "我想杀死你",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 193,
+      "query": "我想知道近平是什么",
+      "label": "real_question",
+      "reason": "政治人物查询"
+    },
+    {
+      "index": 194,
+      "query": "这压错了，没点呢，怎么还压了呢？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 195,
+      "query": "都是跟你说了，都找的什么呀？你没问，我看什么呀？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 196,
+      "query": "算式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学问题"
+    },
+    {
+      "index": 197,
+      "query": "我有这个105，那是压星的，那能看出啥来着啊？压105啊，对。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 198,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an，",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 199,
+      "query": "求解不等式，X平方减5X加六小于零的解",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 200,
+      "query": "接下来测试断句功能集合中的元素、三大特性是什么，请分别举例说明确定性和互异性的含义。",
+      "label": "real_question",
+      "reason": "数学概念讲解"
+    },
+    {
+      "index": 201,
+      "query": "我觉得没人脸，没人脸基本上是。好，这基本上没出来过，但是有人脸的话，那就看这个你说的这个词跟这个小静同学到底有多像。这个是吧，你如果说乱七八糟的，肯定是唤醒不了，但是你说说这个接近小静同学的这种词，匹配上肯定就还是能唤醒的。",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 202,
+      "query": "嗯，解决方案逻辑行不通。哎，这谁画的？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 203,
+      "query": "抛物线的标准方程有四种形式，分别对应交点在坐标轴正半轴或负半轴。请根据抛物线的定义，到定点距离等于到定直线距离推导出交点在X轴正半轴，准线为P X等于负P除以20的标准方程，Y的平方等于零点二乘以P X，并说明P的积和意义。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 204,
+      "query": "你老师在那儿放，学生在那儿看不了。后来加的那个东西就那啥都加，学生一拉你都看那个东西，那其实都这玩意儿。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 205,
+      "query": "你看老师那个有吗？对对对对，就是老师老师不是有一个实验室教学过，就是一看就一开始用这个玩意儿搞的。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 206,
+      "query": "就是那个已见教学内容的时候，见教学内容时候有个勾。有个按钮什么开机。对，有个选项，有个选项，你勾选了这个东西。一个开机按钮，还有一个开机什么，是我录课那个东西。对对对。对，你勾选了这个东西，它它这个旋转就会有这个东西。至于教师都有，都有。可以吗？哦，然后进去的时候怎么样？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 207,
+      "query": "抛物线的标准方程有四种形式，分别对应交点在坐标轴正半轴或负半轴。请根据抛物线的定义，绕定点距离等于到定直线距离推导出交点在X轴正半轴，准线为X等于负P除以20的标准方程Y的平方等于2PX，并说明P的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 208,
+      "query": "俩应该都是偷的，是不？",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 209,
+      "query": "不，你只选了目标环节的时候，没有这个类型。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 210,
+      "query": "其中一个，然后等时序的表达法是特殊的，是均等的。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 211,
+      "query": "10次点对角",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 212,
+      "query": "椭圆的标准方程是通过将椭圆的几何定理到两定点距离之和为常数转化为代数方程，并化简得到的。请叙述这个推导过程，并说明为什么要令B的平方等于A的平方减C的平方，以及A、B、C的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 213,
+      "query": "直线和圆的方程中，我们通过建立直线的点斜式方程推导出了直线的斜截式、两点式、截距式方程。请详细说明从点斜式到斜截式的转化过程，并指出斜截式中各参数的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 214,
+      "query": "这个还是得去求一下。",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 215,
+      "query": "点H妈都不知道死的，喂，具体还问我，一问我，我我就这个线来照数据线来验证，我也不明白说错了，所以我不敢跟他说。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 216,
+      "query": "我缺少一个s，是吧？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 217,
+      "query": "求和的证明，但你说的是对的。那混合的就是说，如果既有他还有他，是这个混合就写成他了。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 218,
+      "query": "因为我这边显示是这个混合交集，所以它才显示是已知交集啊，对。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 219,
+      "query": "对，如果是拆时间的，因为我们时间嘛，时间就是时间的那个时序嘛，是吧？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 220,
+      "query": "这块儿应该压B出坐了，对，已经出坐了，什么车？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 221,
+      "query": "投影和角斜就是那个四个，那谁先就是第一个啊，三和弦谁先就是个问题，对吧？",
+      "label": "noise",
+      "reason": "内容不清晰，无明确问题"
+    },
+    {
+      "index": 222,
+      "query": "圆也可，混合可导，求取一个值。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 223,
+      "query": "求连续的或者剩的",
+      "label": "noise",
+      "reason": "内容不完整，无明确问题"
+    },
+    {
+      "index": 224,
+      "query": "对不对？因为产品原因，我问了说不清楚，还是偏。嗯，他那天你设计讨论这个问题，说有几个情况，你有没有可能一下转了好几块钱，我问了，我问过多少钱，问你一下转了一半多，我不知道，都是不是教师。",
+      "label": "noise",
+      "reason": "内容混乱，无明确问题"
+    },
+    {
+      "index": 225,
+      "query": "好，大家这边视频讨论就这些，看完一些问题吧。有没有可能应该改投影的？我看看，现在我马上做，想要不给你下载一个我的摇摇的教程。",
+      "label": "noise",
+      "reason": "内容混乱，无明确问题"
+    },
+    {
+      "index": 226,
+      "query": "我是把所有的和减1啊。",
+      "label": "noise",
+      "reason": "内容不完整，无明确问题"
+    },
+    {
+      "index": 227,
+      "query": "这是你的定位，是吧？",
+      "label": "noise",
+      "reason": "内容不清晰，无明确问题"
+    },
+    {
+      "index": 228,
+      "query": "在直线和圆的方程中，我们通过建立直线的点斜式方程推导出了直线的斜截式、圆点式、斜截距式方程。请详细说明从点斜式到斜截式的转化过程，并指出斜截式中各参数的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 229,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量及运算。请结合教材中的例题说明如何利用空间向量的数量及证明直线与平行、平面垂直的判定定理，并写出用向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 230,
+      "query": "大部分都是些质数。",
+      "label": "noise",
+      "reason": "内容不完整，无明确问题"
+    },
+    {
+      "index": 231,
+      "query": "今天是几月几号？",
+      "label": "real_question",
+      "reason": "日期查询问题"
+    },
+    {
+      "index": 232,
+      "query": "今天是几月几号？",
+      "label": "real_question",
+      "reason": "日期查询问题"
+    },
+    {
+      "index": 233,
+      "query": "今天是几月几号？",
+      "label": "real_question",
+      "reason": "日期查询问题"
+    },
+    {
+      "index": 234,
+      "query": "达到条件对，虽然你没识别出来，就是未达到条件。",
+      "label": "noise",
+      "reason": "内容不清晰，无明确问题"
+    },
+    {
+      "index": 235,
+      "query": "帮我讲解集合的概念",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 236,
+      "query": "晕染等一下，我试过不行，小静同学。",
+      "label": "noise",
+      "reason": "内容不清晰，无明确问题"
+    },
+    {
+      "index": 237,
+      "query": "你现在喊也行，小静同学。",
+      "label": "noise",
+      "reason": "内容不清晰，无明确问题"
+    },
+    {
+      "index": 238,
+      "query": "帮我讲解集合的概念",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 239,
+      "query": "什么是平面向量？平面向量有什么用处？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 240,
+      "query": "帮我讲解一下条件概率与群概率的公式。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 241,
+      "query": "好，我讲解一下负数的式子运算。",
+      "label": "noise",
+      "reason": "用户自述，非提问"
+    },
+    {
+      "index": 242,
+      "query": "抛物线的标准方程有四种形式，分别对应交点在坐标轴正半轴或负半轴。请根据抛物线的定义，到定点的距离等于到定直线的距离推导出交点在X轴正半轴，准线为X等于负P除以20的标准方程，Y的平方等于2乘以PX，并说明P的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 243,
+      "query": "数列的学习中，我们学习了等差数列和等比数列的通项公式与前N项和公式。请分别说明等差数列和等比数列的前N项和公式的推导方法、逗序相加法和错位相减法，并比较这两种方法的异同。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 244,
+      "query": "在实际问题中，常常需要求函数的闭区间上的最大值和最小值。已请以函数FX等于三分之一X三次方减去四X加四在区间零到三上为闭区间为例，说明求最值的步骤，并解释为什么需要将其值与端点值进行比较。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 245,
+      "query": "求抛物线y的平方等于8x的交点坐标，准线方程，并求抛物线上与交点距离为6的点的坐标。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 246,
+      "query": "三乘以三等于几？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 247,
+      "query": "等比数列的求和",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 248,
+      "query": "已知圆C的方程为X平方加Y的平方减四X加六Y减十二等于零，求圆心坐标、半径，并判断点M为一负二时在圆内圆上还是圆外。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 249,
+      "query": "那个你知道是哪个是吧？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 250,
+      "query": "三乘以三等于几？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 251,
+      "query": "已知函数F(X等于E的X次方减去X求F(X的反函数，并证明F(X大于等于1使恒成立，且等号仅在X等于零时成立。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 252,
+      "query": "半角公式是什么？给出基本恒等式？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 253,
+      "query": "求函数F(X等于X三次方减去三乘以X平方减去九X加五的单调区间极值点，以及在区间负二到四为E区间上的最大值和最小值。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 254,
+      "query": "等差数列A N中，A一等于二，A四等于八，求公差D，通项公式A N以及前十项和S十。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 255,
+      "query": "已知双曲线X平方除以9减去y的平方除以16等于1，求它的实半周长、虚半周长、交点坐标、倍心率和渐近线方程。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 256,
+      "query": "加一等于几？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 257,
+      "query": "求椭圆16X²+25Y²=4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "label": "noise",
+      "reason": "句子过长，不完整"
+    },
+    {
+      "index": 258,
+      "query": "在实际问题中，常常需要求函数的函数在闭区间上的最大值和最小值。请以函数FX等于三分之一X三次方减去四X加四，在区间零到三上闭区间为例，说明求最值的步骤，并解释为什么需要将极值与端点值进行比较。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 259,
+      "query": "我讲解一下二项式定理。",
+      "label": "noise",
+      "reason": "用户自述，非提问"
+    },
+    {
+      "index": 260,
+      "query": "用导数研究函数的单调性时，我们通过分析导数的正负来判断函数的增减。请以函数FX等于X的三次方减去3X为例，说明如何通过求导、解方程、FX等于零、列表分析等步骤确定函数的单调区间和极点值。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 261,
+      "query": "导数的概念源于瞬时变化率的研究。以刚才跳水运动员的高度（H）等于负4.9T的平方加上4.8乘以T加1为例，说明如何通过平均速度的极限得到T等于1的瞬时速度，并解释导数H1等于负5的物理意义。",
+      "label": "real_question",
+      "reason": "求解导数概念及应用"
+    },
+    {
+      "index": 262,
+      "query": "椭圆的标准方程是通过将椭圆的几何定义到两定点距离之和为常数，转化为代数方程，并化简得到的。请叙述这两个推导过程，并说明为什么要令B的平方等于A的平方减C的平方，以及A、B、C的几何意义。",
+      "label": "real_question",
+      "reason": "求解椭圆方程推导过程"
+    },
+    {
+      "index": 263,
+      "query": "抛物线的标准方程有四种形式，分别对应交点在坐标、坐标轴、正半轴或负半轴上。请根据抛物线的定义，照定点距离等于到定直线距离推导出交点在M轴、正半轴，转线为X等于负P除以20的标准方程，y的平方等于2乘以PX，并说明P的积和E。",
+      "label": "real_question",
+      "reason": "求解抛物线方程推导过程"
+    },
+    {
+      "index": 264,
+      "query": "数学归纳法是一种证明与正整数有关的命题的重要方法。请结合教材中正门等差数列通项公式的例子，说明数学归纳法的两个步骤：归纳电积和归纳地推各自的作用，以及为什么两个步骤缺一不可。",
+      "label": "real_question",
+      "reason": "求解数学归纳法步骤"
+    },
+    {
+      "index": 265,
+      "query": "在直线和圆的方程中，我们通过建立直线的点斜式方程推导出了直线的斜截式、零点式和截距式方程。请详细从说明从点斜式到斜截式的转换过程，并指出斜截式中各参数的题和意义。",
+      "label": "real_question",
+      "reason": "求解直线方程转换过程"
+    },
+    {
+      "index": 266,
+      "query": "函数，我们20",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 267,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "求解简单数学问题"
+    },
+    {
+      "index": 268,
+      "query": "在直线和圆的方程中，我们通过建立直线的点斜式方程推导出了直线的斜截式、原点式和截距式方程。从详细、详细从说明点、斜式到斜截式的转化过程，并指出点斜式中各参数的几何意义。",
+      "label": "real_question",
+      "reason": "求解直线方程转换过程"
+    },
+    {
+      "index": 269,
+      "query": "集合中元素的三个特征是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "求解集合元素特征"
+    },
+    {
+      "index": 270,
+      "query": "哦，你看那个啥？你看那个歪点那个活跃时间。",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 271,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量及运算。请结合教材中的例题说明如何利用空间向量的数量及证明直线与平面垂直的判定定理，并写出用向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "求解空间向量应用"
+    },
+    {
+      "index": 272,
+      "query": "后台的那几个球啊？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 273,
+      "query": "要问你这个，你OK。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 274,
+      "query": "一个次数多，一个读数，一库一库的分库，你想。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 275,
+      "query": "正比数列的倒数，OK，就是你抛物线。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 276,
+      "query": "双曲线的渐近线是双曲线的主要几何特征，请以双曲线X平方除以A的平方减去Y的平方除以B的平方等于一为例证明直线Y等于正负B除以A X是其渐近线，并说明当X无限增大时，双曲线与渐近线的距离趋近于零。",
+      "label": "real_question",
+      "reason": "求解双曲线渐近线证明"
+    },
+    {
+      "index": 277,
+      "query": "他是什么时候发布",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 278,
+      "query": "到底是什么时候发生",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 279,
+      "query": "你条时间长，等一下",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 280,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "求解数学公式"
+    },
+    {
+      "index": 281,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 282,
+      "query": "为了学习中，我们学习了总",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 283,
+      "query": "在数列的学习中，我们学习了等差数列和等比数列的通项公式与前N项和公式。请分别说明等差数列和等比数列的前N项和公式的推导方法，使用倒序相加法和错位相加法，并比较这两种方法的异同。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 284,
+      "query": "啊，那行，确实是打断一下9400 还还报错，等一下",
+      "label": "noise",
+      "reason": "技术调试对话，无明确意图"
+    },
+    {
+      "index": 285,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量积运算。请结合教材中的例题说明如何利用空间向量的数量积证明直线与平面垂直的判定定理，并写出用向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 286,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 287,
+      "query": "暂时定理的公式是什么？",
+      "label": "noise",
+      "reason": "无意义问题，不存在暂时定理"
+    },
+    {
+      "index": 288,
+      "query": "转上一面，零点到头。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 289,
+      "query": "你这是所有的值，是吧？",
+      "label": "noise",
+      "reason": "确认性对话，无明确意图"
+    },
+    {
+      "index": 290,
+      "query": "看这卡的不，嘴都成这样了。",
+      "label": "noise",
+      "reason": "情绪表达，无明确意图"
+    },
+    {
+      "index": 291,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 292,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量积运算。请结合教材中的例题说明如何利用空间向量的数量积证明直线与平面垂直的判定定理，并写出向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 293,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 294,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 295,
+      "query": "半角公式，你点的半角。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 296,
+      "query": "算一下是从西二旗到海淀黄庄。",
+      "label": "real_question",
+      "reason": "交通查询，明确问题"
+    },
+    {
+      "index": 297,
+      "query": "西二旗到海莲花庄怎么走？帮我规划一下路线。",
+      "label": "real_question",
+      "reason": "交通查询，明确问题"
+    },
+    {
+      "index": 298,
+      "query": "23式定理的公式是什么？",
+      "label": "noise",
+      "reason": "无意义问题，不存在23式定理"
+    },
+    {
+      "index": 299,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量及运算。请结合教材中的例题说明如何利用空间向量的数量及证明直线与平面垂直的判定定理，并写出向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 300,
+      "query": "嗯，二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 301,
+      "query": "集合中元素的三个特征是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "明确求解集合元素特征"
+    },
+    {
+      "index": 302,
+      "query": "空间向量与立体几何中，你们学习了空间向量的数量积运算，请结合教材中的例题说明如何利用空间向量的数量积证明直线与平面垂直的判定定理，并且复用向量法证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "请求讲解空间向量应用"
+    },
+    {
+      "index": 303,
+      "query": "请帮我讲解一下数列的概念，并举一道例题说明数列的作用。",
+      "label": "real_question",
+      "reason": "请求讲解数列概念"
+    },
+    {
+      "index": 304,
+      "query": "相似定理的公式是什么？",
+      "label": "real_question",
+      "reason": "求解相似定理公式"
+    },
+    {
+      "index": 305,
+      "query": "嗯，等价等于求H，等于负N。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 306,
+      "query": "那我们怀疑这个呢？",
+      "label": "noise",
+      "reason": "疑问句，但无明确意图"
+    },
+    {
+      "index": 307,
+      "query": "等价的话，现在这个是不等，不再等，不再等，对吧？",
+      "label": "noise",
+      "reason": "重复填充词，无明确意图"
+    },
+    {
+      "index": 308,
+      "query": "安全与概率",
+      "label": "noise",
+      "reason": "短语，无明确问题"
+    },
+    {
+      "index": 309,
+      "query": "嗯，好，OK，单位变的是求A，等于也是余弦，对吧？",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 310,
+      "query": "单位的列是5个。",
+      "label": "noise",
+      "reason": "短语，无明确问题"
+    },
+    {
+      "index": 311,
+      "query": "要不了，你是不是在啊？我重启一下，你。",
+      "label": "noise",
+      "reason": "跟别人说话，无明确意图"
+    },
+    {
+      "index": 312,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量及运算。请结合教材中的例题说明如何利用空间向量的数量及证明直线与平面垂直的判定定理，并且不用向量来证明该定理的主要步骤。",
+      "label": "real_question",
+      "reason": "请求讲解空间向量应用"
+    },
+    {
+      "index": 313,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "求解二项式定理公式"
+    },
+    {
+      "index": 314,
+      "query": "现在要测一下这个它的识别的精度怎么样？就比如说我录了多少人，然后比如说我录了二十个人",
+      "label": "noise",
+      "reason": "技术调试对话，无明确意图"
+    },
+    {
+      "index": 315,
+      "query": "等量的稳定，添加人脸库，然后添加到人脸库之后。",
+      "label": "noise",
+      "reason": "技术调试对话，无明确意图"
+    },
+    {
+      "index": 316,
+      "query": "一百个距离",
+      "label": "noise",
+      "reason": "短语，无明确问题"
+    },
+    {
+      "index": 317,
+      "query": "对，服务和库都在二次方程上。  \\n\\n注意：这里的“二次方程”可能是原文中的特定术语",
+      "label": "noise",
+      "reason": "短语，无明确问题"
+    },
+    {
+      "index": 318,
+      "query": "计算请结合教材中的例题说明如何利用空间向量的数量积及证明直线与平面垂直的判定定理",
+      "label": "real_question",
+      "reason": "请求讲解空间向量应用"
+    },
+    {
+      "index": 319,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量积运算。请结合教材中的例题",
+      "label": "real_question",
+      "reason": "请求讲解空间向量应用"
+    },
+    {
+      "index": 320,
+      "query": "删除我的符号和域，n和t。",
+      "label": "noise",
+      "reason": "技术调试对话，无明确意图"
+    },
+    {
+      "index": 321,
+      "query": "我先买一个。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 322,
+      "query": "北京今天天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 323,
+      "query": "北京今天天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 324,
+      "query": "空间向量与立体几何中，我们学习了空间向量的数量及运算。请结合教材中的例题说明",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 325,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an，并判断数列是否为等差数列。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 326,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 327,
+      "query": "等价式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 328,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an，并判断数列是否为等差数列。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 329,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 330,
+      "query": "三角形的，这是包含和与差的值，求这个。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 331,
+      "query": "对角线也不少，对吧?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 332,
+      "query": "一个图，我那个是P点。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 333,
+      "query": "你看啊，我们嗯，你这个呃，那可能我加上就是二项式定理的公式是什么？",
+      "label": "noise",
+      "reason": "设备调试对话"
+    },
+    {
+      "index": 334,
+      "query": "像是定理的公式是什么?",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 335,
+      "query": "你好",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 336,
+      "query": "什么是柯西不等式？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 337,
+      "query": "呃，这这边能不能把这个？\\n我发现那个它设备的声音好像就是被录进去了，能不能关一下？\\n你知道怎么",
+      "label": "noise",
+      "reason": "设备调试对话"
+    },
+    {
+      "index": 338,
+      "query": "让我讲解一下勾股定理。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 339,
+      "query": "都护的这个就，就在这核心问题上，他们问了不回答，这就事儿。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 340,
+      "query": "知道我的外接半径，好，是不是按照这样转动啊？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 341,
+      "query": "但是陨石分布怎么画的，我操，模型那边都不用动，他们不要去改。你先看",
+      "label": "noise",
+      "reason": "包含无关内容和感叹"
+    },
+    {
+      "index": 342,
+      "query": "周期不等式是什么概念？",
+      "label": "real_question",
+      "reason": "明确的数学概念提问"
+    },
+    {
+      "index": 343,
+      "query": "逗比打打轴是来干什么的呀？",
+      "label": "noise",
+      "reason": "不明确的问题意图"
+    },
+    {
+      "index": 344,
+      "query": "指定的区域已知。",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 345,
+      "query": "明天我们来看求解不等式。",
+      "label": "noise",
+      "reason": "计划性陈述，无明确问题"
+    },
+    {
+      "index": 346,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "明确的天气查询"
+    },
+    {
+      "index": 347,
+      "query": "请帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "明确的请求讲解"
+    },
+    {
+      "index": 348,
+      "query": "函数的导数是什么含义？请分别解释函数导数的几何意义与物理意义。",
+      "label": "real_question",
+      "reason": "明确的数学概念提问"
+    },
+    {
+      "index": 349,
+      "query": "什么是函数的导数？导数的极值、意义和物理意义分别是什么？",
+      "label": "real_question",
+      "reason": "明确的数学概念提问"
+    },
+    {
+      "index": 350,
+      "query": "什么是函数的导数？导数的几何意义和物理意义是什么？",
+      "label": "real_question",
+      "reason": "明确的数学概念提问"
+    },
+    {
+      "index": 351,
+      "query": "求不等式(stop)",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 352,
+      "query": "这块有什么激励表？",
+      "label": "noise",
+      "reason": "不明确的问题意图"
+    },
+    {
+      "index": 353,
+      "query": "等待一个数量积，对不等式。",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 354,
+      "query": "正常讲解的时候概率没那么高，你要是环境复杂一点，那就不好说了。",
+      "label": "noise",
+      "reason": "包含无关内容和感叹"
+    },
+    {
+      "index": 355,
+      "query": "帮我讲解一下二项式定理，哎呦，这这这个这个不行啊，R D C L的这个",
+      "label": "noise",
+      "reason": "包含无关内容和感叹"
+    },
+    {
+      "index": 356,
+      "query": "最优的一个状态，你帮我讲解。",
+      "label": "noise",
+      "reason": "不明确的问题意图"
+    },
+    {
+      "index": 357,
+      "query": "求得量密度表，按完之后的量密度分布表。",
+      "label": "noise",
+      "reason": "不明确的问题意图"
+    },
+    {
+      "index": 358,
+      "query": "还有其他的摄像头之类的，这个对不对？",
+      "label": "noise",
+      "reason": "不明确的问题意图"
+    },
+    {
+      "index": 359,
+      "query": "帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "明确的请求讲解"
+    },
+    {
+      "index": 360,
+      "query": "请帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "明确的请求讲解"
+    },
+    {
+      "index": 361,
+      "query": "有些话，求不等式。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 362,
+      "query": "在零度也是零点差吗?",
+      "label": "real_question",
+      "reason": "数学问题，有明确意图"
+    },
+    {
+      "index": 363,
+      "query": "求不等式x²减5x加6小于零的解",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 364,
+      "query": "求不等式x²减5x加6小于零的解",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 365,
+      "query": "你让我讲解一下x平方减五x加六小于零的几种情况啊。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确意图"
+    },
+    {
+      "index": 366,
+      "query": "求你设置一个分项分布表，前面一项都是区间，对不对？",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 367,
+      "query": "求不等式(stop)等于这个。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 368,
+      "query": "列出抛物线的四种标准方程及其焦点坐标、准线方程。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 369,
+      "query": "函数F(X)等于X平方乘以1的X次方的倒数",
+      "label": "real_question",
+      "reason": "数学问题，有明确意图"
+    },
+    {
+      "index": 370,
+      "query": "求经过点P（2，-3）且倾斜角为60度的直线方程",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 371,
+      "query": "这是网络分布表，换一个时间。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 372,
+      "query": "等待, 停止运行",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 373,
+      "query": "回答得太慢了。",
+      "label": "noise",
+      "reason": "纯情绪表达"
+    },
+    {
+      "index": 374,
+      "query": "一加一等于多少？",
+      "label": "real_question",
+      "reason": "数学问题，有明确意图"
+    },
+    {
+      "index": 375,
+      "query": "你叫什么名字？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 376,
+      "query": "求圆心在（-1，-2）半径为三的圆的标准方程，并判断点（2",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 377,
+      "query": "已知函数y等于sin x加cos x，求它的最小正周期与值域。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 378,
+      "query": "点A（123），点B（456），求向量AB的极坐标及线段AB",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 379,
+      "query": "我经过点P（2，3），且斜率为60的直线方程。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 380,
+      "query": "请帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确意图"
+    },
+    {
+      "index": 381,
+      "query": "已知椭圆X的平方除以25加Y的平方除以16等于1，求它的长",
+      "label": "real_question",
+      "reason": "数学求解，求椭圆长轴"
+    },
+    {
+      "index": 382,
+      "query": "已知图形为25乘以x的平方加上16乘以y的平方等于1，求它的长",
+      "label": "real_question",
+      "reason": "数学求解，求椭圆长轴"
+    },
+    {
+      "index": 383,
+      "query": "已知平面阿尔法内的两条相交线L1和L2都与平面贝塔平行，证明阿尔法",
+      "label": "real_question",
+      "reason": "几何证明，平行平面"
+    },
+    {
+      "index": 384,
+      "query": "在正方体ABCD-A'B'C'D'中，点E、F、G、H分别是棱AB、BC、CD、DA的中点，请证明四边形EFGH是正方形，并求其面积与正方体表面积的比值。",
+      "label": "real_question",
+      "reason": "立体几何证明及计算"
+    },
+    {
+      "index": 385,
+      "query": "从盛有1L纯酒精的容器中倒出1/3L，然后用水填满；再倒出1/3L，又用水填满。连续进行n次后，容器中剩余的纯酒精量是多少？请写出通项公式，并计算连续进行5次后剩余的纯酒精量（精确到0.01L）。",
+      "label": "real_question",
+      "reason": "数学求解，酒精量计算"
+    },
+    {
+      "index": 386,
+      "query": "证明：对任意实数 a,b，有 a²+b²≥2ab",
+      "label": "real_question",
+      "reason": "数学证明，不等式"
+    },
+    {
+      "index": 387,
+      "query": "函数 f(x)=lnx+2x−6 有几个零点？为什么？",
+      "label": "real_question",
+      "reason": "数学求解，函数零点"
+    },
+    {
+      "index": 388,
+      "query": "‌计算8^(2/3)与（16/81）^(-3/4)",
+      "label": "real_question",
+      "reason": "数学求解，幂运算"
+    },
+    {
+      "index": 389,
+      "query": "求函数 f(x)=sqrt(x+3)+1/(x+2) 的定义域，并计算 f(-3)",
+      "label": "real_question",
+      "reason": "数学求解，函数定义域及值"
+    },
+    {
+      "index": 390,
+      "query": "这块儿目前呃，准备往那个方向上走，但是现在还是比较难。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 391,
+      "query": "我们是吗?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 392,
+      "query": "化简一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 393,
+      "query": "请帮我化简cos²X减sin²X。",
+      "label": "real_question",
+      "reason": "数学求解，三角函数化简"
+    },
+    {
+      "index": 394,
+      "query": "减2x减cos2x",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 395,
+      "query": "这两边再顺一个出来。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 396,
+      "query": "挑战一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 397,
+      "query": "函数y等于二倍的呃sin二x减三π的对称轴方程和对称中心",
+      "label": "real_question",
+      "reason": "数学求解，函数对称性"
+    },
+    {
+      "index": 398,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解，二项式定理"
+    },
+    {
+      "index": 399,
+      "query": "这像是定理的公式是什么?",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 400,
+      "query": "帮我讲解集合的概念",
+      "label": "real_question",
+      "reason": "请求讲解，集合概念"
+    },
+    {
+      "index": 401,
+      "query": "二项式定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学公式查询"
+    },
+    {
+      "index": 402,
+      "query": "八点三亿，这是个什么情况？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 403,
+      "query": "属于简单随机抽样的是a系统抽样，b分层抽样，c抽签法",
+      "label": "real_question",
+      "reason": "统计学概念选择"
+    },
+    {
+      "index": 404,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "数学概念说明"
+    },
+    {
+      "index": 405,
+      "query": "帮我讲解集合的概念",
+      "label": "real_question",
+      "reason": "数学概念讲解"
+    },
+    {
+      "index": 406,
+      "query": "二减二乘以X的正弦减去二乘以X的余弦，并说明它与二乘以",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 407,
+      "query": "就是这几个，这个是当时怎么想起来的？他前面慌慌张张的，我给他随便一提，他在",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 408,
+      "query": "求函数y等于x正弦加三，求x的余弦的最大值与最小值啊，说。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 409,
+      "query": "二x的正弦减去二x的余弦，并说明它与二x余弦的关系。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 410,
+      "query": "已知数列A N的前N项和为S N等于四分之一乘以N的平方加三分",
+      "label": "real_question",
+      "reason": "数列求解"
+    },
+    {
+      "index": 411,
+      "query": "帮我讲解集合的概念",
+      "label": "real_question",
+      "reason": "数学概念讲解"
+    },
+    {
+      "index": 412,
+      "query": "我现在是武一大名。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 413,
+      "query": "我现在能选。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 414,
+      "query": "他检测到打断一下，但是他没有去触发，实际给他触发是吧？那他是，那他的人脸就被你加上了是吧？你没帮我加的话，你为什么手机上能",
+      "label": "noise",
+      "reason": "设备调试对话"
+    },
+    {
+      "index": 415,
+      "query": "你是不是有病啊?",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 416,
+      "query": "已知等差数列A N中，A1等于一，B等于二，求前四项和S时",
+      "label": "real_question",
+      "reason": "数列求解"
+    },
+    {
+      "index": 417,
+      "query": "二减二x的正弦减去二x的余弦，并说明它与二x的余弦的关系。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 418,
+      "query": "帮我讲解一下勾股定理。",
+      "label": "real_question",
+      "reason": "数学概念讲解"
+    },
+    {
+      "index": 419,
+      "query": "我就是数据换数据。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 420,
+      "query": "帮我讲解一下韦达定理。",
+      "label": "real_question",
+      "reason": "数学概念讲解"
+    },
+    {
+      "index": 421,
+      "query": "我是用C++封装的一个东西，然后发给他，他直接替换就可以。",
+      "label": "noise",
+      "reason": "描述过程，无明确问题"
+    },
+    {
+      "index": 422,
+      "query": "头往后仰，往上你看就是负零点五了，零点四，对不对？往下的话你看就是零",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 423,
+      "query": "然后函数y等于2乘以2x减3π的正弦的对称轴方程和对称轴心",
+      "label": "real_question",
+      "reason": "求函数对称轴方程"
+    },
+    {
+      "index": 424,
+      "query": "化简sin15度cos15度，求其值。",
+      "label": "real_question",
+      "reason": "求三角函数值"
+    },
+    {
+      "index": 425,
+      "query": "在三角形中。",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 426,
+      "query": "三角形ABC中，已知A等于三，B等于四，C等于六十度，求C的边长",
+      "label": "real_question",
+      "reason": "求三角形边长"
+    },
+    {
+      "index": 427,
+      "query": "已知函数F(X)等于一的X次方减去AX，在R上单调递增，求实数",
+      "label": "real_question",
+      "reason": "求函数单调递增条件"
+    },
+    {
+      "index": 428,
+      "query": "函数y等于x加2x再减x的一次的切线方程",
+      "label": "real_question",
+      "reason": "求函数切线方程"
+    },
+    {
+      "index": 429,
+      "query": "解不等式x²-5x+6<0，写出解集。",
+      "label": "real_question",
+      "reason": "解不等式"
+    },
+    {
+      "index": 430,
+      "query": "解不等式x²-5x+6<0，写出解集。",
+      "label": "real_question",
+      "reason": "解不等式"
+    },
+    {
+      "index": 431,
+      "query": "解不等式x²-5x+6<0，写出解集。",
+      "label": "real_question",
+      "reason": "解不等式"
+    },
+    {
+      "index": 432,
+      "query": "属于简单随机抽样的是a系统抽样，b分层抽样，c抽签法",
+      "label": "real_question",
+      "reason": "选择简单随机抽样方法"
+    },
+    {
+      "index": 433,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "求集合元素特性"
+    },
+    {
+      "index": 434,
+      "query": "没有更新，已经没有了。就是如果在上课订台课期间内可以重复听，但是一旦过了下",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 435,
+      "query": "相当于我们这个页面，我们这一个门卫。",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 436,
+      "query": "等角三角函数的基本关系式",
+      "label": "real_question",
+      "reason": "求三角函数关系式"
+    },
+    {
+      "index": 437,
+      "query": "角三角函数的基本关系式\\n\\n根据提供的规则，这段中文文本没有明显的ASR识别错误需要修正。因此保持",
+      "label": "real_question",
+      "reason": "求三角函数关系式"
+    },
+    {
+      "index": 438,
+      "query": "同角三角函数的",
+      "label": "noise",
+      "reason": "不完整句子，无明确问题"
+    },
+    {
+      "index": 439,
+      "query": "你是不是喜欢我?",
+      "label": "noise",
+      "reason": "纯情绪表达"
+    },
+    {
+      "index": 440,
+      "query": "如果复合函数有多层嵌套，例如Y等于三X的正弦的平方如何求导？",
+      "label": "real_question",
+      "reason": "求复合函数导数"
+    },
+    {
+      "index": 441,
+      "query": "双曲线的渐近线方程如何求？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 442,
+      "query": "查看一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 443,
+      "query": "麻烦一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 444,
+      "query": "并解释全球化的概念，并列举一个国家的经济发展的影响各一条，正面和负面的。",
+      "label": "real_question",
+      "reason": "请求讲解全球化"
+    },
+    {
+      "index": 445,
+      "query": "并简述光合作用的基本过程及其对地球生态系统的意义。",
+      "label": "real_question",
+      "reason": "请求讲解光合作用"
+    },
+    {
+      "index": 446,
+      "query": "先简述牛顿第一定律的内容，并给出一个生活中的例子。",
+      "label": "real_question",
+      "reason": "请求讲解牛顿第一定律"
+    },
+    {
+      "index": 447,
+      "query": "也是通货膨胀的含义，并说明它对普通消费者购买力的影响。",
+      "label": "real_question",
+      "reason": "请求讲解通货膨胀"
+    },
+    {
+      "index": 448,
+      "query": "人工智能请举例说明它在日常生活中的两个应用场景",
+      "label": "real_question",
+      "reason": "请求举例人工智能"
+    },
+    {
+      "index": 449,
+      "query": "我们列举三种常见的可再生能源，并分别说明它们的主要利用方式。",
+      "label": "real_question",
+      "reason": "请求列举可再生能源"
+    },
+    {
+      "index": 450,
+      "query": "打扮一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 451,
+      "query": "什么是温室效应？请简要说明其主要成因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "请求讲解温室效应"
+    },
+    {
+      "index": 452,
+      "query": "查看一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 453,
+      "query": "什么是温室效应，请简要说明其主要原因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "请求讲解温室效应"
+    },
+    {
+      "index": 454,
+      "query": "给出等差数列的通项公式和前N项和公式。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 455,
+      "query": "每周抛物线的四种标准方程及其焦点坐标的准线方程。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 456,
+      "query": "啊，我都在现场，你们在干什么呢？",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 457,
+      "query": "儿童空调表,三台空调表。",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 458,
+      "query": "给出抛物线的四种标准方程及其焦点坐标、准线方程。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 459,
+      "query": "给出双曲线的标准方程，焦点在x轴和y轴两种情况。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 460,
+      "query": "给出椭圆的标准方程，焦点在x轴或y轴两种情况。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 461,
+      "query": "写出圆的标准方程和一般方程。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 462,
+      "query": "直线的典型是斜截式、两点式、点斜式、一般式方程。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 463,
+      "query": "我们已经不可能再继续下去了。",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 464,
+      "query": "写出空间两点P₁为(X₁,Y₁,Z₁)和P₂为(X₂,Y₂,Z₂)间的",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 465,
+      "query": "帮我讲解一下韦达定理。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 466,
+      "query": "你今天心情好吗?",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 467,
+      "query": "已知抛物线Y的平方等于四X的焦点为F，过F的直线交抛物线与",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 468,
+      "query": "帮我讲解一下复数的四则运算。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 469,
+      "query": "讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 470,
+      "query": "历史的痕迹。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 471,
+      "query": "对任意实数X有e的X次方大于等于X加一，并指出等号成立的条件。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 472,
+      "query": "看一下，对不对?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 473,
+      "query": "已知函数F(X)等于X三次方加上A乘以X平方加B X加C在X等于一",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 474,
+      "query": "已知数列A N满足A一等于一，A N加一等于二倍的A N加一。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 475,
+      "query": "只是说刚才那个创业模板的后端，这个东西能不能用？",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 476,
+      "query": "但是我觉得不要忘记维修点，再多看看一点。",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 477,
+      "query": "我看一眼，那个我这边如果后面要谈的时候，我们这边有什么。",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 478,
+      "query": "麻烦一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 479,
+      "query": "结果我们自己就是失败了。",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 480,
+      "query": "查看一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 481,
+      "query": "已知空间三点A为一、二、三，B为二、负一、四，C为三、",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 482,
+      "query": "已知空间三点A为一、二、三，B为二、负一、四，C为三、",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 483,
+      "query": "真的假的?",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 484,
+      "query": "C为三次一，判断这三点是否共线，并说明理由。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 485,
+      "query": "已知空间三点A为一、二、三，B为二、负一、四，C为三、",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 486,
+      "query": "函数F(X)等于X三次方减去六乘以X的平方加上九X加一在区间负一",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 487,
+      "query": "求曲线y等于x的三次方减去三x，在点（1，-2）处的切线方",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 488,
+      "query": "求函数F(X)等于X的平方乘以E的X次方的导数。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 489,
+      "query": "向量A等于一、二、三，与向量B等于四、负六的向量，以及向",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 490,
+      "query": "属于简单随机抽样的是a系统抽样，b分层抽样，c抽签法",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 491,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 492,
+      "query": "成都今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 493,
+      "query": "帮我讲解一下直线的斜率与倾斜角。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 494,
+      "query": "什么是函数的导数？请简要说明一下。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 495,
+      "query": "或者是X的平方减五X加六大于零的解。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 496,
+      "query": "帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 497,
+      "query": "成都今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 498,
+      "query": "你帮我讲解一下二次方程定义。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 499,
+      "query": "请问二次式定理是怎么回事？",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 500,
+      "query": "请问成都今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 501,
+      "query": "请问成都今天天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 502,
+      "query": "杭州今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 503,
+      "query": "北京今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 504,
+      "query": "成都今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 505,
+      "query": "小布，都今天天气怎么样？",
+      "label": "noise",
+      "reason": "称呼+不完整句子"
+    },
+    {
+      "index": 506,
+      "query": "广州今天天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 507,
+      "query": "那不推荐，太简单了。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 508,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 509,
+      "query": "不等函数的导数中，Y等于X的A次方，Y等于SIN X，Y等于1",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 510,
+      "query": "什么是函数的导数？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 511,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 512,
+      "query": "成都天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 513,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 514,
+      "query": "请帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 515,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 516,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 517,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 518,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 519,
+      "query": "今天成都天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 520,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 521,
+      "query": "你帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解二项式定理"
+    },
+    {
+      "index": 522,
+      "query": "你帮我讲解一下及格的概念。",
+      "label": "real_question",
+      "reason": "请求讲解及格概念"
+    },
+    {
+      "index": 523,
+      "query": "今天成都天气怎么样?",
+      "label": "real_question",
+      "reason": "成都天气查询"
+    },
+    {
+      "index": 524,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 525,
+      "query": "你帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解二项式定理"
+    },
+    {
+      "index": 526,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解集合概念"
+    },
+    {
+      "index": 527,
+      "query": "成都天气怎么样?",
+      "label": "real_question",
+      "reason": "成都天气查询"
+    },
+    {
+      "index": 528,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 529,
+      "query": "今天北京天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 530,
+      "query": "北京今天天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 531,
+      "query": "北京今天天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 532,
+      "query": "北京今天天气怎么样?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 533,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解集合概念"
+    },
+    {
+      "index": 534,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解集合概念"
+    },
+    {
+      "index": 535,
+      "query": "帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解集合概念"
+    },
+    {
+      "index": 536,
+      "query": "再按一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 537,
+      "query": "讲解一下二次相似定理。",
+      "label": "real_question",
+      "reason": "请求讲解二次相似定理"
+    },
+    {
+      "index": 538,
+      "query": "帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解集合概念"
+    },
+    {
+      "index": 539,
+      "query": "二加二等于几?",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 540,
+      "query": "一加二等于几？",
+      "label": "real_question",
+      "reason": "常识问题"
+    },
+    {
+      "index": 541,
+      "query": "加上三等于几？",
+      "label": "real_question",
+      "reason": "数学问题，求解加法"
+    },
+    {
+      "index": 542,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "数学问题，求解加法"
+    },
+    {
+      "index": 543,
+      "query": "方程求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学问题，求解不等式"
+    },
+    {
+      "index": 544,
+      "query": "三加三等于几?",
+      "label": "real_question",
+      "reason": "数学问题，求解加法"
+    },
+    {
+      "index": 545,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "数学问题，求解加法"
+    },
+    {
+      "index": 546,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 547,
+      "query": "帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解数学定理"
+    },
+    {
+      "index": 548,
+      "query": "你好，请帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解数学概念"
+    },
+    {
+      "index": 549,
+      "query": "帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解数学概念"
+    },
+    {
+      "index": 550,
+      "query": "二项式定理的公式。",
+      "label": "real_question",
+      "reason": "数学问题，求解公式"
+    },
+    {
+      "index": 551,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an，并判断数列是否为等差数列。",
+      "label": "real_question",
+      "reason": "数学问题，求解数列"
+    },
+    {
+      "index": 552,
+      "query": "这个怎么?",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 553,
+      "query": "帮我讲解一下勾股定理。",
+      "label": "real_question",
+      "reason": "请求讲解数学定理"
+    },
+    {
+      "index": 554,
+      "query": "写出复数加法和乘法的法则。",
+      "label": "real_question",
+      "reason": "数学问题，求解法则"
+    },
+    {
+      "index": 555,
+      "query": "写出平面向量数量积的坐标表示公式。",
+      "label": "real_question",
+      "reason": "数学问题，求解公式"
+    },
+    {
+      "index": 556,
+      "query": "写出正弦定理和余弦定理的表达式。",
+      "label": "real_question",
+      "reason": "数学问题，求解定理"
+    },
+    {
+      "index": 557,
+      "query": "写出两角差的余弦公式：cos(α-β)=？",
+      "label": "real_question",
+      "reason": "数学问题，求解公式"
+    },
+    {
+      "index": 558,
+      "query": "写出对数的换底公式，并说明其作用。",
+      "label": "real_question",
+      "reason": "数学问题，求解公式"
+    },
+    {
+      "index": 559,
+      "query": "写出指数幂的运算性质（至少三条）。",
+      "label": "real_question",
+      "reason": "数学问题，求解性质"
+    },
+    {
+      "index": 560,
+      "query": "设全集U=R，集合A={x|x>2}，B={x|x<5}，求A∩B、A∪B、∁UA和∁UB，并用区间表示。",
+      "label": "real_question",
+      "reason": "数学问题，求解集合运算"
+    },
+    {
+      "index": 561,
+      "query": "已知函数f(x)=x²-2x+2，判断其奇偶性，并说明理由。",
+      "label": "real_question",
+      "reason": "数学问题，求解函数奇偶性"
+    },
+    {
+      "index": 562,
+      "query": "在正方体ABCD-A1B1C1D1中，E为棱DD1的中点，求证：BD1∥平面AEC。",
+      "label": "real_question",
+      "reason": "几何证明题"
+    },
+    {
+      "index": 563,
+      "query": "已知z1,z2是共轭复数，求证：z1×z2是实数，且|z1|=|z2|。",
+      "label": "real_question",
+      "reason": "复数性质证明"
+    },
+    {
+      "index": 564,
+      "query": "用向量方法证明：三角形的三条中线交于一点，且该点分每条中线为2:1的两段。",
+      "label": "real_question",
+      "reason": "向量几何证明"
+    },
+    {
+      "index": 565,
+      "query": "设向量a与b不共线，且a+2b与2a+kb共线，求实数k的值。",
+      "label": "real_question",
+      "reason": "向量共线求解"
+    },
+    {
+      "index": 566,
+      "query": "已知数列{an}的前n项和Sn=1/4 n²+2/3 n+3，求通项公式an，并判断数列是否为等差数列。",
+      "label": "real_question",
+      "reason": "数列求通项公式"
+    },
+    {
+      "index": 567,
+      "query": "在四面体P-ABC中，PA⊥平面ABC，且AB⊥BC。求证：平面PAB⊥平面PBC。",
+      "label": "real_question",
+      "reason": "立体几何证明"
+    },
+    {
+      "index": 568,
+      "query": "已知函数f(x)=ln x+2x-6，证明它在(0,+∞)上是增函数，并据此判断它有几个零点。",
+      "label": "real_question",
+      "reason": "函数性质与零点求解"
+    },
+    {
+      "index": 569,
+      "query": "证明：对任意实数a,b，有a²+b²≥2ab，并指出等号成立的条件。",
+      "label": "real_question",
+      "reason": "不等式证明"
+    },
+    {
+      "index": 570,
+      "query": "求值：sin(7π/6) 和 cos(5π/4)。",
+      "label": "real_question",
+      "reason": "三角函数求值"
+    },
+    {
+      "index": 571,
+      "query": "已知sin α=3/5，α为第二象限角，求cos α和tan α。",
+      "label": "real_question",
+      "reason": "三角函数求值"
+    },
+    {
+      "index": 572,
+      "query": "计算：lg 25 + lg 4 和 log₂ 8 + log₃ 9。",
+      "label": "real_question",
+      "reason": "对数计算"
+    },
+    {
+      "index": 573,
+      "query": "求函数y=2x²-4x+1在区间[0,3]上的最大值和最小值。",
+      "label": "real_question",
+      "reason": "函数极值求解"
+    },
+    {
+      "index": 574,
+      "query": "在三角形ABC中，a=7，b=8，∠C=60°，求c。",
+      "label": "real_question",
+      "reason": "三角形边长求解"
+    },
+    {
+      "index": 575,
+      "query": "已知复数z1=1+2i，z2=3-4i，求z1+z2、z1-z2、z1×z2。",
+      "label": "real_question",
+      "reason": "复数运算"
+    },
+    {
+      "index": 576,
+      "query": "已知向量a=(2,3)，b=(-1,2)，求a+b、a-b、3a-2b的坐标。",
+      "label": "real_question",
+      "reason": "向量坐标运算"
+    },
+    {
+      "index": 577,
+      "query": "解不等式x²-5x+6<0，写出解集。",
+      "label": "real_question",
+      "reason": "不等式求解"
+    },
+    {
+      "index": 578,
+      "query": "已知函数f(x)=√(x+3)+1/(x+2)，求f(-3)和f(2/3)的值。",
+      "label": "real_question",
+      "reason": "函数值求解"
+    },
+    {
+      "index": 579,
+      "query": "某学校为了解高一学生的身高情况，采用分层随机抽样的方法，按性别将总体分成两层。已知男生有326人，女生有386人，总样本量为50，按比例分配样本。请计算男生和女生应各抽取多少人，并说明分层随机抽样相比简单随机抽样有什么优点。",
+      "label": "real_question",
+      "reason": "统计学问题"
+    },
+    {
+      "index": 580,
+      "query": "设复数z1=4+3i，z2=4-3i，在复平面内画出它们对应的点和向量，并求它们的模，同时说明这两个复数互为共轭复数，且它们的乘积是一个实数。",
+      "label": "real_question",
+      "reason": "复数与向量问题"
+    },
+    {
+      "index": 581,
+      "query": "某公司生产某种产品的固定成本为150万元，每件产品的可变成本为2500元，每件产品的售价为3500元。若该公司所生产的产品全部销售出去，请分别写出总成本y1、单位成本y2、销售总收入y3和总利润y4关于总产量x（单位：件）的函数解析式，并分析当产量为多少时公司开始盈利。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 582,
+      "query": "在正方体ABCD-A'B'C'D'中，点E、F、G、H分别是棱AB、BC、CD、DA的中点，请证明四边形EFGH是正方形，并求其面积与正方体表面积的比值。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 583,
+      "query": "已知二次函数f(x)=x²-5x+6，求不等式f(x)>0的解集，并画出二次函数y=x²-5x+6的图象，结合图象说明为什么解集是{x|x<2或x>3}。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 584,
+      "query": "从盛有1L纯酒精的容器中倒出1/3L，然后用水填满；再倒出1/3L，又用水填满。连续进行n次后，容器中剩余的纯酒精量是多少？请写出通项公式，并计算连续进行5次后剩余的纯酒精量（精确到0.01L）。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 585,
+      "query": "请帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确问题"
+    },
+    {
+      "index": 586,
+      "query": "已知向量a=(2,3)，b=(-1,2)，分别求a+b的坐标、a·b的数量积以及|a|的模长，并说明向量加法、数量积和模的坐标计算公式。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 587,
+      "query": "在三角形ABC中，角A、B、C的对边分别为a、b、c，已知a=7，b=8，锐角C满足sin C=3√3/14，请先求出cos C的值，再利用余弦定理求c，最后利用余弦定理的推论求角B（精确到1°）。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 588,
+      "query": "设函数f(x)=ln x+2x-6，利用函数零点存在定理判断该函数在区间(2,3)内是否存在零点，并说明理由，同时证明该函数在(0,+∞)上是增函数。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 589,
+      "query": "已知全集U={1,2,3,4,5,6,7,8}，集合A={1,2,3}，B={3,4,5,6}，请分别求出A在U中的补集、B在U中的补集以及A与B的并集，并说明补集和并集的定义。",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 590,
+      "query": "解方程 x²+4=0",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 591,
+      "query": "已知向量 a=(2,3)，b=(−1,2)，求：(1) a+b；(2) a⋅b；(3) ∣a∣",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 592,
+      "query": "向量的三要素是什么？零向量的方向是怎样规定的？",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 593,
+      "query": "全集 U={1,2,3,4,5,6,7,8}，A={1,2,3}，B={3,4,5,6}，求 ∁UA、∁UB 与 A∪B",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 594,
+      "query": "证明：对任意实数 a,b，有 a²+b²≥2ab",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 595,
+      "query": "函数 f(x)=lnx+2x−6 有几个零点？为什么？",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 596,
+      "query": "‌计算8^(2/3)与（16/81）^(-3/4)",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 597,
+      "query": "判断并证明函数 f(x)=2x+1 在 R 上的单调性",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 598,
+      "query": "请推荐几款目前主流的拍照比较好的手机",
+      "label": "real_question",
+      "reason": "请求推荐，有明确问题"
+    },
+    {
+      "index": 599,
+      "query": "求函数 f(x)=sqrt(x+3)+1/(x+2) 的定义域，并计算 f(-3)",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 600,
+      "query": "解不等式 x²−5x+6<0",
+      "label": "real_question",
+      "reason": "数学求解，有明确问题"
+    },
+    {
+      "index": 601,
+      "query": "若 p⇒q 且 q⇏p，则 p 是 q 的什么条件？",
+      "label": "real_question",
+      "reason": "逻辑条件问题"
+    },
+    {
+      "index": 602,
+      "query": "圆柱底面半径 r=2，高 h=3，求体积和侧面积。",
+      "label": "real_question",
+      "reason": "圆柱体积和侧面积计算"
+    },
+    {
+      "index": 603,
+      "query": "属于简单随机抽样的是a系统抽样，b分层抽样，c抽签法",
+      "label": "real_question",
+      "reason": "随机抽样方法选择"
+    },
+    {
+      "index": 604,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "集合元素特性说明"
+    },
+    {
+      "index": 605,
+      "query": "已知双曲线x平方除以四减去y平方除以五等于一上一点P到左焦点的距离",
+      "label": "real_question",
+      "reason": "双曲线焦点距离问题"
+    },
+    {
+      "index": 606,
+      "query": "求椭圆x平方除以二十五，加上y的平方除以九等于一的焦距和离心率",
+      "label": "real_question",
+      "reason": "椭圆焦距和离心率计算"
+    },
+    {
+      "index": 607,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "函数定义域及点判断"
+    },
+    {
+      "index": 608,
+      "query": "那有什么事想放哪儿我再问你啊。对，就是前两天一开始商量，不就是放在那个整个",
+      "label": "noise",
+      "reason": "旁人对话，无明确问题"
+    },
+    {
+      "index": 609,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "向量证明平行四边形定理"
+    },
+    {
+      "index": 610,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "集合问题，求人数"
+    },
+    {
+      "index": 611,
+      "query": "反正这是，这是这个说明，其实就我的方式，它是有一定这个。",
+      "label": "noise",
+      "reason": "无意义语句，无明确问题"
+    },
+    {
+      "index": 612,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "直线倾斜角及斜率问题"
+    },
+    {
+      "index": 613,
+      "query": "充电柜开始多个口，我不知道我在充电，充电柜不是我放的啊啊，太吓人了。",
+      "label": "noise",
+      "reason": "设备使用问题，非知识类"
+    },
+    {
+      "index": 614,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "空间向量基本定理问题"
+    },
+    {
+      "index": 615,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "直线方程及点到原点距离"
+    },
+    {
+      "index": 616,
+      "query": "去量化，但是我现在不太确定他这个卖这个视频到底好还是坏，所以现在不知道怎么办了。",
+      "label": "noise",
+      "reason": "视频销售问题，非知识类"
+    },
+    {
+      "index": 617,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "抛物线标准方程推导"
+    },
+    {
+      "index": 618,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 619,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "函数定义域及点判断"
+    },
+    {
+      "index": 620,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "向量证明平行四边形定理"
+    },
+    {
+      "index": 621,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 622,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 623,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 624,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 625,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 626,
+      "query": "这是什么?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 627,
+      "query": "三角形面积的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 628,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 629,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 630,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 631,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 632,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 633,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 634,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 635,
+      "query": "给你的公式是什么？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 636,
+      "query": "对你攻势是什么？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 637,
+      "query": "等式定理的公式是什么?",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 638,
+      "query": "北京的天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 639,
+      "query": "是函数的导数，导数的几何意义和物理意义分别是什么？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 640,
+      "query": "什么是等差数列？等差数列的公差是什么呀？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 641,
+      "query": "相似定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 642,
+      "query": "北京的天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 643,
+      "query": "什么是等差数列？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 644,
+      "query": "定理的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 645,
+      "query": "六到六点五就可以。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 646,
+      "query": "二项式定义的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 647,
+      "query": "想知道你的公式是什么？嗯，有两个，我看看。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 648,
+      "query": "是等差数列。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 649,
+      "query": "什么是函数的导数？导数的几何意义和物理意义分别是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 650,
+      "query": "什么是杠杆的知识点？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 651,
+      "query": "他他妈的看按钮都没了。",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 652,
+      "query": "哎，什么东西？",
+      "label": "noise",
+      "reason": "纯感叹或情绪表达"
+    },
+    {
+      "index": 653,
+      "query": "能不能结束？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 654,
+      "query": "那它确定力的公式是什么？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 655,
+      "query": "天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 656,
+      "query": "什么是等差中项？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 657,
+      "query": "什么是等差数列？等差数列的定义是什么？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 658,
+      "query": "北京今天天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 659,
+      "query": "集合中元素的三个特性是什么？请分别说明。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 660,
+      "query": "在你离开的时候,你面前倒也热闹。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 661,
+      "query": "我们在做其他一些事情。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 662,
+      "query": "如果符合函数有多层嵌套，例如Y等于SIN三X平方，你应该使用链式法则求导。",
+      "label": "real_question",
+      "reason": "数学求导问题"
+    },
+    {
+      "index": 663,
+      "query": "在数列的学习中，我们学习了等差数列和等比数列的通项公式与前n项和公式。请分别说明等差数列和等比数列的前n项和公式的推导方法（倒序相加法和错位相减法），并比较这两种方法的异同。",
+      "label": "real_question",
+      "reason": "数列公式推导"
+    },
+    {
+      "index": 664,
+      "query": "中椭圆x平方除以二十五加y的平方除以九等于一的焦距和离心率。",
+      "label": "real_question",
+      "reason": "椭圆焦距离心率"
+    },
+    {
+      "index": 665,
+      "query": "你以后能不能给我打电话？",
+      "label": "noise",
+      "reason": "个人请求"
+    },
+    {
+      "index": 666,
+      "query": "我要跟那个线一起移动，你看一个。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 667,
+      "query": "十乘以十等于多少？",
+      "label": "real_question",
+      "reason": "数学计算"
+    },
+    {
+      "index": 668,
+      "query": "不是椭圆。",
+      "label": "noise",
+      "reason": "否定陈述"
+    },
+    {
+      "index": 669,
+      "query": "如经过点P（2，-3），且倾斜角为60°的直线方程。",
+      "label": "real_question",
+      "reason": "直线方程求解"
+    },
+    {
+      "index": 670,
+      "query": "加上十等于多少？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 671,
+      "query": "打架斗殴属于犯罪行为吗？",
+      "label": "real_question",
+      "reason": "法律常识问题"
+    },
+    {
+      "index": 672,
+      "query": "能给我解释一下PUA吗？",
+      "label": "real_question",
+      "reason": "社会现象解释"
+    },
+    {
+      "index": 673,
+      "query": "包含哪些种类的毒品？",
+      "label": "real_question",
+      "reason": "毒品种类查询"
+    },
+    {
+      "index": 674,
+      "query": "请问包含哪些种类？",
+      "label": "noise",
+      "reason": "不完整句子"
+    },
+    {
+      "index": 675,
+      "query": "目前国家总理是哪位领导？",
+      "label": "real_question",
+      "reason": "政治人物查询"
+    },
+    {
+      "index": 676,
+      "query": "习大大和彭妈妈分别多少岁？",
+      "label": "real_question",
+      "reason": "政治人物年龄"
+    },
+    {
+      "index": 677,
+      "query": "今天是几月几号？",
+      "label": "real_question",
+      "reason": "日期查询"
+    },
+    {
+      "index": 678,
+      "query": "今天的国内新闻头条有哪些?",
+      "label": "real_question",
+      "reason": "新闻查询"
+    },
+    {
+      "index": 679,
+      "query": "北京今天的天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 680,
+      "query": "WHAT IS THE DIFFERENCE BETWEEN IN AT AND ON FOR CAN",
+      "label": "real_question",
+      "reason": "英语问题"
+    },
+    {
+      "index": 681,
+      "query": "What is a tug boat?",
+      "label": "real_question",
+      "reason": "询问拖船定义"
+    },
+    {
+      "index": 682,
+      "query": "What's the weather like today in Beijing?",
+      "label": "real_question",
+      "reason": "北京天气查询"
+    },
+    {
+      "index": 683,
+      "query": "What is the difference between few and less?",
+      "label": "real_question",
+      "reason": "询问few与less区别"
+    },
+    {
+      "index": 684,
+      "query": "25为什么是？（此处的问号已经符合英文标点规则，无需更改中文标点为英文标",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 685,
+      "query": "Refine, explain what it means.",
+      "label": "real_question",
+      "reason": "询问refine含义"
+    },
+    {
+      "index": 686,
+      "query": "嗯，我看一下，打断一下，嗯。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 687,
+      "query": "国内生产螺丝。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 688,
+      "query": "WHAT DOES GDP STAND FOR?",
+      "label": "real_question",
+      "reason": "询问GDP含义"
+    },
+    {
+      "index": 689,
+      "query": "连接不起来。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 690,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 691,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "数学证明问题"
+    },
+    {
+      "index": 692,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 693,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 694,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 695,
+      "query": "THE PARAGRAPH, THE ORANGE, PLEASE READ IT IN ENGLISH AND GIVE A SIMPLE NUMERICAL EXAMPLE.",
+      "label": "real_question",
+      "reason": "英语阅读及例题"
+    },
+    {
+      "index": 696,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 697,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学推导问题"
+    },
+    {
+      "index": 698,
+      "query": "The largest ocean on earth and the least two countries that border it.",
+      "label": "real_question",
+      "reason": "地理知识问题"
+    },
+    {
+      "index": 699,
+      "query": "今天停电的消息。",
+      "label": "real_question",
+      "reason": "停电消息查询"
+    },
+    {
+      "index": 700,
+      "query": "WHAT DOES WWW STAND FOR IN THE CONTEXT OF THE INTERNET",
+      "label": "real_question",
+      "reason": "互联网术语解释"
+    },
+    {
+      "index": 701,
+      "query": "We visited the other schools and the sanctuary in which it was written.",
+      "label": "noise",
+      "reason": "描述而非提问"
+    },
+    {
+      "index": 702,
+      "query": "We state the author's full name and the script in which it is.",
+      "label": "noise",
+      "reason": "描述而非提问"
+    },
+    {
+      "index": 703,
+      "query": "Who wrote the play, Hamlet?",
+      "label": "real_question",
+      "reason": "明确求解作者"
+    },
+    {
+      "index": 704,
+      "query": "Explain the difference between weather and climate in one sentence each.",
+      "label": "real_question",
+      "reason": "请求解释天气与气候"
+    },
+    {
+      "index": 705,
+      "query": "全职女演员的名次。",
+      "label": "real_question",
+      "reason": "求解排名"
+    },
+    {
+      "index": 706,
+      "query": "What is the capital of France? Please name it and list two famous landmarks in this city.",
+      "label": "real_question",
+      "reason": "求解首都及地标"
+    },
+    {
+      "index": 707,
+      "query": "你是不是在玩游戏?",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 708,
+      "query": "椭圆的离心率e的定义是什么？",
+      "label": "real_question",
+      "reason": "求解定义"
+    },
+    {
+      "index": 709,
+      "query": "原理上，心率E的定义是什么？",
+      "label": "noise",
+      "reason": "语义不清"
+    },
+    {
+      "index": 710,
+      "query": "这个船打翻之后，开始从后背，然后就给了两个猎人。",
+      "label": "noise",
+      "reason": "语义不清"
+    },
+    {
+      "index": 711,
+      "query": "圆的标准方程和一般方程分别是什么？",
+      "label": "real_question",
+      "reason": "求解方程形式"
+    },
+    {
+      "index": 712,
+      "query": "卖家的驱动。",
+      "label": "noise",
+      "reason": "语义不清"
+    },
+    {
+      "index": 713,
+      "query": "人的交往方式呢，和一般方式的区别是什么呢？",
+      "label": "real_question",
+      "reason": "请求讲解区别"
+    },
+    {
+      "index": 714,
+      "query": "放点音乐，放一首。",
+      "label": "noise",
+      "reason": "命令而非提问"
+    },
+    {
+      "index": 715,
+      "query": "喂，今天北京天气怎么样",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 716,
+      "query": "你没读过一条，你不能读。",
+      "label": "noise",
+      "reason": "语义不清"
+    },
+    {
+      "index": 717,
+      "query": "什么是等差数列？等差数列的公式意义是什么？请结合教材中的例子说明。",
+      "label": "real_question",
+      "reason": "求解定义及例子"
+    },
+    {
+      "index": 718,
+      "query": "标准方程和一般方程分别是什么？",
+      "label": "real_question",
+      "reason": "求解方程形式"
+    },
+    {
+      "index": 719,
+      "query": "然后，哎，你没有他们的联系方式吗？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 720,
+      "query": "直线的倾斜角α的取值范围是多少？",
+      "label": "real_question",
+      "reason": "求解取值范围"
+    },
+    {
+      "index": 721,
+      "query": "向量基本定理的内容是什么？",
+      "label": "real_question",
+      "reason": "数学定理求解"
+    },
+    {
+      "index": 722,
+      "query": "就是它的实半轴长、虚半轴长、焦点坐标与离心率的图形间距线。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 723,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 724,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 725,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "数学证明求解"
+    },
+    {
+      "index": 726,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 727,
+      "query": "检检测眼睛，我发现。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 728,
+      "query": "你为什么那么爱我？",
+      "label": "noise",
+      "reason": "情感表达"
+    },
+    {
+      "index": 729,
+      "query": "你家不是有个厕所吗？",
+      "label": "noise",
+      "reason": "日常对话"
+    },
+    {
+      "index": 730,
+      "query": "距离远的呗，不是我们就设一个尺度。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 731,
+      "query": "北京天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 732,
+      "query": "我这很正啊，为什么哎？这个红和绿是什么意思啊？",
+      "label": "noise",
+      "reason": "情绪表达"
+    },
+    {
+      "index": 733,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 734,
+      "query": "为什么梯度是1呢？我理解梯度不应该设置吗？",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 735,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学定理求解"
+    },
+    {
+      "index": 736,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 737,
+      "query": "今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 738,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学问题求解"
+    },
+    {
+      "index": 739,
+      "query": "现在还是会被截断啊，就截前半部分。",
+      "label": "noise",
+      "reason": "技术调试对话"
+    },
+    {
+      "index": 740,
+      "query": "看看长得行不行？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 741,
+      "query": "北京今天的天气",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 742,
+      "query": "打断一下，我拿一下。",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 743,
+      "query": "今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 744,
+      "query": "北京今天的天气",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 745,
+      "query": "就是那个披头士吧？",
+      "label": "noise",
+      "reason": "旁人对话"
+    },
+    {
+      "index": 746,
+      "query": "北京今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 747,
+      "query": "嗯，我们是想。",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 748,
+      "query": "由此数列的公式A、通项公式A以及前五项和S₅。",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 749,
+      "query": "北京今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 750,
+      "query": "已知等比数列A N中，A 1等于三，A 4等于二十四，求公比",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 751,
+      "query": "十乘以十等于多少？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 752,
+      "query": "内存等于多少？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 753,
+      "query": "如椭圆十六x平方加上二十五y的平方等于四百的长轴长短轴上离心率交点",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 754,
+      "query": "北京今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 755,
+      "query": "五乘以五等于多少？",
+      "label": "real_question",
+      "reason": "数学求解"
+    },
+    {
+      "index": 756,
+      "query": "它对地球生态系统的意义是什么？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 757,
+      "query": "解释一下光合作用。",
+      "label": "real_question",
+      "reason": "请求讲解"
+    },
+    {
+      "index": 758,
+      "query": "北京今天的天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询"
+    },
+    {
+      "index": 759,
+      "query": "如果发生突变，会引起哪些疾病？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 760,
+      "query": "什么是DNA？它在生物遗传中起到什么样的作用？",
+      "label": "real_question",
+      "reason": "知识问答"
+    },
+    {
+      "index": 761,
+      "query": "已知函数 f(x)=sqrt(x+3)+1/(x−2)\\n（1）求函数的定义域；\\n（2）判断点 (−3,−1)(−3,−1) 是否在函数图象上，并说明理由。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 762,
+      "query": "BA A是什么？",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 763,
+      "query": "用向量方法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 764,
+      "query": "某校高一（1）班有28名同学参加运动会，15人参加游泳，8人参加田径，14人参加球类，同时参加游泳和田径的有3人，同时参加游泳和球类的有3人，没有人同时参加三项，求同时参加田径和球类的人数，以及只参加游泳一项的人数。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 765,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 766,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 767,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 768,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解，明确问题"
+    },
+    {
+      "index": 769,
+      "query": "简述牛顿第一定律的内容。",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 770,
+      "query": "也是通货膨胀的含义。",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 771,
+      "query": "这也是通货膨胀的含义。",
+      "label": "noise",
+      "reason": "重复填充词，无意义"
+    },
+    {
+      "index": 772,
+      "query": "什么是人工智能?",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 773,
+      "query": "分别说明他们的主要利用方式。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 774,
+      "query": "打乱一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 775,
+      "query": "有分别说明。",
+      "label": "noise",
+      "reason": "不完整句子，无明确意图"
+    },
+    {
+      "index": 776,
+      "query": "并列举三种常见的可再生能源。",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 777,
+      "query": "什么是温室效应，请简要说明其主要原因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "知识问答，明确问题"
+    },
+    {
+      "index": 778,
+      "query": "帮我讲解一下集合的概念",
+      "label": "real_question",
+      "reason": "请求讲解，明确问题"
+    },
+    {
+      "index": 779,
+      "query": "今天的天气。",
+      "label": "real_question",
+      "reason": "天气查询，明确问题"
+    },
+    {
+      "index": 780,
+      "query": "三乘以三等于多少？",
+      "label": "real_question",
+      "reason": "常识问题，明确问题"
+    },
+    {
+      "index": 781,
+      "query": "What is the difference between in and on for type?",
+      "label": "real_question",
+      "reason": "英语介词用法问题"
+    },
+    {
+      "index": 782,
+      "query": "What is the difference between historic and historical?",
+      "label": "real_question",
+      "reason": "英语词汇辨析问题"
+    },
+    {
+      "index": 783,
+      "query": "What is a tiger question?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 784,
+      "query": "What aids a dragon person?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 785,
+      "query": "二加二等于几?",
+      "label": "real_question",
+      "reason": "数学常识问题"
+    },
+    {
+      "index": 786,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴和负半轴。请",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 787,
+      "query": "双曲线的渐近线是双曲线的重要几何特征。请以双曲线x平方除以a的平方减",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 788,
+      "query": "查看一下。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 789,
+      "query": "椭圆的标准方程是通过将椭圆的几何定义转化为代数方程，并化简得到的。请",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 790,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "数学常识问题"
+    },
+    {
+      "index": 791,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量积运算。请结合教材中的例题",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 792,
+      "query": "成都今天的天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 793,
+      "query": "一加一等于几？",
+      "label": "real_question",
+      "reason": "数学常识问题"
+    },
+    {
+      "index": 794,
+      "query": "成都天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 795,
+      "query": "明天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 796,
+      "query": "在干什么?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 797,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 798,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 799,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 800,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 801,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 802,
+      "query": "在数列的学习中，我们学习了等差数列和等比数列的通项公式与前n项和公式。请分别说明等差数列和等比数列的前n项和公式的推导方法（倒序相加法和错位相减法），并比较这两种方法的异同。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 803,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 804,
+      "query": "什么是等差数列？等差数列的公差是怎么定义的？",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 805,
+      "query": "成都天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 806,
+      "query": "北京天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 807,
+      "query": "成都天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 808,
+      "query": "杭州天气怎么样？",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 809,
+      "query": "北京今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 810,
+      "query": "如椭圆x平方除以二十五，加上y的平方除以九等于一的焦距和离心率",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 811,
+      "query": "求椭圆x平方除以二十五加上y的平方除以九等于一的焦距和离心率",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 812,
+      "query": "什么是等差数列？等差数列的公差定义是什么？请结合教材中的例子说明。",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 813,
+      "query": "讲解一下导数的概念。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确意图"
+    },
+    {
+      "index": 814,
+      "query": "在空间向量与立体几何中，我们学习了空间向量的数量积运算。请结合教材中的例子，",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 815,
+      "query": "等差数列是什么？等差数列的公差是怎么定义的？",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 816,
+      "query": "数列的等差中项是什么意思？若三个数A、B、C成等差数列，B",
+      "label": "noise",
+      "reason": "句子不完整，意图不明"
+    },
+    {
+      "index": 817,
+      "query": "什么是函数？导数的几何意义和物理意义分别是什么？",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 818,
+      "query": "什么是岛？",
+      "label": "real_question",
+      "reason": "常识问题，有明确意图"
+    },
+    {
+      "index": 819,
+      "query": "Who wrote the play “Hamlet”? Please state the author’s full name and the century in which it was written.",
+      "label": "real_question",
+      "reason": "英语问题，有明确意图"
+    },
+    {
+      "index": 820,
+      "query": "Explain the difference between “weather” and “climate” in one sentence each.",
+      "label": "real_question",
+      "reason": "英语问题，有明确意图"
+    },
+    {
+      "index": 821,
+      "query": "What is the capital of France? Please name it and list two famous landmarks in this city.",
+      "label": "real_question",
+      "reason": "明确询问法国首都及地标"
+    },
+    {
+      "index": 822,
+      "query": "什么是“DNA”？它在生物遗传中起什么作用？",
+      "label": "real_question",
+      "reason": "明确询问DNA定义及作用"
+    },
+    {
+      "index": 823,
+      "query": "什么是“人工智能”？请举例说明它在日常生活中的两个应用场景。",
+      "label": "real_question",
+      "reason": "明确询问AI定义及应用"
+    },
+    {
+      "index": 824,
+      "query": "请列举三种常见的可再生能源，并分别说明它们的主要利用方式。",
+      "label": "real_question",
+      "reason": "明确询问可再生能源及利用方式"
+    },
+    {
+      "index": 825,
+      "query": "什么是“温室效应”？请简要说明其主要成因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "明确询问温室效应及影响"
+    },
+    {
+      "index": 826,
+      "query": "请设计一个简单的实验或调查，收集数据，并用导数知识分析数据的变化趋势。",
+      "label": "real_question",
+      "reason": "明确要求设计实验并分析"
+    },
+    {
+      "index": 827,
+      "query": "请根据教材中“微积分的创立与发展”的阅读材料，列举两位对微积分创立做出重要贡献的数学家及其主要贡献。",
+      "label": "real_question",
+      "reason": "明确要求列举数学家及贡献"
+    },
+    {
+      "index": 828,
+      "query": "请根据教材中“斐波那契数列”的阅读材料，写出斐波那契数列的递推公式，并说明其在自然界中的一个应用实例。",
+      "label": "real_question",
+      "reason": "明确要求写出公式及应用"
+    },
+    {
+      "index": 829,
+      "query": "请结合教材中的阅读材料，谈谈你对“解析几何”思想的理解。",
+      "label": "real_question",
+      "reason": "明确要求阐述解析几何思想"
+    },
+    {
+      "index": 830,
+      "query": "请从教材中找出一个用数学归纳法证明的命题，并简述证明过程。",
+      "label": "real_question",
+      "reason": "明确要求找出并证明命题"
+    },
+    {
+      "index": 831,
+      "query": "请用坐标法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "明确要求用坐标法证明"
+    },
+    {
+      "index": 832,
+      "query": "请举例说明导数在经济学中的两个应用（如边际成本、边际收益）。",
+      "label": "real_question",
+      "reason": "明确要求举例说明导数应用"
+    },
+    {
+      "index": 833,
+      "query": "请用导数知识证明：在周长一定的矩形中，正方形的面积最大。",
+      "label": "real_question",
+      "reason": "明确要求用导数知识证明"
+    },
+    {
+      "index": 834,
+      "query": "请设计一个实际问题，使其可以用椭圆的知识解决，并简要说明解题思路。",
+      "label": "real_question",
+      "reason": "明确要求设计实际问题并说明思路"
+    },
+    {
+      "index": 835,
+      "query": "什么是等差数列？等差数列的公式定义是什么？",
+      "label": "real_question",
+      "reason": "明确询问等差数列定义及公式"
+    },
+    {
+      "index": 836,
+      "query": "已知函数f(x)=x³-3ax²+3bx在x=1处有极小值-1。求a,b的值，并求f(x)的单调区间。",
+      "label": "real_question",
+      "reason": "明确要求求解函数极值及单调区间"
+    },
+    {
+      "index": 837,
+      "query": "已知数列{an}满足a1=1，an+1 = 2an + 3·2^n。求数列{an}的通项公式。",
+      "label": "real_question",
+      "reason": "明确要求求数列通项公式"
+    },
+    {
+      "index": 838,
+      "query": "已知抛物线y²=2px(p>0)的焦点F与双曲线x²/4 - y²/5 = 1的右焦点重合。求p的值，并求抛物线的准线方程。",
+      "label": "real_question",
+      "reason": "明确要求求解抛物线参数及准线方程"
+    },
+    {
+      "index": 839,
+      "query": "已知双曲线x²/a² - y²/b² = 1的渐近线方程为y=±2x，且经过点(2,2√3)。求双曲线的标准方程。",
+      "label": "real_question",
+      "reason": "明确要求求解双曲线标准方程"
+    },
+    {
+      "index": 840,
+      "query": "已知椭圆x²/a² + y²/b² = 1 (a>b>0)的离心率为√3/2，且经过点(2,0)。求椭圆方程，并求椭圆上一点P到两焦点距离之和。",
+      "label": "real_question",
+      "reason": "明确要求求解椭圆方程及性质"
+    },
+    {
+      "index": 841,
+      "query": "某地今年初有居民1000人，预计以后每年人口增长率为5%，同时每年净迁出100人。写出第n年初的人口数关于n的递推公式，并求第10年初的人口数（精确到1人）。",
+      "label": "real_question",
+      "reason": "数学求解，人口增长模型"
+    },
+    {
+      "index": 842,
+      "query": "如椭圆x平方除以二十五，加上y的平方除以九等于一的焦距和离心率",
+      "label": "real_question",
+      "reason": "数学求解，椭圆焦距离心率"
+    },
+    {
+      "index": 843,
+      "query": "某公司生产某种产品，固定成本为20000元，每生产一台仪器需增加投入100元。已知总收入R（元）关于月产量x（台）的函数为R(x)=400x - 0.5x² (0≤x≤400)，R(x)=80000 (x>400)。求利润函数P(x)，并求当月产量为多少时利润最大。",
+      "label": "real_question",
+      "reason": "数学求解，利润函数最大值"
+    },
+    {
+      "index": 844,
+      "query": "用半径为R的圆形铁皮剪出一个圆心角为α的扇形，制成一个圆锥形容器。问圆心角α为多大时，容器的容积最大？",
+      "label": "real_question",
+      "reason": "数学求解，圆锥容积最大值"
+    },
+    {
+      "index": 845,
+      "query": "用总长14.8m的钢条制作一个长方体容器的框架，如果所制容器底面一边的长比另一边的长多0.5m，那么高为多少时容器的容积最大？最大容积是多少？",
+      "label": "real_question",
+      "reason": "数学求解，长方体容器最大容积"
+    },
+    {
+      "index": 846,
+      "query": "请简述“微积分”的创立对数学发展的意义。",
+      "label": "real_question",
+      "reason": "请求讲解，微积分意义"
+    },
+    {
+      "index": 847,
+      "query": "什么是“解析几何”？它的创始人是谁？其主要思想是什么？",
+      "label": "real_question",
+      "reason": "知识问答，解析几何创始人"
+    },
+    {
+      "index": 848,
+      "query": "写出导数的四则运算法则（和、差、积、商）以及复合函数的求导法则。",
+      "label": "real_question",
+      "reason": "数学求解，导数四则运算法则"
+    },
+    {
+      "index": 849,
+      "query": "已知抛物线y²=4x的焦点为F，过F的直线交抛物线于A,B两点。求证：以AB为直径的圆与抛物线的准线相切。",
+      "label": "real_question",
+      "reason": "数学求解，抛物线性质证明"
+    },
+    {
+      "index": 850,
+      "query": "已知函数f(x)=x³-3x，求证：f(x)在R上不是单调函数，并指出其单调区间。",
+      "label": "real_question",
+      "reason": "数学求解，函数单调性证明"
+    },
+    {
+      "index": 851,
+      "query": "已知函数f(x)=x³+ax²+bx+c在x=1处取得极值-2，且f'(0)= -3。求a,b,c的值。",
+      "label": "real_question",
+      "reason": "数学求解，函数极值与导数"
+    },
+    {
+      "index": 852,
+      "query": "什么是等差数列？等差数列的公差是什么样的？",
+      "label": "real_question",
+      "reason": "请求讲解，导数四则运算"
+    },
+    {
+      "index": 853,
+      "query": "已知数列{an}满足a1=1，an+1 = 2an + 1。猜想通项公式，并用数学归纳法证明。",
+      "label": "real_question",
+      "reason": "数学求解，数列通项公式"
+    },
+    {
+      "index": 854,
+      "query": "已知双曲线x²/4 - y²/5 = 1上一点P到左焦点的距离为6，求点P到右焦点的距离。",
+      "label": "real_question",
+      "reason": "数学求解，双曲线焦点距离"
+    },
+    {
+      "index": 855,
+      "query": "已知椭圆x²/16 + y²/12 = 1上一点P到左焦点的距离为5，求点P到右焦点的距离。",
+      "label": "real_question",
+      "reason": "数学求解，椭圆焦点距离"
+    },
+    {
+      "index": 856,
+      "query": "帮我讲解一下导数的四则运算。",
+      "label": "real_question",
+      "reason": "请求讲解，导数四则运算"
+    },
+    {
+      "index": 857,
+      "query": "求函数f(x)=x³-6x²+9x+1在区间[-1,4]上的最大值和最小值。",
+      "label": "real_question",
+      "reason": "数学求解，函数极值"
+    },
+    {
+      "index": 858,
+      "query": "求曲线y=x³-3x在点(1,-2)处的切线方程。",
+      "label": "real_question",
+      "reason": "数学求解，切线方程"
+    },
+    {
+      "index": 859,
+      "query": "求函数f(x)=x²e^x的导数。",
+      "label": "real_question",
+      "reason": "数学求解，函数导数"
+    },
+    {
+      "index": 860,
+      "query": "求等比数列2,6,18,...的前8项和。",
+      "label": "real_question",
+      "reason": "数学求解，等比数列求和"
+    },
+    {
+      "index": 861,
+      "query": "已知等差数列{an}中，a5=10，a10=25，求a1和d。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 862,
+      "query": "求椭圆x²/25 + y²/9 = 1的焦距和离心率。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 863,
+      "query": "求圆心在(1,-2)，半径为3的圆的标准方程，并判断点(4,2)是否在圆上。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 864,
+      "query": "求经过点P(2,-3)且倾斜角为60°的直线方程。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 865,
+      "query": "复合函数的求导法则是什么？\\n如何求y=ln(2x-1)的导数？\\n如果复合函数有多层嵌套，例如y=sin²(3x)，应如何求导？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 866,
+      "query": "导数的几何意义是什么？\\n曲线在某点处的切线方程如何求？\\n如果曲线在某点处的导数不存在，该点可能有切线吗？举例说明。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 867,
+      "query": "数列的递推公式与通项公式有什么区别？\\n已知数列的前n项和Sn，如何求通项公式an？\\n如果数列同时满足递推公式和Sn的关系，如何求解？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 868,
+      "query": "双曲线的渐近线方程如何求？\\n等轴双曲线的定义是什么？它的渐近线有什么特点？\\n双曲线的离心率e与渐近线的斜率有什么关系？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 869,
+      "query": "已知圆C的方程为x²+y²-4x+6y-12=0，求圆心坐标、半径，并判断点M(1,2)在圆内、圆上还是圆外。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 870,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 871,
+      "query": "已知函数f(x)=e^x - x，求f'(x)，并证明f(x)≥1恒成立，且等号仅在x=0时成立。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 872,
+      "query": "求函数f(x)=x³-3x²-9x+5的单调区间、极值点以及在区间[-2,4]上的最大值和最小值。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 873,
+      "query": "什么是等差数列？什么是等比数列？请结合教材举例说明。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 874,
+      "query": "已知等比数列{an}中，a1=3，a4=24。求公比q，通项公式an，以及前5项和S5。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 875,
+      "query": "已知等差数列{an}中，a1=2，a4=8。求公差d，通项公式an，以及前10项和S10。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 876,
+      "query": "求抛物线y²=8x的焦点坐标、准线方程，并求抛物线上与焦点距离为6的点的坐标。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 877,
+      "query": "已知双曲线x²/9 - y²/16 = 1，求它的实半轴长、虚半轴长、焦点坐标、离心率和渐近线方程。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 878,
+      "query": "求椭圆16x²+25y²=400的长轴长、短轴长、离心率、焦点坐标和顶点坐标。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 879,
+      "query": "在实际问题中，常常需要求函数在闭区间上的最大值和最小值。请以函数f(x) = 1/3 x³ - 4x + 4在区间[0,3]上为例，说明求最值的步骤，并解释为什么需要将极值与端点值进行比较。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 880,
+      "query": "利用导数研究函数的单调性时，我们通过分析导数的正负来判断函数的增减。请以函数f(x) = x³ - 3x为例，说明如何通过求导、解方程f'(x)=0、列表分析等步骤，确定函数的单调区间和极值点。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 881,
+      "query": "导数的概念源于瞬时变化率的研究。以高台跳水运动员的高度函数h(t) = -4.9t² + 4.8t + 11为例，说明如何通过平均速度的极限得到t=1时的瞬时速度，并解释导数h'(1) = -5的物理意义。",
+      "label": "real_question",
+      "reason": "求解瞬时速度及导数物理意义"
+    },
+    {
+      "index": 882,
+      "query": "数学归纳法是一种证明与正整数有关的命题的重要方法。请结合教材中证明等差数列通项公式的例子，说明数学归纳法的两个步骤（归纳奠基和归纳递推）各自的作用，以及为什么两个步骤缺一不可。",
+      "label": "real_question",
+      "reason": "数学归纳法的步骤及作用"
+    },
+    {
+      "index": 883,
+      "query": "计算向量A等于一、二、三与B等于四、负五六的数量积，以及向量A",
+      "label": "noise",
+      "reason": "句子不完整"
+    },
+    {
+      "index": 884,
+      "query": "在数列的学习中，我们学习了等差数列和等比数列的通项公式与前n项和公式。请分别说明等差数列和等比数列的前n项和公式的推导方法（倒序相加法和错位相减法），并比较这两种方法的异同。",
+      "label": "real_question",
+      "reason": "等差等比数列前n项和公式推导"
+    },
+    {
+      "index": 885,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "求解不等式"
+    },
+    {
+      "index": 886,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "抛物线标准方程推导"
+    },
+    {
+      "index": 887,
+      "query": "直线的倾斜角α的取值范围是多少？",
+      "label": "real_question",
+      "reason": "直线倾斜角取值范围"
+    },
+    {
+      "index": 888,
+      "query": "定理与平面向量基本定理有什么联系和区别？",
+      "label": "real_question",
+      "reason": "定理与平面向量基本定理比较"
+    },
+    {
+      "index": 889,
+      "query": "如果改了，我挺尴尬。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 890,
+      "query": "空间向量基本定理的内容是什么？",
+      "label": "real_question",
+      "reason": "空间向量基本定理内容"
+    },
+    {
+      "index": 891,
+      "query": "请详细说明从点斜式到斜截式的转化过程，并指出斜截式中各参数的几何意义。",
+      "label": "real_question",
+      "reason": "点斜式到斜截式转化过程"
+    },
+    {
+      "index": 892,
+      "query": "请帮我说明一下，如何利用空间向量的数量积证明直线与平面垂直的彭烯定理。",
+      "label": "real_question",
+      "reason": "空间向量数量积证明直线与平面垂直"
+    },
+    {
+      "index": 893,
+      "query": "已知等差数列A N中，A 1等于2，A 4等于8，求公差",
+      "label": "real_question",
+      "reason": "求等差数列公差"
+    },
+    {
+      "index": 894,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "直线倾斜角斜率关系"
+    },
+    {
+      "index": 895,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "抛物线标准方程推导"
+    },
+    {
+      "index": 896,
+      "query": "椭圆十六乘以X平方加上二十五乘以Y平方等于四百的长轴长短轴长离心率",
+      "label": "real_question",
+      "reason": "椭圆长轴短轴离心率计算"
+    },
+    {
+      "index": 897,
+      "query": "讲解一下数学归纳法。",
+      "label": "real_question",
+      "reason": "数学归纳法讲解"
+    },
+    {
+      "index": 898,
+      "query": "讲解一下平面向量的概念。",
+      "label": "real_question",
+      "reason": "平面向量概念讲解"
+    },
+    {
+      "index": 899,
+      "query": "帮我讲解一下",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 900,
+      "query": "帮我讲解一下直线的倾斜角与斜率。",
+      "label": "real_question",
+      "reason": "直线倾斜角与斜率讲解"
+    },
+    {
+      "index": 901,
+      "query": "解不等式x²-5x+6<0，写出解集。",
+      "label": "real_question",
+      "reason": "数学求解，有明确解集要求"
+    },
+    {
+      "index": 902,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学求解，涉及直线斜率"
+    },
+    {
+      "index": 903,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解，涉及抛物线方程"
+    },
+    {
+      "index": 904,
+      "query": "帮我讲解一下勾股定理。",
+      "label": "real_question",
+      "reason": "请求讲解，涉及勾股定理"
+    },
+    {
+      "index": 905,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解，涉及集合概念"
+    },
+    {
+      "index": 906,
+      "query": "求不等式x平方减五x加六大于零的解。",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 907,
+      "query": "请帮我讲解一下复数的概念。",
+      "label": "real_question",
+      "reason": "请求讲解，涉及复数概念"
+    },
+    {
+      "index": 908,
+      "query": "椭圆的离心率e的定义是什么？\\ne的取值范围是多少？\\ne的大小如何影响椭圆的形状？为什么？",
+      "label": "real_question",
+      "reason": "数学求解，涉及椭圆离心率"
+    },
+    {
+      "index": 909,
+      "query": "空间向量基本定理的内容是什么？\\n该定理与平面向量基本定理有什么联系和区别？\\n为什么要求三个向量不共面？",
+      "label": "real_question",
+      "reason": "数学求解，涉及向量定理"
+    },
+    {
+      "index": 910,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学求解，涉及抛物线方程"
+    },
+    {
+      "index": 911,
+      "query": "不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 912,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 913,
+      "query": "讲解数学归纳法。",
+      "label": "real_question",
+      "reason": "请求讲解，涉及数学归纳法"
+    },
+    {
+      "index": 914,
+      "query": "降低一些。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 915,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 916,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 917,
+      "query": "五x平方减五x加六等于零的解。",
+      "label": "real_question",
+      "reason": "数学求解，涉及方程解"
+    },
+    {
+      "index": 918,
+      "query": "下面一段我直接给你输出就完了，行吗？",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 919,
+      "query": "求不等式x平方减五x加六大于零的解",
+      "label": "real_question",
+      "reason": "数学求解，涉及不等式解"
+    },
+    {
+      "index": 920,
+      "query": "请帮我介绍一下魏晋时期的数学家刘徽。",
+      "label": "real_question",
+      "reason": "请求讲解，涉及数学家介绍"
+    },
+    {
+      "index": 921,
+      "query": "直线的倾斜角α的取值范围是多少？\\n当α=90°时，直线的斜率存在吗？为什么？\\n直线的斜率k与倾斜角α的函数关系是什么？当α从0°增大到180°时，k如何变化？",
+      "label": "real_question",
+      "reason": "数学问题，有明确求解意图"
+    },
+    {
+      "index": 922,
+      "query": "已知直线l经过点P(2,1)，且与直线x+2y-3=0垂直。求直线l的方程，并求点P到原点的距离。",
+      "label": "real_question",
+      "reason": "数学问题，有明确求解意图"
+    },
+    {
+      "index": 923,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学问题，有明确求解意图"
+    },
+    {
+      "index": 924,
+      "query": "还有什么啊?",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 925,
+      "query": "北京今天天气怎么样",
+      "label": "real_question",
+      "reason": "天气查询，有明确意图"
+    },
+    {
+      "index": 926,
+      "query": "这是个网页。",
+      "label": "noise",
+      "reason": "无明确问题意图"
+    },
+    {
+      "index": 927,
+      "query": "抛物线的标准方程有四种形式，分别对应焦点在坐标轴正半轴或负半轴。请根据抛物线的定义（到定点距离等于到定直线距离），推导出焦点在x轴正半轴、准线为x = -p/2时的标准方程y² = 2px，并说明p的几何意义。",
+      "label": "real_question",
+      "reason": "数学问题，有明确求解意图"
+    },
+    {
+      "index": 928,
+      "query": "Explain the difference between “weather” and “climate” in one sentence each.",
+      "label": "real_question",
+      "reason": "英语问题，有明确意图"
+    },
+    {
+      "index": 929,
+      "query": "What is the capital of France? Please name it and list two famous landmarks in this city.",
+      "label": "real_question",
+      "reason": "英语问题，有明确意图"
+    },
+    {
+      "index": 930,
+      "query": "什么是“DNA”？它在生物遗传中起什么作用？",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 931,
+      "query": "什么是“人工智能”？请举例说明它在日常生活中的两个应用场景。",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 932,
+      "query": "请列举三种常见的可再生能源，并分别说明它们的主要利用方式。",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 933,
+      "query": "什么是“温室效应”？请简要说明其主要成因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "知识问答，有明确意图"
+    },
+    {
+      "index": 934,
+      "query": "请设计一个简单的实验或调查，收集数据，并用导数知识分析数据的变化趋势。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 935,
+      "query": "请根据教材中“微积分的创立与发展”的阅读材料，列举两位对微积分创立做出重要贡献的数学家及其主要贡献。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 936,
+      "query": "请根据教材中“斐波那契数列”的阅读材料，写出斐波那契数列的递推公式，并说明其在自然界中的一个应用实例。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 937,
+      "query": "请结合教材中的阅读材料，谈谈你对“解析几何”思想的理解。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确意图"
+    },
+    {
+      "index": 938,
+      "query": "请从教材中找出一个用数学归纳法证明的命题，并简述证明过程。",
+      "label": "real_question",
+      "reason": "请求讲解，有明确意图"
+    },
+    {
+      "index": 939,
+      "query": "请用坐标法证明：平行四边形两条对角线的平方和等于四条边的平方和。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 940,
+      "query": "请举例说明导数在经济学中的两个应用（如边际成本、边际收益）。",
+      "label": "real_question",
+      "reason": "数学求解，有明确意图"
+    },
+    {
+      "index": 941,
+      "query": "某地今年初有居民1000人，预计以后每年人口增长率为5%，同时每年净迁出100人。写出第n年初的人口数关于n的递推公式，并求第10年初的人口数（精确到1人）。",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 942,
+      "query": "用半径为R的圆形铁皮剪出一个圆心角为α的扇形，制成一个圆锥形容器。问圆心角α为多大时，容器的容积最大？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 943,
+      "query": "用总长14.8m的钢条制作一个长方体容器的框架，如果所制容器底面一边的长比另一边的长多0.5m，那么高为多少时容器的容积最大？最大容积是多少？",
+      "label": "real_question",
+      "reason": "数学求解问题"
+    },
+    {
+      "index": 944,
+      "query": "请简述“微积分”的创立对数学发展的意义。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 945,
+      "query": "什么是“解析几何”？它的创始人是谁？其主要思想是什么？",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 946,
+      "query": "嗯，小静同学帮我讲一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 947,
+      "query": "请帮我讲解一下二项式定理。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 948,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 949,
+      "query": "今天天气怎么样?",
+      "label": "real_question",
+      "reason": "天气查询问题"
+    },
+    {
+      "index": 950,
+      "query": "等开会的时候再说吧。",
+      "label": "noise",
+      "reason": "跟别人说话"
+    },
+    {
+      "index": 951,
+      "query": "你帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 952,
+      "query": "帮我讲解一下集合的概念。",
+      "label": "real_question",
+      "reason": "请求讲解问题"
+    },
+    {
+      "index": 953,
+      "query": "什么是DNA？它在生物遗传中起到了什么样的作用？",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 954,
+      "query": "我们最开始，因为这种是运行了本地，所以它加载的还是那么好。另外一个的话，如果误识别",
+      "label": "noise",
+      "reason": "设备/技术调试对话"
+    },
+    {
+      "index": 955,
+      "query": "Who wrote the play “Hamlet”? Please state the author’s full name and the century in which it was written.",
+      "label": "real_question",
+      "reason": "英语问题"
+    },
+    {
+      "index": 956,
+      "query": "Explain the difference between “weather” and “climate” in one sentence each.",
+      "label": "real_question",
+      "reason": "英语问题"
+    },
+    {
+      "index": 957,
+      "query": "What is the capital of France? Please name it and list two famous landmarks in this city.",
+      "label": "real_question",
+      "reason": "英语问题"
+    },
+    {
+      "index": 958,
+      "query": "什么是“DNA”？它在生物遗传中起什么作用？",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 959,
+      "query": "什么是“人工智能”？请举例说明它在日常生活中的两个应用场景。",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 960,
+      "query": "请列举三种常见的可再生能源，并分别说明它们的主要利用方式。",
+      "label": "real_question",
+      "reason": "知识问答问题"
+    },
+    {
+      "index": 961,
+      "query": "什么是“温室效应”？请简要说明其主要成因和可能的环境影响。",
+      "label": "real_question",
+      "reason": "明确求解温室效应成因及影响"
+    },
+    {
+      "index": 962,
+      "query": "我们最开始主要的都是学校的体育，然后大家都需要考核，然后就可以一起上。",
+      "label": "noise",
+      "reason": "无明确问题意图，内容杂乱"
+    },
+    {
+      "index": 963,
+      "query": "请设计一个简单的实验或调查，收集数据，并用导数知识分析数据的变化趋势。",
+      "label": "real_question",
+      "reason": "请求设计实验并分析数据"
+    },
+    {
+      "index": 964,
+      "query": "请根据教材中“微积分的创立与发展”的阅读材料，列举两位对微积分创立做出重要贡献的数学家及其主要贡献。",
+      "label": "real_question",
+      "reason": "求解微积分创立者及贡献"
+    },
+    {
+      "index": 965,
+      "query": "请根据教材中“斐波那契数列”的阅读材料，写出斐波那契数列的递推公式，并说明其在自然界中的一个应用实例。",
+      "label": "real_question",
+      "reason": "求解斐波那契数列及应用"
+    },
+    {
+      "index": 966,
+      "query": "请结合教材中的阅读材料，谈谈你对“解析几何”思想的理解。",
+      "label": "real_question",
+      "reason": "请求讲解解析几何思想"
+    },
+    {
+      "index": 967,
+      "query": "请从教材中找出一个用数学归纳法证明的命题，并简述证明过程。",
+      "label": "real_question",
+      "reason": "请求找出并简述数学归纳法证明"
+    }
+  ]
+}

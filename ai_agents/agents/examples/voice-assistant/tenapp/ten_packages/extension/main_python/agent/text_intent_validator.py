@@ -4,39 +4,38 @@ Text intent validator for semantic validation.
 This module validates ASR (Automatic Speech Recognition) text by:
 Detecting whether the text represents a meaningful question or just noise.
 
-The validation uses fast noise detection with minimal token output.
+Uses OpenAI Chat Completions API with the same prompt and return format as
+classify_queries.py.
 """
 
 import asyncio
+import json
 import os
 import time
+from pathlib import Path
 from typing import Optional
 
-import httpx
+from openai import AsyncOpenAI
+
+
+def _get_api_key() -> str:
+    """Get API key from OPENAI_API_KEY environment variable."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "OPENAI_API_KEY environment variable is not set. "
+            "Please configure it in .env file."
+        )
+    return api_key
 
 
 def _get_base_url() -> str:
-    """Get base URL from OPENAI_API_BASE environment variable.
-
-    Removes /v1 suffix if present. Raises error if not configured.
-    """
-    base_url = os.environ.get("OPENAI_API_BASE")
-    if not base_url:
-        raise ValueError(
-            "OPENAI_API_BASE environment variable is not set. "
-            "Please configure it in .env file."
-        )
-    # Remove /v1 suffix if present
-    if base_url.endswith("/v1"):
-        base_url = base_url[:-3]
-    return base_url
+    """Get base URL from OPENAI_BASE_URL environment variable."""
+    return os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
 
 
 def _get_model() -> str:
-    """Get model name from OPENAI_MODEL environment variable.
-
-    Raises error if not configured.
-    """
+    """Get model name from OPENAI_MODEL environment variable."""
     model = os.environ.get("OPENAI_MODEL")
     if not model:
         raise ValueError(
@@ -47,9 +46,36 @@ def _get_model() -> str:
 
 
 # Module constants
+DEFAULT_API_KEY = _get_api_key()
 DEFAULT_BASE_URL = _get_base_url()
 DEFAULT_MODEL = _get_model()
 DEFAULT_TIMEOUT = 5.0
+
+# Copied from classify_queries.py — same prompt and return format
+SYSTEM_PROMPT = """你是一个语音助手 query 分类器。你的任务是对每条用户输入进行分类。
+
+分类标准：
+
+**real_question（真实问题）**：用户有明确意图获取信息、求解问题或请求讲解的内容。包括但不限于：
+- 知识问答（如"什么是等差数列？"、"什么是失蜡铸造"）
+- 数学求解（如"求不等式 x²-5x+6<0 的解"、"二项式定理的公式是什么？"）
+- 请求讲解（如"帮我讲解一下集合的概念"）
+- 天气查询（如"北京今天天气怎么样？"）
+- 常识问题（如"一加一等于几？"、"中国的十大开国元帅有哪些人？"）
+- 英语问题（如英文提问的语法、知识类问题）
+- 有明确学科或知识领域的完整提问
+
+**noise（噪声）**：不构成有效提问的内容。包括但不限于：
+- 旁人对话（如"对，就是那个，或者边的那俩"、"你看那个歪点那个活跃时间"）
+- ASR 碎片/不完整句子（如"函数，我们20"、"等一下公式"）
+- 重复填充词（如"我知道了"重复多遍、"你你你你你"重复多遍）
+- 跟别人说话（如"打断一下，我拿一下"、"等开会的时候再说吧"）
+- 设备/技术调试对话（如"唤醒后几秒后提问才有效"、"这个还是得去求一下"）
+- 纯感叹或情绪表达（如"真的假的?"、"你是不是有病啊?"）
+- 无明确问题意图的短语（如"查看一下"、"麻烦一下"、"挑战一下"）
+
+请对输入的 query 进行分类，返回 `real_question` 或 `noise`，不要返回其他内容。
+"""
 
 # Common noise words that can be filtered without LLM call
 COMMON_NOISE_WORDS = {
@@ -71,13 +97,14 @@ COMMON_NOISE_WORDS = {
 
 class TextIntentValidator:
     """
-    Text intent validator using LLM for semantic validation.
+    Text intent validator using OpenAI Chat Completions API.
 
-    Uses fast noise detection with YES/NO response for efficiency.
+    Uses the same prompt and return format as classify_queries.py.
     """
 
     def __init__(
         self,
+        api_key: str = DEFAULT_API_KEY,
         base_url: str = DEFAULT_BASE_URL,
         model: str = DEFAULT_MODEL,
         timeout: float = DEFAULT_TIMEOUT,
@@ -86,147 +113,108 @@ class TextIntentValidator:
         Initialize TextIntentValidator.
 
         Args:
-            base_url: Ollama API endpoint URL
+            api_key: OpenAI API key
+            base_url: OpenAI API base URL
             model: Model name to use for validation
             timeout: Request timeout in seconds
         """
+        self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: Optional[AsyncOpenAI] = None
 
-    async def _get_client(self) -> httpx.AsyncClient:
-        """Get or create lazy-initialized HTTP client."""
+    async def _get_client(self) -> AsyncOpenAI:
+        """Get or create lazy-initialized AsyncOpenAI client."""
         if self._client is None:
-            self._client = httpx.AsyncClient(timeout=self.timeout)
+            self._client = AsyncOpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url,
+                timeout=self.timeout,
+            )
         return self._client
 
     async def close(self) -> None:
-        """Close HTTP client and clean up resources."""
+        """Close OpenAI client and clean up resources."""
         if self._client:
-            await self._client.aclose()
+            await self._client.close()
             self._client = None
 
-    def _build_check_prompt(self, text: str) -> str:
-        """
-        Build prompt for stage 1: noise detection.
-
-        Returns YES/NO based on whether text is meaningful. This prompt
-        is designed for fast evaluation with minimal token output.
-
-        Args:
-            text: The text to evaluate
-
-        Returns:
-            A prompt string for the LLM to evaluate noise
-        """
-        return f"""你是一个ASR文本验证助手。请判断给定文本是否有意义。
-
-回答 "NO" 的条件（满足任一即为噪音）：
-1. 单词重复：同一词语连续重复，如"这个这个"、"那个那个"、"然后然后"、"对对对"、"就是就是"、"嗯嗯"、"啊啊"
-2. 纯填充词/迟疑声："um", "uh", "嗯", "啊", "呃", "唔", "er", "ah"
-3. 单独的简单问候（仅一个词）："hello", "你好", "hi", "hey"
-4. 无意义短句："你说", "我问", "我之前", "之前不是", "应该是", "对", "对吧", "你在一", "开始", "就是", "以后"
-5. 说话停顿/继续："然后呢", "所以呢", "就是说", "以后呢", "就是说这个", "那个呢"
-6. 表达确认但不完整："对对对", "可以可以", "是的是的", "应该会", "好的好的"
-7. 表达状态或感受："我觉得应该是", "我之前用过", "你看看", "你也行", "你觉得", "我感觉"
-8. 说话中断/不完整："开始的勇气", "然后我以后", "那最后最后", "开始", "就是", "以后"
-9. 闲聊短句："你说什么", "我问你", "我知道", "以后呢，在这个广告吗？"
-10. 单独的粘连单词："yourname"（只有一个词）
-
-回答 "YES" 的条件（满足以下任一标准即可）：
-1. 完整的问题：有明确的疑问语气或问号，如"今天天气怎么样?"、"讲个笑话"、"What's the weather like?"
-2. 明确的请求：有明确的请求意图，如"你能帮我吗?"、"我想听音乐"、"Play some music"、"Help me"
-3. 具体的命令：有明确的命令意图，如"把一元二次方程讲一下"
-4. 问候+完整内容：问候后面有完整的问题或请求，如"你好，今天天气怎么样?"、"Hello, how are you?"
-5. 包含实际内容的英文粘连词："what'syourname"、"howareyou"、"hello， how areyou"
-6. 包含ASR错误但有明确意图："¥12次方程"、"2次方程"（虽然识别错误，但语义明确）
-7. 用怎么样开头的，如： 如"怎么样xxx", 如"怎么样xxx，不犯法",
-判断原则：
-- 如果文本包含明确的语义意图（即使有ASR错误），回答 "YES"
-- 英文粘连词如果有实际含义，回答 "YES"；单独一个无意义词回答 "NO"
-- 优先识别真正的噪音（重复、填充词、不完整表达），不要误判有实际内容的文本
-
-请只回答 "YES" 或 "NO"，不要添加任何其他文字。
-
-待分析文本: "{text}"
-
-回答: """
-
-    async def is_meaningful(self, text: str) -> tuple[bool, float, str, None]:
+    async def is_meaningful(self, text: str) -> tuple[bool, float, str]:
         """
         Check if text is meaningful or noise.
 
-        Uses fast noise detection (YES/NO, minimal tokens).
+        Calls OpenAI Chat Completions API with the same prompt as
+        classify_queries.py, parses the JSON result, and returns whether
+        the label is "real_question".
 
         Error handling strategy: On any error, return True (meaningful) to
-        avoid filtering valid user input. This is safer than defaulting to
-        filtering as noise, which would frustrate users.
+        avoid filtering valid user input.
 
         Args:
             text: The text to validate
 
         Returns:
             A tuple containing:
-                - is_meaningful: Whether the text passed the noise check
+                - is_meaningful: Whether the text is a real question
                 - elapsed_time: Total time spent on validation (seconds)
                 - raw_response: The raw LLM response (for debugging)
-                - None: Placeholder for backward compatibility
         """
         # Handle empty or whitespace-only input
         if not text or len(text.strip()) == 0:
-            return False, 0.0, "", None
+            return False, 0.0, "empty"
 
         # Fast path: filter common noise words without LLM call
         text_lower = text.strip().lower()
         if text_lower in COMMON_NOISE_WORDS:
-            return False, 0.0, "FAST_PATH_NOISE", None
+            return False, 0.0, "FAST_PATH_NOISE"
 
-        # 短文本被过滤掉
+        # Short text filter
         if len(text_lower) <= 2:
-            return False, 0.0, "FAST_PATH_NOISE", None
+            return False, 0.0, "FAST_PATH_NOISE"
 
-        # 短文本被过滤掉
+        # "打断一下" fast path
         if "打断一下" in text_lower:
-            return True, 0.0, "FAST_PATH_NOISE", None
+            return True, 0.0, "FAST_PATH_YES"
 
-        total_elapsed = 0.0
-
-        # Stage 1: Noise detection
         start_time = time.time()
         try:
             client = await self._get_client()
-            prompt = self._build_check_prompt(text)
 
-            response = await client.post(
-                f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {
-                        "num_predict": 2,  # Minimal tokens for YES/NO
-                        "temperature": 0.1,
-                    },
-                },
-            )
+            user_message = f"请对以下 query 分类：\n\n{text}"
 
-            total_elapsed = time.time() - start_time
+            response = await client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_message},
+                ],
+                temperature=0.0,
+                num_predict=10,
+            )  # type: ignore
 
-            # Process stage 1 response
-            if response.status_code != 200:
-                return True, total_elapsed, "ERROR_DEFAULT_YES", None
+            total_elapsed = (time.time() - start_time) * 1000
 
-            result = response.json()
-            response_text = result.get("response", "").strip().upper()
-            is_meaningful = response_text.startswith("YES")
+            # Parse the JSON result — same format as classify_queries.py
+            content = response.choices[0].message.content.strip()
+            print(content)
+            # Extract JSON (may be wrapped in markdown code block)
+            if content.startswith("```"):
+                lines = content.split("\n")
+                content = "\n".join(lines[1:-1])
 
-            return is_meaningful, total_elapsed, response_text, None
+            results = json.loads(content)
+            label = results[0]["label"]
+            is_meaningful = label == "real_question"
+
+            return is_meaningful, total_elapsed, content
 
         except asyncio.TimeoutError:
-            return True, total_elapsed, "TIMEOUT_DEFAULT_YES", None
+            total_elapsed = time.time() - start_time
+            return True, total_elapsed, "TIMEOUT_DEFAULT_YES"
         except Exception as e:
-            return True, total_elapsed, f"ERROR: {e}", None
+            total_elapsed = time.time() - start_time
+            return True, total_elapsed, f"ERROR: {e}"
 
 
 # Test function for standalone testing
@@ -239,55 +227,27 @@ async def test_text_intent_validator():
     """
     validator = TextIntentValidator()
 
-    # Test cases: (text, expected_is_meaningful, _)
-    test_cases = [
-        # Meaningful questions - Complete questions
-        ("今天天气怎么样?", True, None),
-        ("讲个笑话", True, None),
-        ("What's the weather like?", True, None),
-        # Meaningful questions - Request type
-        ("你能帮我吗?", True, None),
-        ("我想听音乐", True, None),
-        ("Play some music", True, None),
-        # Meaningful questions - Command/learning related
-        ("¥12次方程的解法", True, None),
-        ("什么是¥12次方程组", True, None),
-        ("把一元二次方程讲一下", True, None),
-        # Meaningful questions - Greeting + question
-        ("你好，今天天气怎么样?", True, None),
-        ("Hello, how are you?", True, None),
-        # English concatenation tests (now treated as meaningful without correction)
-        ("what'syourname", True, None),
-        ("hello， how areyou", True, None),
-        ("yourname", False, None),  # Single word, not meaningful
-        # Noise cases from actual logs
-        ("然后我以后就是就是我现在我现在想", False, None),
-        ("然后呢，就是那个会议室有一点", False, None),
-        ("开始的勇气。对我就是", False, None),
-        ("我说我就不要了", False, None),
-        ("你在一", False, None),
-        ("之前不是已经已经那个了，就是说", False, None),
-        ("然后呢", False, None),
-        # Common noise
-        ("你好", False, None),  # Standalone greeting
-        ("嗯", False, None),
-        ("ah", False, None),
-        ("嗯嗯", False, None),
-        ("然后然后", False, None),
-        ("我知道", False, None),
-        ("你看看", False, None),
-        ("你觉得", False, None),
-        ("开始", False, None),
-        ("就是", False, None),
-    ]
+    # Load test cases from classification_results.json
+    script_dir = Path(__file__).parent
+    results_file = script_dir / "classification_results.json"
+    with open(results_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Build test cases: (query, expected_is_meaningful)
+    test_cases = []
+    for item in data["results"]:
+        expected = item["label"] == "real_question"
+        test_cases.append((item["query"], expected))
 
     print("=" * 70)
-    print("Testing TextIntentValidator - Noise Detection")
+    print(
+        f"Testing TextIntentValidator - {len(test_cases)} cases from classification_results.json"
+    )
     print("=" * 70)
 
     results = []
-    for text, expected_meaningful, _ in test_cases:
-        is_meaningful, elapsed, raw_response, _ = await validator.is_meaningful(text)
+    for text, expected_meaningful in test_cases:
+        is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
 
         # Check if result matches expectation
         status = "✓" if is_meaningful == expected_meaningful else "✗"
@@ -304,7 +264,7 @@ async def test_text_intent_validator():
         )
 
         # Print result
-        print(f"{status} '{text}' -> {is_meaningful} ({elapsed:.3f}s)")
+        print(f"{status} '{text[:40]}' -> {is_meaningful} ({elapsed:.3f}s)")
 
     # Print summary statistics
     print("=" * 70)
