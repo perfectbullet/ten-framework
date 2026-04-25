@@ -3,6 +3,7 @@
 Local CosyVoice WebSocket TTS Implementation
 Based on the WebSocket interface documented in websocket_interface.md
 """
+
 import json
 import base64
 import threading
@@ -130,9 +131,9 @@ class LocalSpeechSynthesizer:
             self.ws_thread = threading.Thread(
                 target=lambda: self.ws.run_forever(
                     ping_interval=35,  # Send ping every 35 seconds
-                    ping_timeout=30,   # Wait for pong response (must be < ping_interval)
+                    ping_timeout=30,  # Wait for pong response (must be < ping_interval)
                 ),
-                daemon=True
+                daemon=True,
             )
             self.ws_thread.start()
 
@@ -232,6 +233,7 @@ class LocalSpeechSynthesizer:
             "text": text,
             "spk_id": self.voice,  # Use voice as speaker ID
             "chunk_id": chunk_id,
+            "instruct_text": "You are a helpful assistant. 请用较快语速说一句话。<|endofprompt|>",
         }
 
         # Send request

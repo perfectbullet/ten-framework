@@ -35,6 +35,7 @@ from .cosy_tts import (
     MESSAGE_TYPE_CMD_RESULT_GENERATED,
 )
 
+
 def get_channel_from_cmdline(ten_env) -> dict:
     """
     从 property.json 文件中读取 agora_rtc 的 channel 值并解析。
@@ -58,25 +59,30 @@ def get_channel_from_cmdline(ten_env) -> dict:
         parent_pid = os.getppid()
         ten_env.log_info(f"[get_channel] parent_pid: {parent_pid}")
 
-        cmdline_path = f'/proc/{parent_pid}/cmdline'
+        cmdline_path = f"/proc/{parent_pid}/cmdline"
         ten_env.log_info(f"[get_channel] reading cmdline from: {cmdline_path}")
 
-        with open(cmdline_path, 'r') as f:
+        with open(cmdline_path, "r") as f:
             cmdline = f.read()
             # cmdline 中的参数用 \x00 分隔，替换为空格以便正则匹配
-            cmdline_readable = cmdline.replace('\x00', ' ')
+            cmdline_readable = cmdline.replace("\x00", " ")
 
             # 保存原始 cmdline 到本地文件（用于调试）
             output_file = f"/tmp/cmdline_pid_{parent_pid}.txt"
-            with open(output_file, 'wb') as out_f:
-                out_f.write(cmdline.encode('utf-8', errors='replace'))
+            with open(output_file, "wb") as out_f:
+                out_f.write(cmdline.encode("utf-8", errors="replace"))
             ten_env.log_info(f"[get_channel] cmdline saved to: {output_file}")
 
             # 查找 --property 参数（使用替换后的 cmdline_readable）
             # 匹配 /tmp/xxx/property-xxx.json 或 /var/log/property-xxx.json 格式
-            match = re.search(r'--property\s+(/[a-z]+/[^/]*/property-[^\.]+\.json|/var/log/property-[^\.]+\.json)', cmdline_readable)
+            match = re.search(
+                r"--property\s+(/[a-z]+/[^/]*/property-[^\.]+\.json|/var/log/property-[^\.]+\.json)",
+                cmdline_readable,
+            )
             if not match:
-                ten_env.log_error("[get_channel] no --property found in cmdline, using defaults")
+                ten_env.log_error(
+                    "[get_channel] no --property found in cmdline, using defaults"
+                )
                 return {
                     "channel_name": default_channel_name,
                     "team_id": default_team_id,
@@ -88,14 +94,16 @@ def get_channel_from_cmdline(ten_env) -> dict:
 
         # 2. 读取 property.json 文件
         ten_env.log_info(f"[get_channel] reading property file: {property_path}")
-        with open(property_path, 'r', encoding='utf-8') as f:
+        with open(property_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # 3. 导航到 agora_rtc 节点的 property，获取 channel 值
         graphs = data.get("ten", {}).get("predefined_graphs", [])
         ten_env.log_info(f"[get_channel] found {len(graphs)} predefined_graphs")
         if not graphs:
-            ten_env.log_error("[get_channel] no predefined_graphs found, using defaults")
+            ten_env.log_error(
+                "[get_channel] no predefined_graphs found, using defaults"
+            )
             return {
                 "channel_name": None,
                 "team_id": default_team_id,
@@ -110,11 +118,15 @@ def get_channel_from_cmdline(ten_env) -> dict:
             node_name = node.get("name")
             if node_name == "agora_rtc":
                 channel_name = node.get("property", {}).get("channel")
-                ten_env.log_info(f"[get_channel] found agora_rtc node, channel: {channel_name}")
+                ten_env.log_info(
+                    f"[get_channel] found agora_rtc node, channel: {channel_name}"
+                )
                 break
 
         if not channel_name:
-            ten_env.log_error("[get_channel] no channel found in agora_rtc node, using defaults")
+            ten_env.log_error(
+                "[get_channel] no channel found in agora_rtc node, using defaults"
+            )
             return {
                 "channel_name": None,
                 "team_id": default_team_id,
@@ -123,10 +135,12 @@ def get_channel_from_cmdline(ten_env) -> dict:
             }
 
         # 4. 解析 channel_name 格式: employee_<team_id>_<user_id>_<employee_id>
-        parts = channel_name.split('_')
+        parts = channel_name.split("_")
         ten_env.log_info(f"[get_channel] channel_name parts: {parts}, len={len(parts)}")
         if len(parts) >= 4 and parts[0] == "employee":
-            ten_env.log_info(f"[get_channel] successfully parsed: team_id={parts[1]}, user_id={parts[2]}, employee_id={parts[3]}")
+            ten_env.log_info(
+                f"[get_channel] successfully parsed: team_id={parts[1]}, user_id={parts[2]}, employee_id={parts[3]}"
+            )
             return {
                 "channel_name": channel_name,
                 "team_id": parts[1],
@@ -135,7 +149,9 @@ def get_channel_from_cmdline(ten_env) -> dict:
             }
         else:
             # 格式不匹配，返回 channel_name 但使用默认的 team_id, user_id, employee_id
-            ten_env.log_error(f"[get_channel] channel format mismatch: {channel_name}, using default ids")
+            ten_env.log_error(
+                f"[get_channel] channel format mismatch: {channel_name}, using default ids"
+            )
             return {
                 "channel_name": channel_name,
                 "team_id": default_team_id,
@@ -143,7 +159,9 @@ def get_channel_from_cmdline(ten_env) -> dict:
                 "employee_id": default_employee_id,
             }
     except Exception as e:
-        ten_env.log_error(f"[get_channel] Exception: {e}, traceback: {traceback.format_exc()}")
+        ten_env.log_error(
+            f"[get_channel] Exception: {e}, traceback: {traceback.format_exc()}"
+        )
         # 发生任何错误时，返回默认值
         return {
             "channel_name": None,
@@ -206,11 +224,15 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 self.config.update_params()
                 # Validate params
                 self.config.validate_params()
-                employee_id = get_channel_from_cmdline(ten_env)['employee_id']
+                employee_id = get_channel_from_cmdline(ten_env)["employee_id"]
 
                 # 从API获取voice
-                self.config.voice = await self._get_voice_from_employee_api(employee_id, ten_env)
-                ten_env.log_info(f"got employee_id: {employee_id}, resolved voice: {self.config.voice}")
+                self.config.voice = await self._get_voice_from_employee_api(
+                    employee_id, ten_env
+                )
+                ten_env.log_info(
+                    f"got employee_id: {employee_id}, resolved voice: {self.config.voice}"
+                )
 
                 self.ten_env.log_info(
                     f"cosy tts config: {self.config.to_str(sensitive_handling=True)}",
@@ -230,15 +252,11 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                     f"Using local CosyVoice service at: {self.config.local_service_url}",
                     category=LOG_CATEGORY_KEY_POINT,
                 )
-                self.client = CosyTTSClient(
-                    self.config, self.ten_env, self.vendor()
-                )
+                self.client = CosyTTSClient(self.config, self.ten_env, self.vendor())
 
                 self.client.start()
 
-            self.audio_processor_task = asyncio.create_task(
-                self._process_audio_data()
-            )
+            self.audio_processor_task = asyncio.create_task(self._process_audio_data())
         except Exception as e:
             ten_env.log_error(f"on_init failed: {traceback.format_exc()}")
             await self._send_tts_error(str(e))
@@ -317,13 +335,8 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 return
 
             # Check if audio processor task is still running, restart if needed
-            if (
-                self.audio_processor_task is None
-                or self.audio_processor_task.done()
-            ):
-                self.ten_env.log_info(
-                    "Audio processor task not running, restarting..."
-                )
+            if self.audio_processor_task is None or self.audio_processor_task.done():
+                self.ten_env.log_info("Audio processor task not running, restarting...")
                 self.audio_processor_task = asyncio.create_task(
                     self._process_audio_data()
                 )
@@ -450,17 +463,15 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                 try:
                     # Debug audio mode: use pre-loaded audio file
                     if self.config.use_debug_audio:
-                        done, message_type, data = (
-                            await self._get_next_debug_audio_chunk()
-                        )
+                        (
+                            done,
+                            message_type,
+                            data,
+                        ) = await self._get_next_debug_audio_chunk()
                     else:
                         # Normal mode: get audio data from TTS client
-                        self.ten_env.log_info(
-                            "Waiting for audio data from client..."
-                        )
-                        done, message_type, data = (
-                            await self.client.get_audio_data()
-                        )
+                        self.ten_env.log_info("Waiting for audio data from client...")
+                        done, message_type, data = await self.client.get_audio_data()
 
                     self.ten_env.log_info(
                         f"Received done: {done}, message_type: {message_type}, current_request_id: {self.current_request_id}"
@@ -512,9 +523,7 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                         await self._send_tts_error(
                             str(data),
                             code=ModuleErrorCode.NON_FATAL_ERROR.value,
-                            vendor_info=ModuleErrorVendorInfo(
-                                vendor=self.vendor()
-                            ),
+                            vendor_info=ModuleErrorVendorInfo(vendor=self.vendor()),
                         )
 
                     elif message_type == MESSAGE_TYPE_CMD_CANCEL:
@@ -612,9 +621,7 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
         for request_id, recorder in self.recorder_map.items():
             try:
                 await recorder.flush()
-                self.ten_env.log_info(
-                    f"Flushed PCMWriter for request_id: {request_id}"
-                )
+                self.ten_env.log_info(f"Flushed PCMWriter for request_id: {request_id}")
             except Exception as e:
                 self.ten_env.log_error(
                     f"Error flushing PCMWriter for request_id {request_id}: {e}"
@@ -688,16 +695,13 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
         # ✅ FIX: Skip sending if request_id is None
         if not self.current_request_id:
             self.ten_env.log_info(
-                f"[tts] Skipping tts_audio_end with None request_id, "
-                f"reason: {reason}"
+                f"[tts] Skipping tts_audio_end with None request_id, reason: {reason}"
             )
             return
 
         if self.request_start_ts:
-            self.request_total_audio_duration_ms = (
-                self._calculate_audio_duration(
-                    self.total_audio_bytes, self.config.sample_rate
-                )
+            self.request_total_audio_duration_ms = self._calculate_audio_duration(
+                self.total_audio_bytes, self.config.sample_rate
             )
             request_event_interval = int(
                 (datetime.now() - self.request_start_ts).total_seconds() * 1000
@@ -731,9 +735,7 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
             return
 
         # Clean up old PCMWriters (except current request_id)
-        old_request_ids = [
-            rid for rid in self.recorder_map.keys() if rid != request_id
-        ]
+        old_request_ids = [rid for rid in self.recorder_map.keys() if rid != request_id]
 
         for old_rid in old_request_ids:
             try:
@@ -784,7 +786,9 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
             ),
         )
 
-    async def _get_voice_from_employee_api(self, employee_id: str, ten_env: AsyncTenEnv) -> str:
+    async def _get_voice_from_employee_api(
+        self, employee_id: str, ten_env: AsyncTenEnv
+    ) -> str:
         """从员工API获取gender和tone，组合成voice值"""
         api_base_url = os.getenv("EMPLOYEE_API_BASE_URL", "http://192.168.8.234:8100")
         url = f"{api_base_url}/api/employee/detail/{employee_id}"
@@ -792,7 +796,9 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers={"Accept": "application/json"}) as response:
+                async with session.get(
+                    url, headers={"Accept": "application/json"}
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
                         if data.get("code") == 200 and "data" in data:
@@ -806,10 +812,14 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
                                 ten_env.log_info(f"Generated voice from API: {voice}")
                                 return voice
 
-            ten_env.log_info(f"Invalid or missing gender/tone, using default voice: {default_voice}")
+            ten_env.log_info(
+                f"Invalid or missing gender/tone, using default voice: {default_voice}"
+            )
             return default_voice
         except Exception as e:
-            ten_env.log_error(f"Failed to fetch employee data: {e}, using default voice: {default_voice}")
+            ten_env.log_error(
+                f"Failed to fetch employee data: {e}, using default voice: {default_voice}"
+            )
             return default_voice
 
     async def _write_audio_to_dump_file(self, audio_chunk: bytes) -> None:
@@ -903,13 +913,14 @@ class CosyTTSExtension(AsyncTTS2BaseExtension):
 
         # Get chunk based on current position
         chunk = self.debug_audio_data[
-            self.debug_audio_position : self.debug_audio_position + self.debug_audio_chunk_size
+            self.debug_audio_position : self.debug_audio_position
+            + self.debug_audio_chunk_size
         ]
 
         # Update position with wraparound
-        self.debug_audio_position = (
-            self.debug_audio_position + len(chunk)
-        ) % len(self.debug_audio_data)
+        self.debug_audio_position = (self.debug_audio_position + len(chunk)) % len(
+            self.debug_audio_data
+        )
 
         # Small delay to simulate real-time audio streaming
         # 100ms = 0.1 second for 3200 bytes at 16kHz
