@@ -94,13 +94,6 @@
             },
             {
               "type": "extension",
-              "name": "message_collector",
-              "addon": "message_collector2",
-              "extension_group": "transcriber",
-              "property": {}
-            },
-            {
-              "type": "extension",
               "name": "streamid_adapter",
               "addon": "streamid_adapter",
               "property": {}
