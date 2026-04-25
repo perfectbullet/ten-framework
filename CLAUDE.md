@@ -6,230 +6,136 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **TEN Framework** monorepo - an open-source framework for building real-time conversational AI agents with voice, video, and multimodal capabilities.
 
-The repository contains two main components:
-
-1. **Core Framework** (`/core`, `/packages`) - The runtime engine written in Rust, Go, and C++
+Two main components:
+1. **Core Framework** (`/core`, `/packages`) - Runtime engine written in Rust, Go, and C++
 2. **AI Agents** (`/ai_agents`) - Pre-built extensions, examples, and server for AI agents
 
-Most development work for AI agents happens in `/ai_agents`. See `ai_agents/CLAUDE.md` for detailed guidance on extension development.
+Most day-to-day development happens in `/ai_agents`.
+
+## Build System
+
+Uses `task` (go-task/task) as the task runner and **GN** (Generate Ninja) as the build system for the core framework.
+
+```bash
+# Core framework (from repo root)
+task gen-tman          # Generate build files (includes tman package manager)
+task build             # Build the core framework
+task build-tman        # Build only tman
+task clean             # rm -rf out/
+
+# AI agents (from ai_agents/)
+task lint              # Lint all Python extensions
+task lint-extension EXTENSION=cosy_tts_python   # Lint single extension
+task format            # Format Python code with black (line-length 80)
+task test              # Run all tests (extensions + server)
+task test-extension EXTENSION=agents/ten_packages/extension/cosy_tts_python  # Test single extension
+task test-extension-no-install EXTENSION=...     # Test without reinstalling deps
+task test-server       # Go tests for server only
+task asr-guarder-test  # ASR integration tests
+task tts-guarder-test  # TTS integration tests
+```
 
 ## Architecture Overview
 
 ```
 ten-framework/
 ├── core/              # Core runtime engine (Rust/Go/C++)
-│   ├── include/       # Public C API headers
-│   ├── src/           # Runtime implementations
-│   └── ten_gn/        # GN build system definitions
 ├── packages/          # Core packages (addon loaders, extensions, protocols)
-│   ├── core_addon_loaders/
-│   ├── core_extensions/
-│   └── core_protocols/
-├── ai_agents/         # AI agent implementations (see ai_agents/CLAUDE.md)
+├── ai_agents/
 │   ├── agents/
-│   │   ├── ten_packages/extension/  # 60+ extensions (ASR, TTS, LLM, tools)
-│   │   └── examples/                # Complete agent examples
-│   ├── server/       # Go API server for agent lifecycle
-│   └── playground/   # Next.js frontend UI
-├── tests/            # Test framework
-└── tools/            # Development tools
-```
-
-## Build System
-
-The TEN Framework uses **GN** (Generate Ninja) as its build system - the same build tool used by Chromium.
-
-### Core Framework Build Commands
-
-```bash
-# Generate build files for core framework
-task gen
-
-# Generate with tman enabled (common for development)
-task gen-tman
-
-# Build the core framework
-task build
-
-# Build only tman (package manager)
-task build-tman
-
-# Clean build artifacts
-task clean
-```
-
-**Build Output:** Artifacts are placed in `out/` directory (git-ignored).
-
-### tman (TEN Package Manager)
-
-`tman` is the package manager used to install TEN dependencies. After building with `task gen-tman`:
-
-```bash
-# From an app directory (e.g., ai_agents/agents/examples/voice-assistant/tenapp)
-tman install        # Install dependencies from manifest.json
-tman run start      # Run the application
-tman designer       # Start visual graph designer
+│   │   ├── ten_packages/extension/   # ~36 Python extensions (ASR, TTS, LLM, tools)
+│   │   ├── ten_packages/system/      # System packages (ten_runtime_python, ten_ai_base)
+│   │   └── examples/voice-assistant/ # Primary example agent
+│   ├── server/        # Go API server (Gin) - manages agent workers
+│   └── playground/    # Next.js frontend UI
+├── tests/             # Test framework
+└── tools/             # Development tools
 ```
 
 ## AI Agents Development
 
-Most AI agent development happens in `/ai_agents`. This includes:
+### Dev Container
 
-- **Extensions** (`ai_agents/agents/ten_packages/extension/`) - 60+ modular extensions for ASR, TTS, LLM, tools
-- **Examples** (`ai_agents/agents/examples/`) - Complete agent implementations
-- **Server** (`ai_agents/server/`) - Go-based REST API for agent lifecycle
-- **Playground** (`ai_agents/playground/`) - Next.js frontend UI
-
-For detailed guidance on AI agents development, see **`ai_agents/CLAUDE.md`**.
-
-### Quick Start for AI Agents
+Development runs inside a Docker container (`ten_agent_dev`):
 
 ```bash
 cd ai_agents
-docker compose up -d              # Start dev container
-docker exec -it ten_agent_dev bash # Enter container
-
-cd agents/examples/voice-assistant # Navigate to example
-task install                      # Install dependencies
-task run                          # Run the agent
+docker compose up -d
+docker exec -it ten_agent_dev bash
 ```
 
-### AI Agents Common Commands
+The container mounts `ai_agents/` at `/app` and uses `agents/examples/voice-assistant/.env` for environment variables. All debugging must happen inside the container.
+
+### Running the Agent (inside container)
 
 ```bash
-# From ai_agents/ directory
-task lint                         # Lint Python extensions
-task format                       # Format Python code with black
-task test                         # Run all tests
-task test-extension EXTENSION=... # Test specific extension
-```
-
-### AI Agents 调试命令
-
-**重要提示**：
-- API 服务器部署在服务器上的容器内部，不能在本地直接访问 `http://localhost:8082`
-- 所有调试操作需要在容器内部进行
-
-```bash
-# 进入开发容器
-docker compose exec -it ten_agent_dev bash
-
-# 容器内：切换到语音助手示例目录
 cd agents/examples/voice-assistant
-
-# 设置日志路径
 export LOG_PATH=/var/log
-
-# 构建 API 服务器
-task build-api-server
-
-# 后台运行并查看日志
-nohup task run > info.log 2>&1 &
-
-# 实时查看日志
-tail -n1 -f info.log
-
-# 过滤特定内容的日志（如 test_channel）
-tail -n1 -f info.log|grep test_channel
+task install           # Install deps (tman + python deps + build API server)
+task run               # Runs the API server (bin/api -tenapp_dir=...)
 ```
 
-## TypeScript/JavaScript Tooling
+The API server spawns `tman run start` worker processes for each channel. Logs go to `$LOG_PATH` or stdout.
 
-The root `package.json` provides commands for TS/JS files (mainly playground and server):
+### Extension Structure
 
-```bash
-npm run lint        # Check code with Biome
-npm run lint:fix    # Fix linting issues
-npm run format      # Format code with Biome
-npm run format:write # Write formatted code
+Every Python extension follows this pattern:
+
+```
+extension_name/
+├── addon.py           # Entry point - registers extension with @register_addon_as_extension
+├── extension.py       # Main extension class (inherits from AsyncTenEnv base)
+├── manifest.json      # Extension metadata, dependencies, API interface
+├── property.json      # Default properties (config schema)
+├── requirements.txt   # Python dependencies
+└── tests/             # Standalone tests
 ```
 
-**Biome** is used instead of ESLint/Prettier for faster linting and formatting.
+**addon.py pattern** (entry point that the runtime discovers):
+```python
+@register_addon_as_extension("extension_name")
+class MyExtensionAddon(Addon):
+    def on_create_instance(self, ten_env: TenEnv, name: str, context) -> None:
+        from .extension import MyExtension
+        ten_env.on_create_instance_done(MyExtension(name), context)
+```
 
-## Git-Ignored Files (Do Not Modify)
+Base classes for extensions live in `ten_ai_base` system package:
+- `AsyncTTS2BaseExtension` - TTS extensions
+- `AsyncASRBaseExtension` - ASR extensions
+- `AsyncLLMBaseExtension` - LLM extensions
 
-Many files in this repository are auto-generated by the build system. Do NOT modify:
+### Graph Configuration
 
-**Core Framework:**
-- `out/` - Build output directory
-- `.gn`, `.gnfiles/` - GN build system generated files
-- `compile_commands.json` - Generated for LSP/intellisense
+Extensions are wired together via `property.json` in the app's `tenapp/` directory. The graph defines nodes (extensions), their properties, and connections (how messages flow between them). Environment variable substitution uses `${env:VAR_NAME|default}` syntax.
 
-**AI Agents:**
-- `manifest-lock.json` - Generated by tman dependency resolution
-- `BUILD.gn` - Generated build configuration
-- `.ten/` - TEN runtime generated files
-- `bin/main`, `bin/worker` - Compiled binaries
-- `node_modules/` - JavaScript dependencies
-
-**General:**
-- `*.log` files - Runtime logs
-- `.next/` - Next.js build output
-
-## Language-Specific Notes
-
-### Rust
-- Core runtime uses Rust for `ten_manager` and `ten_rust`
-- Build with GN: `task build`
-- Cargo target directory: `core/src/ten_rust/target/` (git-ignored)
-
-### Go
-- Server implementation in `ai_agents/server/`
-- Uses `go test` for testing
-- Tests available via `task test-server` from `ai_agents/`
-
-### Python
-- Most extensions are written in Python
-- Uses `black` for formatting (line length: 80)
-- Uses `pyright` for type checking
-- See `ai_agents/CLAUDE.md` for Python development patterns
-
-### C++
-- Core runtime API is C++
-- Uses `.clang-format` and `.clang-tidy` for code style
-
-## Key Environment Variables
-
-Required for running AI agents (set in `ai_agents/.env`):
-
-**RTC (Agora):**
-- `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`
-
-**LLM:**
-- `OPENAI_API_KEY`, `OPENAI_MODEL`
-- `AZURE_OPENAI_*` for Azure OpenAI
-
-**ASR:**
-- `DEEPGRAM_API_KEY`, `AZURE_ASR_*`
-
-**TTS:**
-- `ELEVENLABS_TTS_KEY`, `AZURE_TTS_*`
-
-See `ai_agents/.env.example` for complete list.
-
-## Ten Framework Design Patterns
-
-### Extension Graph Architecture
-
-TEN uses a graph-based architecture where extensions connect via `property.json`:
-
+Example dependency declaration in `manifest.json`:
 ```json
 {
-  "ten": {
-    "predefined_graphs": [{
-      "name": "voice_assistant",
-      "graph": {
-        "nodes": [
-          {"name": "stt", "addon": "deepgram_asr_python"},
-          {"name": "llm", "addon": "openai_llm2_python"},
-          {"name": "tts", "addon": "elevenlabs_tts2_python"}
-        ],
-        "connections": [...]
-      }
-    }]
-  }
+  "type": "extension",
+  "name": "cosy_tts_python",
+  "dependencies": [
+    {"type": "system", "name": "ten_runtime_python", "version": "0.11"},
+    {"type": "system", "name": "ten_ai_base", "version": "0.7"}
+  ]
 }
 ```
+
+Path-based dependencies (for local dev) in app's `manifest.json`:
+```json
+{"path": "../../../ten_packages/extension/cosy_tts_python"}
+```
+
+### API Server
+
+The Go server (`ai_agents/server/`) exposes REST endpoints for agent lifecycle:
+- `POST /start` - Spawn a worker for a channel
+- `POST /stop` - Stop a worker
+- `POST /token/generate` - Generate Agora RTC token
+- `GET /graphs` - List available graphs from property.json
+- `GET /health` - Health check
+
+Workers run as child processes (`/app/agents/bin/start`) managed per channel name.
 
 ### Message Types
 
@@ -239,37 +145,29 @@ Extensions communicate via:
 - **Audio frames** - PCM audio streams
 - **Video frames** - Video data
 
-## Testing
+## Git-Ignored Auto-Generated Files
 
-```bash
-# Core framework tests
-# Tests are run via GN build targets
+Do NOT modify these - they are generated by the build system:
+- `out/` - Build output
+- `.gn`, `.gnfiles/` - GN build system files
+- `manifest-lock.json` - tman dependency lock
+- `BUILD.gn` - Build configuration
+- `.ten/` - Runtime generated files
+- `bin/main`, `bin/worker` - Compiled binaries
+- `compile_commands.json` - LSP support
 
-# AI agents tests
-cd ai_agents
-task test                         # All tests
-task test-extension EXTENSION=... # Single extension
-task asr-guarder-test             # ASR integration tests
-task tts-guarder-test             # TTS integration tests
-```
+## Language Tooling
 
-## Documentation
+- **Python**: `black` (line-length 80), `pyright` for type checking. PYTHONPATH must include `ten_runtime_python/lib`, `ten_runtime_python/interface`, and `ten_ai_base/interface`
+- **Go**: `go test ./...` for server tests
+- **TypeScript/JavaScript**: `npm run lint` / `npm run format` uses Biome (root package.json)
+- **Rust**: Core runtime, build via `task build`
+- **C++**: Core runtime API, uses `.clang-format` / `.clang-tidy`
 
-- Official Documentation: https://theten.ai/docs
-- GitHub Issues: https://github.com/TEN-framework/ten-framework/issues
-- Discord Community: https://discord.gg/VnPftUzAMJ
+## Environment Variables
 
-## Related Repositories
+Required for running AI agents. Set in `ai_agents/agents/examples/voice-assistant/.env` (the docker-compose env_file source). See `ai_agents/.env.example` for the complete list. Key ones:
 
-The TEN ecosystem includes:
-- [ten-vad](https://github.com/ten-framework/ten-vad) - Voice Activity Detection
-- [ten-turn-detection](https://github.com/ten-framework/ten-turn-detection) - Turn detection for full-duplex dialogue
-- [portal](https://github.com/ten-framework/portal) - Official website and blog
-
-
-**Summary Language Requirement**:
-- All document summaries (chunk/section/document level) are generated in Chinese
-- Implementation in `app/services/semantic_chunking.py`
-- Chunk summary: "请用简洁的中文总结以下文本的核心内容，不超过50字"
-- Section summary: "请用简洁的中文总结以下章节内容的主要观点，不超过100字"
-- Document summary: "请用简洁的中文总结以下文档的整体内容和主要要点，不超过200字"
+- `AGORA_APP_ID` (32 chars, validated at server startup), `AGORA_APP_CERTIFICATE`
+- `LOG_PATH`, `LOG_STDOUT`, `SERVER_PORT`, `WORKERS_MAX`
+- API keys per extension (e.g., `OPENAI_API_KEY`, `DEEPGRAM_API_KEY`, `ELEVENLABS_TTS_KEY`)

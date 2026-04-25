@@ -188,3 +188,21 @@ ai_agents/agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/send_au
 
 ai_agents/agents/examples/voice-assistant/tenapp/send_audio_save
 analyze_vad_delay.py
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data/request_0.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data/request_0.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data/request_1.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data/request_1.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_0.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_0.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_1.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_1.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_2.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_2.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_3.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/request_3.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/test_output_request0.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data copy/test_output.wav
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_0.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_1.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_2.json
+ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_3.json
