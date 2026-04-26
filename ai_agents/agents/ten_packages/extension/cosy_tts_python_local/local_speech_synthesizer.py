@@ -233,7 +233,7 @@ class LocalSpeechSynthesizer:
             "text": text,
             "spk_id": self.voice,  # Use voice as speaker ID
             "chunk_id": chunk_id,
-            "instruct_text": "You are a helpful assistant. 请用较快语速说一句话。<|endofprompt|>",
+            "instruct_text": "You are a helpful assistant. 请用正常语速说一句话。<|endofprompt|>",
         }
 
         # Send request

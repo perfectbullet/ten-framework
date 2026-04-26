@@ -77,40 +77,52 @@ class MainControlExtension(AsyncExtension):
         # 有序列表管理 TTS 状态：最大长度100
         self.tts_status_dict: dict = {}  # {tts_request_id: {"tts_text_list": [], "audio_duration_list": []}}
 
-        self._last_tts_busy: bool = False
-
     def _current_metadata(self) -> dict:
         return {"session_id": self.session_id, "turn_id": self.turn_id}
 
     def is_tts_playing(self) -> bool:
         """
-        检查当前是否有 TTS 正在播放
+        检查当前轮次是否有 TTS 正在播放。
+        使用 self.turn_id 确定当前轮次，而非 max(keys())。
         """
-        # 如果没有音频记录，返回 False
-        if not self.tts_status_dict:
-            return False
 
-        # 获取最新的 TTS 记录
-        latest_key = max(self.tts_status_dict.keys())
-        latest_status = self.tts_status_dict[latest_key]
+        current_turn_id = str(self.turn_id)
+        self.ten_env.log_info(
+            f"[MainControlExtension] is_tts_playing {self.tts_status_dict}"
+            f"current_turn_id {current_turn_id}"
+        )
+        if current_turn_id not in self.tts_status_dict:
+            raise ValueError(
+                f"[MainControlExtension] current_turn_id {current_turn_id}"
+                f" no in {self.tts_status_dict}"
+            )
 
-        # 如果没有音频时长记录，返回 False
-        if not latest_status["audio_duration_list"]:
-            return False
+        current_tts_status = self.tts_status_dict[current_turn_id]
+        # 没有 audio_duration_list 就还没有播报完成
+        if not current_tts_status.get("audio_duration_list"):
+            return True
 
-        # 获取最后一次音频结束记录
-        last_audio = latest_status["audio_duration_list"][-1]
-        if last_audio["reason"] == 2:  # INTERRUPTED
-            return False
+        # 如果 text_input_end 还没收到，说明还在往 TTS 发文本，TTS 还会生成更多音频
+        if not current_tts_status.get("text_input_end"):
+            return True
 
-        # 计算播放结束时间
+        if not current_tts_status.get("audio_duration_list"):
+            return True
+
+        last_audio_duration_status = current_tts_status["audio_duration_list"][-1]
+
         playback_end_time = (
-            self.tts_status_dict[latest_key]["tts_audio_start_playing_time"]
-            + last_audio["duration_ms"] / 1000.0
+            current_tts_status["tts_audio_start_playing_time"]
+            + last_audio_duration_status["duration_ms"] / 1000.0
         )
 
-        # 如果当前时间还在播放时间内，返回 True
-        return time.time() < playback_end_time
+        current_time = time.time()
+        self.ten_env.log_info(
+            f"[MainControlExtension] playback_end_time {playback_end_time} "
+            f"current_turn_id {current_turn_id} "
+            f"current_time is {current_time} "
+        )
+        return current_time < playback_end_time
 
     def _is_interrupt_phrase(self, text: str) -> bool:
         """
@@ -121,20 +133,10 @@ class MainControlExtension(AsyncExtension):
         # 去除前后标点符号后检查
         text_clean = text.strip().strip(string.punctuation + "，。！？、；：''《》【】")
         text_lower = text_clean.lower()
-
         # 检查是否包含打断短语（只检查短语是否在输入文本中）
         for phrase in self._interrupt_phrases:
             if phrase.lower() in text_lower:
                 return True
-
-        # 检查重复的打断意图字符（如：停停停、等等等、别别别、stopstop）
-        # 匹配单个汉字重复3次及以上
-        if re.match(r"^([停等别])\1{2,}$", text_clean):
-            return True
-        # 匹配英文单词重复2次及以上（如：stopstop）
-        if re.match(r"^([a-z]+)\1{1,}$", text_lower):
-            return True
-
         return False
 
     async def on_init(self, ten_env: AsyncTenEnv):
@@ -162,6 +164,11 @@ class MainControlExtension(AsyncExtension):
     async def _on_user_joined(self, event: UserJoinedEvent):
         self._rtc_user_count += 1
         if self._rtc_user_count == 1 and self.config and self.config.greeting:
+            # 新用户加入，重置对话状态
+            self.turn_id = 0
+            self.tts_status_dict.clear()
+            self.is_llm_streaming = False
+
             await self._send_to_tts(self.config.greeting, True)
             await self._send_transcript("assistant", self.config.greeting, True, 100)
 
@@ -187,9 +194,10 @@ class MainControlExtension(AsyncExtension):
         )
         self.session_id = event.metadata.get("session_id", "100")
         stream_id = int(self.session_id)
-        if not event.text or not event.final:
+        if not event.text:
             return
-
+        if not event.final:
+            return
         # 检查是否是打断短语（在语义验证之前）
         if ENABLE_INTERRUPT_PHRASE and self._is_interrupt_phrase(event.text):
             self.ten_env.log_info(
@@ -222,12 +230,20 @@ class MainControlExtension(AsyncExtension):
                 )
                 return
         self.ten_env.log_info(f"[MainControlExtension] text_len={len(event.text)}")
-        if len(event.text) > 4:
-            await self._interrupt()
-            self.turn_id += 1
-            await self.agent.queue_llm_input(event.text)
-            # 只在有意义文本且已打断后发送转录
-            await self._send_transcript("user", event.text, event.final, stream_id)
+        if len(event.text) < 4:
+            return
+        await self._interrupt()
+        self.turn_id += 1
+        # 这里要初始化当前轮次语音初始化状态
+        self.tts_status_dict[str(self.turn_id)] = {
+            "tts_text_list": [],
+            "audio_duration_list": [],
+            "text_input_end": False,
+        }
+
+        await self.agent.queue_llm_input(event.text)
+        # 只在有意义文本且已打断后发送转录
+        await self._send_transcript("user", event.text, event.final, stream_id)
 
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
@@ -252,7 +268,7 @@ class MainControlExtension(AsyncExtension):
             event.text,
             event.is_final,
             100,
-            data_type=("reasoning" if event.type == "reasoning" else "text"),
+            data_type="text",
         )
 
     async def on_start(self, ten_env: AsyncTenEnv):
@@ -307,25 +323,25 @@ class MainControlExtension(AsyncExtension):
         self.ten_env.log_info(
             f"[MainControlExtension] TTS status check: "
             f"is_tts_busy={is_tts_busy}, "
-            f"_last_tts_busy={self._last_tts_busy}, "
             f"is_llm_streaming={self.is_llm_streaming}"
         )
-        # 更新状态追踪
-        self._last_tts_busy = is_tts_busy
 
         data_name = data.get_name()
         self.ten_env.log_info(f"[MainControlExtension] on_data received: {data_name}")
         # 处理 TTS 音频开始事件
         if data_name == "tts_audio_start":
             request_id, _ = data.get_property_string("request_id")
-            # 音频播放开始的时间
-            self.tts_status_dict[request_id]["tts_audio_start_playing_time"] = (
-                time.time()
-            )
+            # 安全检查：打断可能导致 entry 已被删除
+            if request_id in self.tts_status_dict:
+                # 注意：这是 TTS 开始"发送"音频的时间，不是"播报"开始时间
+                # 播报实际开始时间会晚于这个值（存在网络+播放器缓冲延迟）
+                self.tts_status_dict[request_id]["tts_audio_start_playing_time"] = (
+                    time.time()
+                )
             self.ten_env.log_info(
                 f"[MainControlExtension] TTS audio started: request_id={request_id}"
             )
-        # 处理 TTS 音频结束事件
+        # 处理 TTS 音频结束事件， 就是文本数据已经发送完成；并不能代表音频合成完成或者播放完成。
         elif data_name == "tts_audio_end":
             request_id, _ = data.get_property_string("request_id")
             duration_ms, _ = data.get_property_int("request_total_audio_duration_ms")
@@ -347,7 +363,7 @@ class MainControlExtension(AsyncExtension):
         # 处理 TTS 刷新结束事件（打断时触发）
         elif data_name == "tts_flush_end":
             # 打断时清空当前 TTS 状态
-            current_turn_request_id = f"tts-request-{self.turn_id}"
+            current_turn_request_id = str(self.turn_id)
             if current_turn_request_id in self.tts_status_dict:
                 self.ten_env.log_info(
                     f"[MainControlExtension] TTS flush ended - cleared status for: {current_turn_request_id}"
@@ -394,27 +410,7 @@ class MainControlExtension(AsyncExtension):
                 },
             )
         elif data_type == "reasoning":
-            # 应该
-            await _send_data(
-                self.ten_env,
-                "message",
-                "message_collector",
-                {
-                    "data_type": "raw",
-                    "role": role,
-                    "text": json.dumps(
-                        {
-                            "type": "reasoning",
-                            "data": {
-                                "text": text,
-                            },
-                        }
-                    ),
-                    "text_ts": int(time.time() * 1000),
-                    "is_final": final,
-                    "stream_id": stream_id,
-                },
-            )
+            raise ValueError("should not get reasoning")
         self.ten_env.log_info(
             f"[MainControlExtension] Sent transcript: {role}, final={final}, text={_truncate_text(text)}"
         )
@@ -423,7 +419,7 @@ class MainControlExtension(AsyncExtension):
         """
         Sends a sentence to the TTS system.
         """
-        request_id = f"tts-request-{self.turn_id}"
+        request_id = str(self.turn_id)
 
         # 初始化 TTS 状态记录
         if request_id not in self.tts_status_dict:
@@ -437,10 +433,15 @@ class MainControlExtension(AsyncExtension):
             self.tts_status_dict[request_id] = {
                 "tts_text_list": [],
                 "audio_duration_list": [],
+                "text_input_end": False,
             }
 
         # 更新文本列表
         self.tts_status_dict[request_id]["tts_text_list"].append(text)
+
+        # 标记是否是最后一帧文本输入
+        if is_final:
+            self.tts_status_dict[request_id]["text_input_end"] = True
 
         await _send_data(
             self.ten_env,
@@ -462,9 +463,10 @@ class MainControlExtension(AsyncExtension):
         中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。
         该操作通常在检测到用户语音时触发。
         """
-        # 打断时清空当前 TTS 状态
-        current_turn_request_id = f"tts-request-{self.turn_id}"
+        # 打断时设置 has_interrupt
+        current_turn_request_id = str(self.turn_id)
         if current_turn_request_id in self.tts_status_dict:
+            self.tts_status_dict[current_turn_request_id]["has_interrupt"] = True
             self.ten_env.log_info(
                 f"[MainControlExtension] Cleared TTS status for interrupted request: {current_turn_request_id}"
             )
@@ -562,29 +564,8 @@ class MainControlExtension(AsyncExtension):
             error_msg = f"[MainControlExtension] Check interrupt failed: {e}\nStack trace:\n{stack_trace}"
             self.ten_env.log_error(error_msg)
 
-    def _get_tts_status_summary(self) -> dict:
-        """获取 TTS 状态摘要信息"""
-        total_requests = len(self.tts_status_dict)
-        total_audio_duration = 0
-        total_texts = 0
-
-        for status in self.tts_status_dict.values():
-            total_audio_duration += sum(
-                d["duration_ms"]
-                for d in status["audio_duration_list"]
-                if d["reason"] == 1
-            )
-            total_texts += len(status["tts_text_list"])
-
-        return {
-            "total_requests": total_requests,
-            "total_audio_duration_ms": total_audio_duration,
-            "total_texts": total_texts,
-            "is_playing": self.is_tts_playing(),
-        }
-
     async def _save_tts_status_dict_to_file(self):
-        """每10秒保存一次 TTS 状态字典到文件（异步）"""
+        """每1秒保存一次 TTS 状态字典到文件（异步）"""
         while not self.stopped:
             try:
                 # 创建目录（如果不存在）
@@ -603,7 +584,7 @@ class MainControlExtension(AsyncExtension):
                     f"[MainControlExtension] Failed to save TTS status dict: {e}"
                 )
 
-            await asyncio.sleep(10)  # 每10秒保存一次
+            await asyncio.sleep(2)  # 每10秒保存一次
 
     def _sync_save_tts_status_dict(self, save_file: Path) -> None:
         """同步保存 TTS 状态字典（在线程池中执行）"""
@@ -618,14 +599,6 @@ class MainControlExtension(AsyncExtension):
         periodic_check_interrupt_times = 0
         while not self.stopped:
             await self._check_interrupt_file()
-
-            # 每 10 次检查输出一次 TTS 状态摘要
-            if periodic_check_interrupt_times % 10 == 0:
-                status_summary = self._get_tts_status_summary()
-                self.ten_env.log_info(
-                    f"[MainControlExtension] TTS status summary: {status_summary}"
-                )
-
             await asyncio.sleep(1)  # 每 1 秒检查一次
             self.ten_env.log_info(
                 f"[MainControlExtension] _periodic_check_interrupt {periodic_check_interrupt_times}"
