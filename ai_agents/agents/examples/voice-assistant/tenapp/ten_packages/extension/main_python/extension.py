@@ -222,7 +222,8 @@ class MainControlExtension(AsyncExtension):
             ) = await self.text_intent_validator.is_meaningful(event.text)
             self.ten_env.log_info(
                 f"[MainControlExtension] TextIntentValidator: "
-                f"is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s"
+                f"is_meaningful={is_meaningful}, elapsed={elapsed:.3f}s "
+                f"raw_response is {raw_response}"
             )
             if not is_meaningful:
                 self.ten_env.log_info(
@@ -251,18 +252,20 @@ class MainControlExtension(AsyncExtension):
             f"[MainControlExtension] _on_llm_response event.type={event.type}"
         )
 
-        # 流式输出开始
-        if not event.is_final and event.type == "message":
+        # 任何非 final 事件都标记 LLM 正在流式输出
+        if not event.is_final:
             self.is_llm_streaming = True
-            sentences = self.sentence_buffer.feed(event.delta)
-            for s in sentences:
-                await self._send_to_tts(s, False)
-        # 流式输出结束
-        if event.is_final and event.type == "message":
-            self.is_llm_streaming = False
-            # 注意：不在这里设置播放完成时间，因为 TTS 音频输出是异步的
-            remaining_text = self.sentence_buffer.flush()
-            await self._send_to_tts(remaining_text, True)
+
+        # message 类型的 TTS 发送
+        if event.type == "message":
+            if not event.is_final:
+                sentences = self.sentence_buffer.feed(event.delta)
+                for s in sentences:
+                    await self._send_to_tts(s, False)
+            else:
+                remaining_text = self.sentence_buffer.flush()
+                await self._send_to_tts(remaining_text, True)
+                self.is_llm_streaming = False
         await self._send_transcript(
             "assistant",
             event.text,

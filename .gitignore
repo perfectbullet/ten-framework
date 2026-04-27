@@ -206,3 +206,4 @@ ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_1.json
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_2.json
 ai_agents/agents/ten_packages/extension/cosy_tts_python_local/test_data_20240425/request_3.json
+ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/agent/text_intent_validator.sh

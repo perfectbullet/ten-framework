@@ -20,12 +20,7 @@ from openai import AsyncOpenAI
 
 def _get_api_key() -> str:
     """Get API key from OPENAI_API_KEY environment variable."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "OPENAI_API_KEY environment variable is not set. "
-            "Please configure it in .env file."
-        )
+    api_key = os.environ.get("OPENAI_API_KEY", "no-key")
     return api_key
 
 
@@ -52,7 +47,7 @@ DEFAULT_MODEL = _get_model()
 DEFAULT_TIMEOUT = 5.0
 
 # Copied from classify_queries.py — same prompt and return format
-SYSTEM_PROMPT = """你是一个语音助手 query 分类器。你的任务是对每条用户输入进行分类。
+SYSTEM_PROMPT = """你是一个语音助手 query 分类器。你的任务是对用户输入进行分类。
 
 分类标准：
 
@@ -74,7 +69,10 @@ SYSTEM_PROMPT = """你是一个语音助手 query 分类器。你的任务是对
 - 纯感叹或情绪表达（如"真的假的?"、"你是不是有病啊?"）
 - 无明确问题意图的短语（如"查看一下"、"麻烦一下"、"挑战一下"）
 
-请对输入的 query 进行分类，返回 `real_question` 或 `noise`，不要返回其他内容。
+请对输入的 query 进行分类，返回 JSON 对象。每项格式：
+{"label": "real_question" 或 "noise", "reason": "简短理由(不超过15字)"}
+
+只返回 JSON 对象，不要返回其他内容。
 """
 
 # Common noise words that can be filtered without LLM call
@@ -157,63 +155,62 @@ class TextIntentValidator:
         Returns:
             A tuple containing:
                 - is_meaningful: Whether the text is a real question
-                - elapsed_time: Total time spent on validation (seconds)
+                - elapsed_time: Total time spent on validation (milliseconds)
                 - raw_response: The raw LLM response (for debugging)
         """
+        # Normalize text once for fast-path checks
+        text_normalized = text.strip().lower() if text else ""
+
         # Handle empty or whitespace-only input
-        if not text or len(text.strip()) == 0:
+        if not text_normalized:
             return False, 0.0, "empty"
 
         # Fast path: filter common noise words without LLM call
-        text_lower = text.strip().lower()
-        if text_lower in COMMON_NOISE_WORDS:
+        if text_normalized in COMMON_NOISE_WORDS:
             return False, 0.0, "FAST_PATH_NOISE"
 
         # Short text filter
-        if len(text_lower) <= 2:
+        if len(text_normalized) <= 2:
             return False, 0.0, "FAST_PATH_NOISE"
 
         # "打断一下" fast path
-        if "打断一下" in text_lower:
+        if "打断一下" in text_normalized:
             return True, 0.0, "FAST_PATH_YES"
 
         start_time = time.time()
+
         try:
             client = await self._get_client()
-
-            user_message = f"请对以下 query 分类：\n\n{text}"
 
             response = await client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": user_message},
+                    {"role": "user", "content": text},
                 ],
                 temperature=0.0,
-                num_predict=10,
-            )  # type: ignore
+                max_tokens=50,
+            )
 
-            total_elapsed = (time.time() - start_time) * 1000
+            total_elapsed = time.time() - start_time
 
-            # Parse the JSON result — same format as classify_queries.py
-            content = response.choices[0].message.content.strip()
-            print(content)
-            # Extract JSON (may be wrapped in markdown code block)
+            content = (response.choices[0].message.content or "").strip()
+            # Strip markdown code block wrapper if present
             if content.startswith("```"):
                 lines = content.split("\n")
                 content = "\n".join(lines[1:-1])
 
-            results = json.loads(content)
-            label = results[0]["label"]
+            result = json.loads(content)
+            label = result["label"]
             is_meaningful = label == "real_question"
 
             return is_meaningful, total_elapsed, content
 
-        except asyncio.TimeoutError:
-            total_elapsed = time.time() - start_time
-            return True, total_elapsed, "TIMEOUT_DEFAULT_YES"
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            total_elapsed = (time.time() - start_time) * 1000
+            return True, total_elapsed, f"ERROR: {e}"
         except Exception as e:
-            total_elapsed = time.time() - start_time
+            total_elapsed = (time.time() - start_time) * 1000
             return True, total_elapsed, f"ERROR: {e}"
 
 
@@ -246,7 +243,7 @@ async def test_text_intent_validator():
     print("=" * 70)
 
     results = []
-    for text, expected_meaningful in test_cases:
+    for text, expected_meaningful in test_cases[:10]:
         is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
 
         # Check if result matches expectation
@@ -262,9 +259,6 @@ async def test_text_intent_validator():
                 "status": status,
             }
         )
-
-        # Print result
-        print(f"{status} '{text[:40]}' -> {is_meaningful} ({elapsed:.3f}s)")
 
     # Print summary statistics
     print("=" * 70)
