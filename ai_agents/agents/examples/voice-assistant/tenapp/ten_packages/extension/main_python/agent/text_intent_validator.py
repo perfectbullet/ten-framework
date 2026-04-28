@@ -192,9 +192,10 @@ class TextIntentValidator:
                 max_tokens=50,
             )
 
-            total_elapsed = time.time() - start_time
+            total_elapsed = (time.time() - start_time) * 1000
 
             content = (response.choices[0].message.content or "").strip()
+
             # Strip markdown code block wrapper if present
             if content.startswith("```"):
                 lines = content.split("\n")
@@ -232,7 +233,7 @@ async def test_text_intent_validator():
 
     # Build test cases: (query, expected_is_meaningful)
     test_cases = []
-    for item in data["results"]:
+    for item in data["results"][:10]:
         expected = item["label"] == "real_question"
         test_cases.append((item["query"], expected))
 
@@ -241,9 +242,13 @@ async def test_text_intent_validator():
         f"Testing TextIntentValidator - {len(test_cases)} cases from classification_results.json"
     )
     print("=" * 70)
+    print(
+        f"{'#':<4} {'Text':<30} {'Result':<10} {'Expected':<10} {'Time':<10} {'Status'}"
+    )
+    print("-" * 70)
 
     results = []
-    for text, expected_meaningful in test_cases[:10]:
+    for idx, (text, expected_meaningful) in enumerate(test_cases, 1):
         is_meaningful, elapsed, raw_response = await validator.is_meaningful(text)
 
         # Check if result matches expectation
@@ -258,6 +263,17 @@ async def test_text_intent_validator():
                 "raw_response": raw_response,
                 "status": status,
             }
+        )
+
+        # Format result string
+        result_str = "meaningful" if is_meaningful else "noise"
+        expected_str = "meaningful" if expected_meaningful else "noise"
+
+        # Truncate text if too long
+        display_text = text[:27] + "..." if len(text) > 30 else text
+
+        print(
+            f"{idx:<4} {display_text:<30} {result_str:<10} {expected_str:<10} {elapsed:<10.1f} {status}"
         )
 
     # Print summary statistics
@@ -281,7 +297,7 @@ def _print_summary_stats(results: list[dict]) -> None:
     avg_time = sum(r["elapsed"] for r in results) / total
 
     print(f"Accuracy: {correct}/{total} ({accuracy:.1f}%)")
-    print(f"Average response time: {avg_time:.3f}s")
+    print(f"Average response time: {avg_time:.3f}ms")
 
     # Separate statistics for noise vs meaningful text
     noise_times = [r["elapsed"] for r in results if not r["is_meaningful"]]
@@ -289,10 +305,10 @@ def _print_summary_stats(results: list[dict]) -> None:
 
     if noise_times:
         noise_avg = sum(noise_times) / len(noise_times)
-        print(f"Noise avg time: {noise_avg:.3f}s")
+        print(f"Noise avg time: {noise_avg:.3f}ms")
     if meaningful_times:
         meaningful_avg = sum(meaningful_times) / len(meaningful_times)
-        print(f"Meaningful avg time: {meaningful_avg:.3f}s")
+        print(f"Meaningful avg time: {meaningful_avg:.3f}ms")
 
 
 if __name__ == "__main__":

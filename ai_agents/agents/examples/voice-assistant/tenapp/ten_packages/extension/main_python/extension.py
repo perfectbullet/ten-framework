@@ -98,15 +98,17 @@ class MainControlExtension(AsyncExtension):
             )
 
         current_tts_status = self.tts_status_dict[current_turn_id]
-        # 没有 audio_duration_list 就还没有播报完成
+
+        # 如果没有发送任何 TTS 文本，说明 TTS 还没开始，返回 False
+        if not current_tts_status.get("tts_text_list"):
+            return False
+
+        # 如果有 TTS 文本但没有 audio_duration_list，说明 TTS 正在生成音频
         if not current_tts_status.get("audio_duration_list"):
             return True
 
         # 如果 text_input_end 还没收到，说明还在往 TTS 发文本，TTS 还会生成更多音频
         if not current_tts_status.get("text_input_end"):
-            return True
-
-        if not current_tts_status.get("audio_duration_list"):
             return True
 
         last_audio_duration_status = current_tts_status["audio_duration_list"][-1]
@@ -249,7 +251,8 @@ class MainControlExtension(AsyncExtension):
     @agent_event_handler(LLMResponseEvent)
     async def _on_llm_response(self, event: LLMResponseEvent):
         self.ten_env.log_info(
-            f"[MainControlExtension] _on_llm_response event.type={event.type}"
+            f"[MainControlExtension] _on_llm_response event.type={event.type},"
+            f"[MainControlExtension] event.delta={event.delta}"
         )
 
         # 任何非 final 事件都标记 LLM 正在流式输出
@@ -259,12 +262,9 @@ class MainControlExtension(AsyncExtension):
         # message 类型的 TTS 发送
         if event.type == "message":
             if not event.is_final:
-                sentences = self.sentence_buffer.feed(event.delta)
-                for s in sentences:
-                    await self._send_to_tts(s, False)
+                await self._send_to_tts(event.delta, False)
             else:
-                remaining_text = self.sentence_buffer.flush()
-                await self._send_to_tts(remaining_text, True)
+                await self._send_to_tts(event.delta, True)
                 self.is_llm_streaming = False
         await self._send_transcript(
             "assistant",
@@ -491,7 +491,7 @@ class MainControlExtension(AsyncExtension):
 
             cmdline_path = f"/proc/{parent_pid}/cmdline"
             path_msg = f"[MainControlExtension] Reading cmdline from: {cmdline_path}"
-            self.ten_env.log_info(path_msg)
+            # self.ten_env.log_info(path_msg)
 
             try:
                 with open(cmdline_path, "r") as f:
@@ -524,7 +524,7 @@ class MainControlExtension(AsyncExtension):
 
             # 读取并检查 interrupt 标记（在 ten 节点下）
             read_msg = f"[MainControlExtension] Reading property file: {property_path}"
-            self.ten_env.log_info(read_msg)
+            # self.ten_env.log_info(read_msg)
             with open(property_path, "r") as f:
                 data = json.load(f)
 
@@ -532,7 +532,7 @@ class MainControlExtension(AsyncExtension):
             ten_data = data.get("ten", {})
             ten_keys = ", ".join(list(ten_data.keys()))
             keys_msg = f"[MainControlExtension] Ten data keys: {ten_keys}"
-            self.ten_env.log_info(keys_msg)
+            # self.ten_env.log_info(keys_msg)
 
             interrupt_data = ten_data.get("interrupt", {})
             action = interrupt_data.get("action")
@@ -558,7 +558,7 @@ class MainControlExtension(AsyncExtension):
                 self.ten_env.log_info("[MainControlExtension] Interrupt marker cleared")
             else:
                 no_new_msg = f"[MainControlExtension] No new interrupt to process: action={action}"
-                self.ten_env.log_info(no_new_msg)
+                # self.ten_env.log_info(no_new_msg)
         except Exception as e:
             # 记录错误以便诊断，包含详细的错误栈
             import traceback
@@ -579,9 +579,9 @@ class MainControlExtension(AsyncExtension):
                 save_file = save_dir / "tts_status_dict.json"
                 await asyncio.to_thread(self._sync_save_tts_status_dict, save_file)
 
-                self.ten_env.log_info(
-                    f"[MainControlExtension] TTS status dict saved to {save_file}"
-                )
+                # self.ten_env.log_info(
+                #     f"[MainControlExtension] TTS status dict saved to {save_file}"
+                # )
             except Exception as e:
                 self.ten_env.log_error(
                     f"[MainControlExtension] Failed to save TTS status dict: {e}"
@@ -603,9 +603,9 @@ class MainControlExtension(AsyncExtension):
         while not self.stopped:
             await self._check_interrupt_file()
             await asyncio.sleep(1)  # 每 1 秒检查一次
-            self.ten_env.log_info(
-                f"[MainControlExtension] _periodic_check_interrupt {periodic_check_interrupt_times}"
-            )
+            # self.ten_env.log_info(
+            #     f"[MainControlExtension] _periodic_check_interrupt {periodic_check_interrupt_times}"
+            # )
             periodic_check_interrupt_times = periodic_check_interrupt_times + 1
         self.ten_env.log_info(
             "[MainControlExtension] Periodic interrupt check and save task stopped"
