@@ -88,7 +88,7 @@ class MainControlExtension(AsyncExtension):
 
         current_turn_id = str(self.turn_id)
         self.ten_env.log_info(
-            f"[MainControlExtension] is_tts_playing {self.tts_status_dict}"
+            f"[MainControlExtension] is_tts_playing {self.tts_status_dict} "
             f"current_turn_id {current_turn_id}"
         )
         if current_turn_id not in self.tts_status_dict:
@@ -466,13 +466,15 @@ class MainControlExtension(AsyncExtension):
         中断正在进行的大语言模型（LLM）和语音合成（TTS）生成过程。
         该操作通常在检测到用户语音时触发。
         """
-        # 打断时设置 has_interrupt
+        # 打断时设置 has_interrupt，并清理状态以避免死锁
         current_turn_request_id = str(self.turn_id)
         if current_turn_request_id in self.tts_status_dict:
             self.tts_status_dict[current_turn_request_id]["has_interrupt"] = True
+            self.tts_status_dict[current_turn_request_id]["text_input_end"] = True
             self.ten_env.log_info(
                 f"[MainControlExtension] Cleared TTS status for interrupted request: {current_turn_request_id}"
             )
+        self.is_llm_streaming = False
 
         await self.agent.flush_llm()
         await _send_data(
