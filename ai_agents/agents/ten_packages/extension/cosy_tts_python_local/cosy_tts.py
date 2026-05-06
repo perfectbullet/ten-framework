@@ -76,8 +76,8 @@ class AsyncIteratorCallback:
         """Called when TTS synthesis completes successfully."""
         self.ten_env.log_info("TTS synthesis task completed successfully.")
 
-        # Send completion signal only if not cancelled
-        if not self._cancelled:
+        # Send completion signal only if not cancelled and not closed
+        if not self._cancelled and not self._closed:
             asyncio.run_coroutine_threadsafe(
                 self._queue.put((True, MESSAGE_TYPE_CMD_COMPLETE, None)),
                 self._loop,
@@ -87,8 +87,8 @@ class AsyncIteratorCallback:
         """Called when TTS synthesis encounters an error."""
         self.ten_env.log_error(f"TTS synthesis task failed: {message}")
 
-        # Send error signal only if not cancelled
-        if not self._cancelled:
+        # Send error signal only if not cancelled and not closed
+        if not self._cancelled and not self._closed:
             asyncio.run_coroutine_threadsafe(
                 self._queue.put((False, MESSAGE_TYPE_CMD_ERROR, message)),
                 self._loop,
