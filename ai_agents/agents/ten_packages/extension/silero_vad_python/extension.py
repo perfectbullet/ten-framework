@@ -16,7 +16,6 @@ from ten_runtime import (
     Data,
 )
 from .config import SileroVADConfig
-from .funasr_model import get_asr_wrapper
 
 import numpy as np
 import os
@@ -71,8 +70,6 @@ class SileroVADPythonExtension(AsyncExtension):
             f"dump={self.config.dump}",
         )
 
-        self._load_model(ten_env)
-
     def _load_model(self, ten_env: AsyncTenEnv) -> None:
         """Load Silero VAD model and create iterator."""
         try:
@@ -105,19 +102,6 @@ class SileroVADPythonExtension(AsyncExtension):
         )
 
         ten_env.log_info("Silero VAD model loaded successfully")
-
-    def _load_asr_model(self, ten_env: AsyncTenEnv) -> None:
-        """Load FunASR model for speech recognition."""
-        try:
-            ten_env.log_info(f"Loading FunASR model from: {self.config.asr_model_dir}")
-            self.asr_model = get_asr_wrapper(
-                model_dir=self.config.asr_model_dir, quantize=self.config.asr_quantize
-            )
-            ten_env.log_info("FunASR model loaded successfully")
-        except Exception as e:
-            ten_env.log_error(f"Failed to load FunASR model: {e}")
-            ten_env.log_warn("ASR functionality will be disabled")
-            self.asr_model = None
 
     async def on_start(self, _ten_env: AsyncTenEnv) -> None:
         self._reset_state()
