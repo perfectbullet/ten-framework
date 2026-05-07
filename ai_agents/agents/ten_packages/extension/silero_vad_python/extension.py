@@ -13,9 +13,8 @@ from ten_runtime import (
     Cmd,
     StatusCode,
     CmdResult,
-    Data,
 )
-from .config import SileroVADConfig
+from .config import FSMNVADConfig
 
 import numpy as np
 import os
@@ -27,22 +26,20 @@ class SileroVADPythonExtension(AsyncExtension):
     def __init__(self, name: str):
         super().__init__(name)
         self.name = name
-        self.config: SileroVADConfig = None
+        self.config: FSMNVADConfig = None
 
-        # Silero VAD model and iterator
+        # FSMN VAD model
         self.model = None
-        self.vad_iterator = None
+        self.vad_cache: dict = {}
 
         # Audio buffer for processing
         self.audio_buffer: bytearray = bytearray()
 
+        # Chunk size in samples (computed from chunk_size_ms)
+        self.chunk_samples: int = 0
+
         # VAD state tracking
         self.is_speech_active = False
-        self.current_start_ms = 0
-
-        # ASR (Speech Recognition) related
-        self.asr_model = None
-        self.speech_buffer: bytearray = bytearray()
 
         # Speech segment buffer for saving detected speech segments as WAV
         self.speech_segment_buffer: bytearray = bytearray()
@@ -50,80 +47,83 @@ class SileroVADPythonExtension(AsyncExtension):
 
     async def on_init(self, ten_env: AsyncTenEnv) -> None:
         config_json, _ = await ten_env.get_property_to_json("")
-        self.config = SileroVADConfig.model_validate_json(config_json)
+        self.config = FSMNVADConfig.model_validate_json(config_json)
         ten_env.log_debug(f"config: {self.config}")
 
         # Validate sampling rate
-        if self.config.sampling_rate not in (8000, 16000):
+        if self.config.sampling_rate != 16000:
             ten_env.log_error(
-                f"Invalid sampling_rate: {self.config.sampling_rate}. Must be 8000 or 16000"
+                f"Invalid sampling_rate: {self.config.sampling_rate}. Must be 16000 for FSMN VAD"
             )
             raise ValueError(
-                f"sampling_rate must be 8000 or 16000, got {self.config.sampling_rate}"
+                f"sampling_rate must be 16000 for FSMN VAD, got {self.config.sampling_rate}"
             )
+
+        # Compute chunk size in samples
+        self.chunk_samples = int(
+            self.config.chunk_size_ms * self.config.sampling_rate / 1000
+        )
 
         ten_env.log_info(
-            f"Silero VAD config: threshold={self.config.threshold}, "
-            f"min_speech={self.config.min_speech_duration_ms}ms, "
-            f"min_silence={self.config.min_silence_duration_ms}ms, "
-            f"use_onnx={self.config.use_onnx}",
-            f"dump={self.config.dump}",
+            f"FSMN VAD config: model_dir={self.config.model_dir}, "
+            f"chunk_size_ms={self.config.chunk_size_ms}, "
+            f"chunk_samples={self.chunk_samples}, "
+            f"device={self.config.device}, "
+            f"passthrough={self.config.passthrough}, "
+            f"dump={self.config.dump}"
         )
+
+        # Load model
+        self._load_model(ten_env)
 
     def _load_model(self, ten_env: AsyncTenEnv) -> None:
-        """Load Silero VAD model and create iterator."""
+        """Load FunASR FSMN VAD model."""
         try:
-            from silero_vad import load_silero_vad, VADIterator
+            from funasr import AutoModel
         except ImportError:
             ten_env.log_error(
-                "silero-vad is not installed. Install with: pip install silero-vad torch torchaudio"
+                "funasr is not installed. Install with: pip install funasr"
             )
-            raise ImportError("silero-vad package is required")
+            raise ImportError("funasr package is required")
 
-        ten_env.log_info(f"Loading Silero VAD model (ONNX: {self.config.use_onnx})...")
-
-        try:
-            self.model = load_silero_vad(onnx=self.config.use_onnx)
-        except Exception as e:
-            if self.config.use_onnx:
-                ten_env.log_warn(
-                    f"Failed to load ONNX model: {e}. Falling back to JIT model..."
-                )
-                self.model = load_silero_vad(onnx=False)
-            else:
-                raise
-
-        self.vad_iterator = VADIterator(
-            self.model,
-            threshold=self.config.threshold,
-            sampling_rate=self.config.sampling_rate,
-            min_silence_duration_ms=self.config.min_silence_duration_ms,
-            speech_pad_ms=self.config.speech_pad_ms,
+        model_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            self.config.model_dir,
         )
+        ten_env.log_info(f"Loading FSMN VAD model from: {model_path}")
 
-        ten_env.log_info("Silero VAD model loaded successfully")
+        self.model = AutoModel(
+            model=model_path,
+            device=self.config.device,
+            disable_update=True,
+            disable_pbar=True,
+            lookback_time_start_point=400,  # 起点向前冗余
+            lookahead_time_end_point=400,  # 终点向后冗余
+            do_extend=1,  # 是否启用上述扩展
+            max_end_silence_time=1000,  # 静音断句阈值
+        )
+        self.vad_cache = {}
+
+        ten_env.log_info("FSMN VAD model loaded successfully")
 
     async def on_start(self, _ten_env: AsyncTenEnv) -> None:
         self._reset_state()
-        _ten_env.log_info("Silero VAD extension started")
+        _ten_env.log_info("FSMN VAD extension started")
 
     async def on_stop(self, _ten_env: AsyncTenEnv) -> None:
         self._reset_state()
-        _ten_env.log_info("Silero VAD extension stopped")
+        _ten_env.log_info("FSMN VAD extension stopped")
 
     async def on_deinit(self, _ten_env: AsyncTenEnv) -> None:
         self.model = None
-        self.vad_iterator = None
+        self.vad_cache = {}
 
     def _reset_state(self) -> None:
         """Reset VAD state and audio buffer."""
         self.audio_buffer = bytearray()
-        self.speech_buffer = bytearray()
         self.speech_segment_buffer = bytearray()
         self.is_speech_active = False
-        self.current_start_ms = 0
-        if self.vad_iterator is not None:
-            self.vad_iterator.reset_states()
+        self.vad_cache = {}
 
     async def on_cmd(self, ten_env: AsyncTenEnv, cmd: Cmd) -> None:
         cmd_name = cmd.get_name()
@@ -131,9 +131,6 @@ class SileroVADPythonExtension(AsyncExtension):
 
         cmd_result = CmdResult.create(StatusCode.OK, cmd)
         await ten_env.return_result(cmd_result)
-
-    async def on_data(self, ten_env: AsyncTenEnv, data: Data) -> None:
-        pass
 
     async def _send_audio_frame(self, ten_env: AsyncTenEnv, audio_data: bytes) -> None:
         """Helper function to create and send an audio frame with given data."""
@@ -150,31 +147,34 @@ class SileroVADPythonExtension(AsyncExtension):
         audio_frame.unlock_buf(buf)
         await ten_env.send_audio_frame(audio_frame)
 
-    async def _process_vad_result(self, ten_env: AsyncTenEnv, result: dict) -> None:
-        """Process VAD detection result and send appropriate commands."""
-        if "start" in result:
+    async def _process_vad_result(self, ten_env: AsyncTenEnv, segments: list) -> None:
+        """Process FSMN VAD detection result and send appropriate commands.
+
+        FSMN output format (list of [beg, end] pairs):
+        - [[beg, -1]]: speech start detected
+        - [[-1, end]]: speech end detected
+        - [[beg, end]]: complete segment (both start and end)
+        - []: no event
+        Timestamps are in milliseconds.
+        """
+        if not segments:
+            return
+
+        for segment in segments:
+            beg, end = segment[0], segment[1]
+
             # Speech start detected
-            if not self.is_speech_active:
+            if beg != -1 and not self.is_speech_active:
                 self.is_speech_active = True
-                self.current_start_ms = result["start"]
-                ten_env.log_info("[VAD] Speech START")
-                # Clear speech segment buffer for new segment
+                ten_env.log_info(f"[VAD] Speech START at {beg}ms")
                 self.speech_segment_buffer = bytearray()
-                # Send start_of_sentence command
-                ten_env.log_info("[VAD] Sending start_of_sentence command")
                 await ten_env.send_cmd(Cmd.create("start_of_sentence"))
-                ten_env.log_info("[VAD] Command sent: start_of_sentence")
-        elif "end" in result:
+
             # Speech end detected
-            if self.is_speech_active:
+            if end != -1 and self.is_speech_active:
                 self.is_speech_active = False
-                # 使用实际时间计算时长
-                ten_env.log_info("[VAD] Speech END")
-                # Send end_of_sentence command
-                ten_env.log_info("[VAD] Sending end_of_sentence command")
+                ten_env.log_info(f"[VAD] Speech END at {end}ms")
                 await ten_env.send_cmd(Cmd.create("end_of_sentence"))
-                ten_env.log_info("[VAD] Command sent: end_of_sentence")
-                # Save speech segment as WAV file
                 self._save_speech_segment_as_wav(ten_env)
 
     def _save_speech_segment_as_wav(self, ten_env: AsyncTenEnv) -> None:
@@ -211,11 +211,11 @@ class SileroVADPythonExtension(AsyncExtension):
     async def on_audio_frame(
         self, ten_env: AsyncTenEnv, audio_frame: AudioFrame
     ) -> None:
-        # Skip processing if VAD iterator is not ready yet
-        if self.vad_iterator is None:
+        # Skip processing if model is not loaded yet
+        if self.model is None:
             return
 
-        frame_buf = audio_frame.get_buf()  # 固定 320 bytes
+        frame_buf = audio_frame.get_buf()
 
         # Debug: log frame count every 100 frames
         if not hasattr(self, "_frame_count"):
@@ -249,7 +249,7 @@ class SileroVADPythonExtension(AsyncExtension):
         self.audio_buffer.extend(frame_buf)
 
         # Check if we have enough data for a chunk
-        chunk_bytes = self.config.chunk_size * BYTES_PER_SAMPLE
+        chunk_bytes = self.chunk_samples * BYTES_PER_SAMPLE
         if len(self.audio_buffer) < chunk_bytes:
             return
 
@@ -261,13 +261,19 @@ class SileroVADPythonExtension(AsyncExtension):
         audio_int16 = np.frombuffer(audio_buf, dtype=np.int16)
         audio_float32 = audio_int16.astype(np.float32) / 32768.0
 
-        # Debug: before VAD inference
-        # ten_env.log_info(f"[VAD] Processing chunk: {len(audio_buf)} bytes")
+        # Process with FSMN VAD
+        res = self.model.generate(
+            input=audio_float32,
+            cache=self.vad_cache,
+            is_final=False,
+            chunk_size=self.config.chunk_size_ms,
+            speech_noise_thres=0.8,  # 语音/噪声概率阈值,
+            is_streaming_input=True,
+            detect_mode=0,
+        )
 
-        # Process with Silero VAD
-        result = self.vad_iterator(audio_float32, return_seconds=False)
-
-        if result:
-            # Debug: VAD result
-            ten_env.log_info(f"[VAD] Result: {result}")
-            await self._process_vad_result(ten_env, result)
+        # res format: [{"value": [[beg, end], ...]}]
+        if res and len(res) > 0 and res[0]["value"]:
+            segments = res[0]["value"]
+            ten_env.log_info(f"[VAD] Result: {segments}")
+            await self._process_vad_result(ten_env, segments)
