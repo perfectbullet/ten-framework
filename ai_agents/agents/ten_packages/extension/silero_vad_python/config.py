@@ -34,6 +34,13 @@ class FSMNVADConfig(BaseModel):
         description="Forward audio frames to output (set to False for VAD-only mode)",
     )
 
+    # Pre-buffer configuration
+    pre_buffer_ms: int = Field(
+        default=600,
+        gt=0,
+        description="Pre-buffer duration in ms. Audio before speech start is retained and sent to ASR.",
+    )
+
     # Debug configuration
     dump: bool = Field(
         default=False,

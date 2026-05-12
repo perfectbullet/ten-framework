@@ -2,7 +2,7 @@
 # 配置文件示例
 
 # Connection settings (连接设置)
-host: "192.168.8.233"         # Remote server IP or hostname (远程服务器IP或主机名)
+host: "192.168.8.234"         # Remote server IP or hostname (远程服务器IP或主机名)
 port: 22                       # SSH port (SSH端口)
 username: "zenking"             # SSH username (SSH用户名)
 # password: "your_passphrase_here"         # SSH password (SSH密码) - Optional if using private_key
@@ -48,6 +48,9 @@ include_patterns:
   - agents/ten_packages/extension/silero_vad_python/property.json
   - agents/ten_packages/extension/streamid_adapter/extension.py
 
+  - agents/ten_packages/extension/silero_vad_python/speech_fsmn_vad_zh-cn-16k-common-pytorch/*
+  - agents/ten_packages/extension/silero_vad_python/wheel_packages_torch211/*
+
   # golang的server
   - server/internal/*.go
   - server/*.go
@@ -55,7 +58,7 @@ include_patterns:
   # 其他可能需要同步的文件（取消注释以启用）
   - "docker-compose.yml"       # Docker 配置
   # - "tenapp/property.json"     # TEN 应用配置
-  - ".env"                     # 环境变量（慎用，包含敏感信息）
+  # - ".env"                     # 环境变量（慎用，包含敏感信息）
   # - "Taskfile.yml"             # Taskfile 配置
   # - "property.json"            # 属性配置文件
   # - "tenapp"                   # 整个 tenapp 目录

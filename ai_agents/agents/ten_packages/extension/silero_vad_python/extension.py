@@ -35,6 +35,10 @@ class SileroVADPythonExtension(AsyncExtension):
         # Audio buffer for processing
         self.audio_buffer: bytearray = bytearray()
 
+        # Pre-buffer for speech start (retains recent audio before VAD detection)
+        self.pre_buffer: bytearray = bytearray()
+        self.pre_buffer_bytes: int = 0
+
         # Chunk size in samples (computed from chunk_size_ms)
         self.chunk_samples: int = 0
 
@@ -62,6 +66,12 @@ class SileroVADPythonExtension(AsyncExtension):
         # Compute chunk size in samples
         self.chunk_samples = int(
             self.config.chunk_size_ms * self.config.sampling_rate / 1000
+        )
+
+        # Compute pre-buffer size in bytes
+        self.pre_buffer_bytes = (
+            int(self.config.pre_buffer_ms * self.config.sampling_rate / 1000)
+            * BYTES_PER_SAMPLE
         )
 
         ten_env.log_info(
@@ -97,9 +107,9 @@ class SileroVADPythonExtension(AsyncExtension):
             device=self.config.device,
             disable_update=True,
             disable_pbar=True,
-            lookback_time_start_point=400,  # 起点向前冗余
-            lookahead_time_end_point=400,  # 终点向后冗余
-            do_extend=1,  # 是否启用上述扩展
+            # lookback_time_start_point=200,  # 起点向前冗余
+            # lookahead_time_end_point=100,  # 终点向后冗余
+            # do_extend=1,  # 是否启用上述扩展
             max_end_silence_time=1000,  # 静音断句阈值
         )
         self.vad_cache = {}
@@ -121,6 +131,7 @@ class SileroVADPythonExtension(AsyncExtension):
     def _reset_state(self) -> None:
         """Reset VAD state and audio buffer."""
         self.audio_buffer = bytearray()
+        self.pre_buffer = bytearray()
         self.speech_segment_buffer = bytearray()
         self.is_speech_active = False
         self.vad_cache = {}
@@ -165,6 +176,15 @@ class SileroVADPythonExtension(AsyncExtension):
 
             # Speech start detected
             if beg != -1 and not self.is_speech_active:
+                # Send pre-buffered audio to ASR first
+                if self.config.passthrough and self.pre_buffer:
+                    pre_buf_bytes = bytes(self.pre_buffer)
+                    ten_env.log_info(
+                        f"[VAD] Sending pre-buffer: {len(pre_buf_bytes)} bytes "
+                        f"(~{len(pre_buf_bytes) / (self.config.sampling_rate / 1000 * BYTES_PER_SAMPLE):.0f}ms)"
+                    )
+                    await self._send_audio_frame(ten_env, pre_buf_bytes)
+                    self.pre_buffer = bytearray()
                 self.is_speech_active = True
                 ten_env.log_info(f"[VAD] Speech START at {beg}ms")
                 self.speech_segment_buffer = bytearray()
@@ -226,6 +246,12 @@ class SileroVADPythonExtension(AsyncExtension):
                 f"[VAD] Frame #{self._frame_count}: {len(frame_buf)} bytes"
             )
 
+        # Maintain pre-buffer during silence (for speech start recovery)
+        if not self.is_speech_active:
+            self.pre_buffer.extend(frame_buf)
+            if len(self.pre_buffer) > self.pre_buffer_bytes:
+                self.pre_buffer = self.pre_buffer[-self.pre_buffer_bytes :]
+
         # Optional passthrough - forward audio ONLY when speech is detected
         if self.config.passthrough and self.is_speech_active:
             if not hasattr(self, "_forwarded_frame_count"):
@@ -267,7 +293,7 @@ class SileroVADPythonExtension(AsyncExtension):
             cache=self.vad_cache,
             is_final=False,
             chunk_size=self.config.chunk_size_ms,
-            speech_noise_thres=0.8,  # 语音/噪声概率阈值,
+            speech_noise_thres=0.7,  # 语音/噪声概率阈值,
             is_streaming_input=True,
             detect_mode=0,
         )

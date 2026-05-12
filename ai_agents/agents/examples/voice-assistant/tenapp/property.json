@@ -32,7 +32,7 @@
                 "params": {
                   "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|no_api_key}",
                   "asr_backend": "funasr",
-                  "funasr_host": "192.168.8.233",
+                  "funasr_host": "192.168.8.234",
                   "funasr_port": "10095",
                   "funasr_is_ssl": false,
                   "funasr_chunk_size": "5,10,5",
@@ -103,17 +103,10 @@
               "name": "vad",
               "addon": "silero_vad_python",
               "property": {
-                "use_onnx": true,
                 "sampling_rate": 16000,
-                "threshold": 0.75,
-                "min_speech_duration_ms": 250,
-                "min_silence_duration_ms": 1200,
-                "speech_pad_ms": 120,
-                "chunk_size": 512,
                 "passthrough": true,
                 "dump": false,
-                "dump_path": "./vad_dump",
-                "enable_asr": false
+                "dump_path": "./vad_dump"
               }
             }
           ],

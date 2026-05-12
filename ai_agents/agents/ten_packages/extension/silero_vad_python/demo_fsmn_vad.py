@@ -15,7 +15,17 @@ DEFAULT_MODEL_DIR = os.path.join(
 chunk_size = 200  # ms
 
 fsmn_vad_model_path = ""
-model = AutoModel(model=DEFAULT_MODEL_DIR, device="cpu", disable_update=True)
+model = AutoModel(
+    model=DEFAULT_MODEL_DIR,
+    device="cpu",
+    log_level="warning",
+    disable_update=True,
+    disable_pbar=True,
+    lookback_time_start_point=400,  # 构建时设才生效
+    lookahead_time_end_point=200,  # 构建时设才生效
+    do_extend=1,  # 构建时设才生效
+    max_end_silence_time=1000,  # 两个地方都行
+)
 
 print(model.model_path)
 # 遍历模型参数，看 device
@@ -37,7 +47,13 @@ for i in range(total_chunk_num):
     # [[-1, end]]：表示只检测到结束点。
     # []：表示既没有检测到起始点，也没有检测到结束点 输出结果单位为毫秒，从起始点开始的绝对时间。
     res = model.generate(
-        input=speech_chunk, cache=cache, is_final=is_final, chunk_size=chunk_size
+        input=speech_chunk,
+        cache=cache,
+        is_final=is_final,
+        chunk_size=chunk_size,
+        speech_noise_thres=0.8,  # 语音/噪声概率阈值,
+        is_streaming_input=True,
+        detect_mode=1,
     )
     if len(res[0]["value"]):
         print(res)

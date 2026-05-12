@@ -4,6 +4,7 @@
   "device": "cpu",
   "chunk_size_ms": 200,
   "passthrough": true,
+  "pre_buffer_ms": 600,
   "dump": false,
   "dump_path": ""
 }
