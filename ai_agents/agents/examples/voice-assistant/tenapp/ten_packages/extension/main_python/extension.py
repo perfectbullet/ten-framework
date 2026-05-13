@@ -113,8 +113,12 @@ class MainControlExtension(AsyncExtension):
 
         last_audio_duration_status = current_tts_status["audio_duration_list"][-1]
 
+        start_time = current_tts_status.get("tts_audio_start_playing_time")
+        if start_time is None:
+            return False
+
         playback_end_time = (
-            current_tts_status["tts_audio_start_playing_time"]
+            start_time
             + last_audio_duration_status["duration_ms"] / 1000.0
         )
 

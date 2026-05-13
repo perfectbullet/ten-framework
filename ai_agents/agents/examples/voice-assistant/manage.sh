@@ -168,13 +168,16 @@ start_service() {
     print_info "设置环境变量..."
     export AGORA_APP_ID=c51a83813c654291981c09ff195b38a0
     export AGORA_APP_CERTIFICATE=1ab5fa2b3c834169a18b5f07d44d1359
-    # export OPENAI_API_BASE=http://192.168.8.233:11434/v1
-    # export OPENAI_MODEL=qwen2.5:14b
 
-    export OPENAI_BASE_URL=http://192.168.8.233:11434/v1
+    # 给揭阳一中的服务器 qwen2.5
+    export OPENAI_BASE_URL=http://192.168.100.215:11434/v1
+    # 公司测试服务器 qwen2.5
+    # export OPENAI_BASE_URL=http://192.168.100.215:11434/v1
     export OPENAI_MODEL=qwen2.5:14b
-
-    export EMPLOYEE_API_BASE_URL=http://192.168.8.233:8100
+    # 给揭阳一中的服务器 zenkingmorphe接口
+    export EMPLOYEE_API_BASE_URL=http://192.168.8.234:8100
+    # 公司测试服务器 zenkingmorphe接口
+    # export EMPLOYEE_API_BASE_URL=http://192.168.8.234:8100
 
     # 后台启动
     print_info "启动服务..."

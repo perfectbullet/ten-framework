@@ -54,11 +54,11 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "http://192.168.8.233:8100/api/chat/v1",
+                "base_url": "http://192.168.8.234:8100/api/chat/v1",
                 "api_key": "ollama2",
                 "frequency_penalty": 0.9,
                 "model": "deepseek-chat",
-                "max_tokens": 4096,
+                "max_tokens": 8192,
                 "prompt": "",
                 "proxy_url": "no_proxy",
                 "greeting": "",
@@ -79,7 +79,7 @@
                   "sample_rate": 16000,
                   "voice": "hutao",
                   "use_local_service": true,
-                  "local_service_url": "ws://192.168.8.233:50002/streaming/ws"
+                  "local_service_url": "ws://192.168.8.234:50002/streaming/ws"
                 }
               }
             },
