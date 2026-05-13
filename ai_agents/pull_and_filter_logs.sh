@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-REMOTE="zenking@192.168.8.233:/data/metahuman_work/ten-framework/ai_agents/agents/examples/voice-assistant/info.log"
+REMOTE="zenking@192.168.8.233:/data/metahuman_work/ten-framework/ai_agents/agents/examples/voice-assistant/info-interupt.log"
 
 echo "=== 1. 拉取日志 ==="
 rsync -avz --progress "$REMOTE" ./
 
 echo ""
 echo "=== 2. 清理日志：去除 [employee_xxx] 开头的行 ==="
-grep -v '^\[employee_' info.log > info2.log
+grep -v '^\[employee_' info-kasile.log > info2.log
 echo "info2.log 已生成 ($(wc -l < info2.log) 行)"
 
 echo ""

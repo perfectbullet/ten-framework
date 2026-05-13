@@ -99,6 +99,10 @@ class MainControlExtension(AsyncExtension):
 
         current_tts_status = self.tts_status_dict[current_turn_id]
 
+        # 已被打断的 turn 不再播放
+        if current_tts_status.get("has_interrupt"):
+            return False
+
         # 如果没有发送任何 TTS 文本，说明 TTS 还没开始，返回 False
         if not current_tts_status.get("tts_text_list"):
             return False

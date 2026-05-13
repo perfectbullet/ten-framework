@@ -32,7 +32,7 @@ include_patterns:
   - "agents/ten_packages/extension/silero_vad_python/requirements.txt"
   - "agents/examples/voice-assistant/tenapp/ten_packages/extension/*.py"
   - agents/examples/voice-assistant/*.py
-  - agents/examples/voice-assistant/*.json
+  # - agents/examples/voice-assistant/*.json
   - agents/examples/voice-assistant/*.yml
   - agents/examples/voice-assistant/*.sh
   - agents/ten_packages/extension/aliyun_asr_bigmodel_local_python/*.py
@@ -44,8 +44,8 @@ include_patterns:
   - agents/examples/voice-assistant/tenapp/main.go
   - agents/examples/voice-assistant/tenapp/go.mod
   - agents/examples/voice-assistant/tenapp/go.sum
-  - agents/examples/voice-assistant/tenapp/manifest.json
-  - agents/ten_packages/extension/silero_vad_python/property.json
+  # - agents/examples/voice-assistant/tenapp/manifest.json
+  # - agents/ten_packages/extension/silero_vad_python/property.json
   - agents/ten_packages/extension/streamid_adapter/extension.py
 
   - agents/ten_packages/extension/silero_vad_python/speech_fsmn_vad_zh-cn-16k-common-pytorch/*
@@ -95,6 +95,7 @@ exclude_patterns:
   - "agents/examples/voice-assistant/tenapp/msg_dict_json/*"
   - "agents/examples/voice-assistant/tenapp/send_audio_save/*"
   - "agents/examples/voice-assistant/tenapp/vad_dump/*"
+  - "ai_agents/agents/examples/voice-assistant/manage.sh"
 
 # Synchronization options (同步选项)
 delete_remote: false           # Delete remote files not in local (删除远程不存在于本地的文件)

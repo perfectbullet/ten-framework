@@ -105,7 +105,7 @@
               "property": {
                 "sampling_rate": 16000,
                 "passthrough": true,
-                "dump": false,
+                "dump": true,
                 "dump_path": "./vad_dump"
               }
             }

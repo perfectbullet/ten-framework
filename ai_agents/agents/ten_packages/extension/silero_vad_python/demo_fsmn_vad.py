@@ -1,20 +1,19 @@
 import os
+import wave
 
+import numpy as np
 from funasr import AutoModel
-import soundfile
 
 # 获取脚本所在目录
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# 默认模型目录：脚本同级目录下的 speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-onnx
 DEFAULT_MODEL_DIR = os.path.join(
     _SCRIPT_DIR,
     "speech_fsmn_vad_zh-cn-16k-common-pytorch",
 )
 
-
 chunk_size = 200  # ms
+sample_rate = 16000
 
-fsmn_vad_model_path = ""
 model = AutoModel(
     model=DEFAULT_MODEL_DIR,
     device="cpu",
@@ -28,32 +27,69 @@ model = AutoModel(
 )
 
 print(model.model_path)
-# 遍历模型参数，看 device
 
-wav_file = f"{model.model_path}/example/vad_example.wav"
-
-speech, sample_rate = soundfile.read(wav_file)
+# 读取 PCM 文件
+pcm_file = "/mnt/d/pcm_data/vad_in.pcm"
+raw_data = np.fromfile(pcm_file, dtype=np.int16)
+speech = raw_data.astype(np.float32) / 32768.0
 chunk_stride = int(chunk_size * sample_rate / 1000)
 
+# 输出目录与 PCM 同目录
+output_dir = os.path.dirname(pcm_file)
+
+
+def save_segment(data: np.ndarray, start_ms: int, end_ms: int, idx: int) -> None:
+    filename = f"vad_segment_{idx}_{start_ms}ms-{end_ms}ms.wav"
+    filepath = os.path.join(output_dir, filename)
+    with wave.open(filepath, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sample_rate)
+        wf.writeframes(data.tobytes())
+    duration_ms = end_ms - start_ms
+    print(f"  -> Saved: {filename} ({duration_ms}ms, {len(data)} samples)")
+
+
+# VAD 流式处理
 cache = {}
-total_chunk_num = int(len((speech) - 1) / chunk_stride + 1)
+segment_count = 0
+segment_start_ms = None
+total_chunk_num = int((len(speech) - 1) / chunk_stride + 1)
+
 for i in range(total_chunk_num):
     speech_chunk = speech[i * chunk_stride : (i + 1) * chunk_stride]
     is_final = i == total_chunk_num - 1
 
-    # 注：流式 VAD 模型输出格式为 4 种情况：
-    # [[beg1, end1], [beg2, end2], .., [begN, endN]]：同上离线 VAD 输出结果。
-    # [[beg, -1]]：表示只检测到起始点。
-    # [[-1, end]]：表示只检测到结束点。
-    # []：表示既没有检测到起始点，也没有检测到结束点 输出结果单位为毫秒，从起始点开始的绝对时间。
     res = model.generate(
         input=speech_chunk,
         cache=cache,
         is_final=is_final,
         chunk_size=chunk_size,
-        speech_noise_thres=0.8,  # 语音/噪声概率阈值,
+        speech_noise_thres=0.8,
         is_streaming_input=True,
         detect_mode=1,
     )
-    if len(res[0]["value"]):
-        print(res)
+
+    if not res or not res[0]["value"]:
+        continue
+
+    segments = res[0]["value"]
+    print(f"Chunk {i}: {segments}")
+
+    for seg in segments:
+        beg, end = seg[0], seg[1]
+
+        # 语音开始
+        if beg != -1:
+            segment_start_ms = beg
+
+        # 语音结束
+        if end != -1 and segment_start_ms is not None:
+            start_sample = int(segment_start_ms * sample_rate / 1000)
+            end_sample = int(end * sample_rate / 1000)
+            segment_data = raw_data[start_sample:end_sample]
+            save_segment(segment_data, segment_start_ms, end, segment_count)
+            segment_count += 1
+            segment_start_ms = None
+
+print(f"\nDone: {segment_count} segments saved to {output_dir}")

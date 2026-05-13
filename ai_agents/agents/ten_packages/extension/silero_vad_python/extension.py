@@ -143,8 +143,21 @@ class SileroVADPythonExtension(AsyncExtension):
         cmd_result = CmdResult.create(StatusCode.OK, cmd)
         await ten_env.return_result(cmd_result)
 
+    def _dump_audio_if_needed(self, buf: bytes, suffix: str) -> None:
+        if not self.config.dump:
+            return
+        if not self.config.dump_path:
+            return
+        dump_file = os.path.join(
+            self.config.dump_path, f"{self.name}_{suffix}.pcm"
+        )
+        with open(dump_file, "ab") as f:
+            f.write(buf)
+
     async def _send_audio_frame(self, ten_env: AsyncTenEnv, audio_data: bytes) -> None:
         """Helper function to create and send an audio frame with given data."""
+
+        self._dump_audio_if_needed(audio_data, "out")
 
         audio_frame = AudioFrame.create("pcm_frame")
         audio_frame.set_bytes_per_sample(BYTES_PER_SAMPLE)
@@ -236,6 +249,7 @@ class SileroVADPythonExtension(AsyncExtension):
             return
 
         frame_buf = audio_frame.get_buf()
+        self._dump_audio_if_needed(frame_buf, "in")
 
         # Debug: log frame count every 100 frames
         if not hasattr(self, "_frame_count"):
