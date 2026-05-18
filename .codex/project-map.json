@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "default_area": "ai_agents",
+  "routing_rules": [
+    {
+      "when": [
+        "voice assistant",
+        "rtc",
+        "asr",
+        "vad",
+        "tts",
+        "llm",
+        "interrupt",
+        "channel",
+        "worker",
+        "graph"
+      ],
+      "go_to": "ai_agents"
+    },
+    {
+      "when": [
+        "runtime",
+        "engine",
+        "binding",
+        "manager",
+        "protocol",
+        "addon loader"
+      ],
+      "go_to": "core_and_packages"
+    },
+    {
+      "when": [
+        "smoke test",
+        "integration test",
+        "regression test"
+      ],
+      "go_to": "tests"
+    }
+  ],
+  "areas": [
+    {
+      "id": "ai_agents",
+      "summary": "Primary product-facing workspace for agent examples and AI integrations.",
+      "entry_paths": [
+        "ai_agents/AGENTS.md",
+        "ai_agents/Taskfile.yml",
+        "ai_agents/agents/examples/voice-assistant",
+        "ai_agents/server"
+      ],
+      "hotspots": [
+        {
+          "name": "voice_assistant_example",
+          "path": "ai_agents/agents/examples/voice-assistant",
+          "use_for": [
+            "default end-to-end example",
+            "local reproduction",
+            "task install/task run flows"
+          ]
+        },
+        {
+          "name": "voice_assistant_graph",
+          "path": "ai_agents/agents/examples/voice-assistant/tenapp/property.json",
+          "use_for": [
+            "node wiring",
+            "connection routing",
+            "environment-driven graph config"
+          ]
+        },
+        {
+          "name": "main_python",
+          "path": "ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python",
+          "use_for": [
+            "conversation control",
+            "interrupt handling",
+            "ASR to LLM to TTS coordination"
+          ]
+        },
+        {
+          "name": "python_extensions",
+          "path": "ai_agents/agents/ten_packages/extension",
+          "use_for": [
+            "provider-specific behavior",
+            "ASR/VAD/TTS/LLM adapters",
+            "standalone extension tests"
+          ]
+        },
+        {
+          "name": "api_server",
+          "path": "ai_agents/server",
+          "use_for": [
+            "REST endpoints",
+            "worker lifecycle",
+            "channel startup and teardown"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core_and_packages",
+      "summary": "Framework runtime, core bindings, reusable packages, and shared build system.",
+      "entry_paths": [
+        "core",
+        "packages",
+        "tools"
+      ]
+    },
+    {
+      "id": "tests",
+      "summary": "Smoke, integration, and utility test coverage.",
+      "entry_paths": [
+        "tests",
+        "tests/ten_runtime",
+        "tests/ten_manager"
+      ]
+    }
+  ],
+  "task_profiles": [
+    {
+      "name": "bugfix_voice_pipeline",
+      "inspect_first": [
+        "ai_agents/AGENTS.md",
+        "ai_agents/agents/examples/voice-assistant/Taskfile.yml",
+        "ai_agents/agents/examples/voice-assistant/tenapp/property.json",
+        "ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python/extension.py"
+      ],
+      "verify_with": [
+        "cd ai_agents/agents/examples/voice-assistant && task run",
+        "cd ai_agents && task test-server"
+      ]
+    },
+    {
+      "name": "edit_python_extension",
+      "inspect_first": [
+        "ai_agents/Taskfile.yml",
+        "ai_agents/agents/ten_packages/extension/<target>/manifest.json",
+        "ai_agents/agents/ten_packages/extension/<target>/property.json",
+        "ai_agents/agents/ten_packages/extension/<target>/tests"
+      ],
+      "verify_with": [
+        "cd ai_agents && task test-extension EXTENSION=agents/ten_packages/extension/<target>"
+      ]
+    },
+    {
+      "name": "server_issue",
+      "inspect_first": [
+        "ai_agents/server/main.go",
+        "ai_agents/server/internal/http_server.go",
+        "ai_agents/server/internal/worker.go"
+      ],
+      "verify_with": [
+        "cd ai_agents && task test-server"
+      ]
+    }
+  ],
+  "constraints": {
+    "prefer_source_files": true,
+    "avoid_generated_files": true,
+    "known_gitignored_hotspots": [
+      "ai_agents/agents/examples/voice-assistant/tenapp/property.json"
+    ]
+  }
+}

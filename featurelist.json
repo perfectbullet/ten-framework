@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "TEN Framework",
+    "repo_root": ".",
+    "primary_languages": [
+      "C",
+      "C++",
+      "Python",
+      "Go",
+      "TypeScript"
+    ],
+    "summary": "Monorepo for the TEN runtime and real-time conversational AI agents with graph-based extension composition."
+  },
+  "agent_entrypoints": [
+    {
+      "path": "AGENTS.md",
+      "purpose": "Root-level Codex guidance for the whole monorepo."
+    },
+    {
+      "path": "CLAUDE.md",
+      "purpose": "Existing repository guidance written for Claude Code."
+    },
+    {
+      "path": "ai_agents/AGENTS.md",
+      "purpose": "Deeper guidance for the ai_agents subtree."
+    }
+  ],
+  "focus_areas": [
+    {
+      "name": "core_runtime",
+      "path": "core",
+      "description": "Low-level TEN runtime, internals, bindings, and foundational engine code."
+    },
+    {
+      "name": "reusable_packages",
+      "path": "packages",
+      "description": "Shared TEN apps, extensions, addon loaders, and protocols."
+    },
+    {
+      "name": "ai_agents",
+      "path": "ai_agents",
+      "description": "Primary area for voice assistant examples, extensions, API server, and frontend."
+    },
+    {
+      "name": "tests",
+      "path": "tests",
+      "description": "Runtime smoke tests, manager tests, and utility support code."
+    }
+  ],
+  "features": [
+    {
+      "id": "graph_based_agents",
+      "area": "ai_agents",
+      "description": "TEN apps are assembled from nodes and connections defined in property.json graphs."
+    },
+    {
+      "id": "voice_assistant_pipeline",
+      "area": "ai_agents",
+      "description": "Primary example chains RTC, VAD, ASR, LLM, and TTS into a real-time voice interaction loop.",
+      "entry_path": "ai_agents/agents/examples/voice-assistant"
+    },
+    {
+      "id": "python_extensions",
+      "area": "ai_agents",
+      "description": "Provider-specific Python extensions implement modular speech, language, and synthesis behavior.",
+      "entry_path": "ai_agents/agents/ten_packages/extension"
+    },
+    {
+      "id": "go_api_server",
+      "area": "ai_agents",
+      "description": "Go server starts and manages worker processes and exposes lifecycle APIs.",
+      "entry_path": "ai_agents/server"
+    },
+    {
+      "id": "frontend_playground",
+      "area": "ai_agents",
+      "description": "Frontend workspace for interacting with agent examples.",
+      "entry_path": "ai_agents/playground"
+    },
+    {
+      "id": "embedded_client",
+      "area": "ai_agents",
+      "description": "ESP32 client integration demonstrates hardware connectivity for TEN agents.",
+      "entry_path": "ai_agents/esp32-client"
+    },
+    {
+      "id": "runtime_smoke_tests",
+      "area": "tests",
+      "description": "Comprehensive smoke and integration coverage for runtime message flow and graph behavior.",
+      "entry_path": "tests/ten_runtime"
+    }
+  ],
+  "default_paths": {
+    "default_example": "ai_agents/agents/examples/voice-assistant",
+    "default_graph_config": "ai_agents/agents/examples/voice-assistant/tenapp/property.json",
+    "default_main_extension": "ai_agents/agents/examples/voice-assistant/tenapp/ten_packages/extension/main_python",
+    "default_server": "ai_agents/server",
+    "default_agent_taskfile": "ai_agents/Taskfile.yml"
+  },
+  "commands": [
+    {
+      "name": "root_lint",
+      "cwd": ".",
+      "command": "npm run lint",
+      "purpose": "Run root formatting/lint checks configured through Biome."
+    },
+    {
+      "name": "root_format",
+      "cwd": ".",
+      "command": "npm run format",
+      "purpose": "Format repository files covered by the root Biome config."
+    },
+    {
+      "name": "agents_lint",
+      "cwd": "ai_agents",
+      "command": "task lint",
+      "purpose": "Lint Python agent extensions."
+    },
+    {
+      "name": "agents_test",
+      "cwd": "ai_agents",
+      "command": "task test",
+      "purpose": "Run server tests and extension tests."
+    },
+    {
+      "name": "agents_test_server",
+      "cwd": "ai_agents",
+      "command": "task test-server",
+      "purpose": "Run Go API server tests only."
+    },
+    {
+      "name": "voice_assistant_install",
+      "cwd": "ai_agents/agents/examples/voice-assistant",
+      "command": "task install",
+      "purpose": "Install tenapp dependencies and build the API server."
+    },
+    {
+      "name": "voice_assistant_run",
+      "cwd": "ai_agents/agents/examples/voice-assistant",
+      "command": "task run",
+      "purpose": "Run the default voice assistant stack."
+    },
+    {
+      "name": "voice_assistant_run_tenapp",
+      "cwd": "ai_agents/agents/examples/voice-assistant",
+      "command": "task run-tenapp",
+      "purpose": "Run the TEN app directly."
+    }
+  ],
+  "edit_rules": {
+    "prefer_source_files": true,
+    "avoid_generated_files": true,
+    "notes": [
+      "Do not hand-edit generated outputs such as BUILD.gn, compile_commands.json, .ten, or build artifacts.",
+      "Many agent changes require coordinated updates across Python code, manifest.json, and property.json.",
+      "Some local voice-assistant files are gitignored in this repository, including the example property.json."
+    ]
+  }
+}
