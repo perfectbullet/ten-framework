@@ -29,7 +29,7 @@ model = AutoModel(
 print(model.model_path)
 
 # 读取 PCM 文件
-pcm_file = "/mnt/d/pcm_data/vad_in.pcm"
+pcm_file = "/mnt/d/vad_dump/vad_dump234前端音量条件后的/vad_in.pcm"
 raw_data = np.fromfile(pcm_file, dtype=np.int16)
 speech = raw_data.astype(np.float32) / 32768.0
 chunk_stride = int(chunk_size * sample_rate / 1000)
