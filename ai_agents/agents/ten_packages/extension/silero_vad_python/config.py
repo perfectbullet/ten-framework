@@ -50,3 +50,21 @@ class FSMNVADConfig(BaseModel):
         default="",
         description="Directory path for dumping audio files",
     )
+
+    # AGC/NS configuration (webrtc-audio-processing)
+    enable_agc: bool = Field(
+        default=True,
+        description="Enable Automatic Gain Control",
+    )
+    enable_ns: bool = Field(
+        default=True,
+        description="Enable Noise Suppression",
+    )
+    agc_level: int = Field(
+        default=1,
+        description="AGC type (1=adaptive analog, 2/3 will kill low-volume signal)",
+    )
+    ns_level: int = Field(
+        default=1,
+        description="NS level 0-3 (1=low, 3 will kill low-volume speech)",
+    )

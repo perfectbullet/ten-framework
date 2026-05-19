@@ -45,6 +45,9 @@ class SileroVADPythonExtension(AsyncExtension):
         # VAD state tracking
         self.is_speech_active = False
 
+        # WebRTC AudioProcessing (AGC + NS)
+        self.audio_processor = None
+
         # Speech segment buffer for saving detected speech segments as WAV
         self.speech_segment_buffer: bytearray = bytearray()
         self.speech_segment_count: int = 0
@@ -86,6 +89,9 @@ class SileroVADPythonExtension(AsyncExtension):
         # Load model
         self._load_model(ten_env)
 
+        # Initialize AGC + NS
+        self._init_audio_processor(ten_env)
+
     def _load_model(self, ten_env: AsyncTenEnv) -> None:
         """Load FunASR FSMN VAD model."""
         try:
@@ -115,6 +121,37 @@ class SileroVADPythonExtension(AsyncExtension):
         self.vad_cache = {}
 
         ten_env.log_info("FSMN VAD model loaded successfully")
+
+    def _init_audio_processor(self, ten_env: AsyncTenEnv) -> None:
+        """Initialize WebRTC AudioProcessing for AGC + NS."""
+        if not self.config.enable_agc and not self.config.enable_ns:
+            ten_env.log_info("AGC and NS both disabled, skipping")
+            return
+
+        try:
+            from webrtc_audio_processing import AudioProcessingModule
+        except ImportError:
+            ten_env.log_warn(
+                "webrtc-audio-processing not installed, AGC/NS disabled"
+            )
+            return
+
+        self.audio_processor = AudioProcessingModule(
+            aec_type=0,
+            enable_ns=self.config.enable_ns,
+            agc_type=self.config.agc_level if self.config.enable_agc else 0,
+            enable_vad=False,
+        )
+        self.audio_processor.set_stream_format(self.config.sampling_rate, 1)
+        if self.config.enable_ns:
+            self.audio_processor.set_ns_level(self.config.ns_level)
+        self.audio_processor.set_system_delay(0)
+
+        ten_env.log_info(
+            f"AudioProcessing initialized: agc={self.config.enable_agc}, "
+            f"ns={self.config.enable_ns}, agc_level={self.config.agc_level}, "
+            f"ns_level={self.config.ns_level}"
+        )
 
     async def on_start(self, _ten_env: AsyncTenEnv) -> None:
         self._reset_state()
@@ -250,6 +287,11 @@ class SileroVADPythonExtension(AsyncExtension):
 
         frame_buf = audio_frame.get_buf()
         self._dump_audio_if_needed(frame_buf, "in")
+
+        # AGC + NS processing (before VAD)
+        if self.audio_processor is not None:
+            processed = self.audio_processor.process_stream(frame_buf)
+            frame_buf = processed
 
         # Debug: log frame count every 100 frames
         if not hasattr(self, "_frame_count"):
