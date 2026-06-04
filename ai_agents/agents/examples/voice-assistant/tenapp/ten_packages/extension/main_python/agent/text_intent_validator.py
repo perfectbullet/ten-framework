@@ -188,18 +188,29 @@ class TextIntentValidator:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": text},
                 ],
-                temperature=0.0,
+                temperature=0.7,
                 max_tokens=50,
+                extra_body={
+                    "guided_json": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string",
+                                "enum": ["real_question", "noise"],
+                            },
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["label", "reason"],
+                    },
+                    # Disable thinking mode for Qwen3 — prevents
+                    # over-analysis that misclassifies noise as real
+                    # "chat_template_kwargs": {"enable_thinking": False},
+                },
             )
 
             total_elapsed = (time.time() - start_time) * 1000
 
             content = (response.choices[0].message.content or "").strip()
-
-            # Strip markdown code block wrapper if present
-            if content.startswith("```"):
-                lines = content.split("\n")
-                content = "\n".join(lines[1:-1])
 
             result = json.loads(content)
             label = result["label"]

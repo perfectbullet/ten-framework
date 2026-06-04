@@ -51,7 +51,7 @@ class FSMNVADConfig(BaseModel):
         description="Directory path for dumping audio files",
     )
 
-    # AGC/NS configuration (webrtc-audio-processing)
+    # AGC/NS configuration (webrtc-audio-processing) AGC+NS 增益降噪
     enable_agc: bool = Field(
         default=True,
         description="Enable Automatic Gain Control",

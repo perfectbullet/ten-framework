@@ -290,7 +290,7 @@ class SileroVADPythonExtension(AsyncExtension):
 
         # AGC + NS processing (before VAD)
         if self.audio_processor is not None:
-            processed = self.audio_processor.process_stream(frame_buf)
+            processed = self.audio_processor.process_stream(bytes(frame_buf))
             frame_buf = processed
 
         # Debug: log frame count every 100 frames

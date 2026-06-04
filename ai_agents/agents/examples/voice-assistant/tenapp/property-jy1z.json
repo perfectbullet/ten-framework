@@ -1,0 +1,278 @@
+{
+  "ten": {
+    "predefined_graphs": [
+      {
+        "name": "voice_assistant",
+        "auto_start": true,
+        "graph": {
+          "nodes": [
+            {
+              "type": "extension",
+              "name": "agora_rtc",
+              "addon": "agora_rtc",
+              "extension_group": "default",
+              "property": {
+                "app_id": "c51a83813c654291981c09ff195b38a0",
+                "app_certificate": "1ab5fa2b3c834169a18b5f07d44d1359",
+                "channel": "ten_agent_test",
+                "stream_id": 1234,
+                "remote_stream_id": 123,
+                "subscribe_audio": true,
+                "publish_audio": true,
+                "publish_data": true,
+                "enable_agora_asr": false
+              }
+            },
+            {
+              "type": "extension",
+              "name": "stt",
+              "addon": "aliyun_asr_bigmodel_local_python",
+              "extension_group": "stt",
+              "property": {
+                "params": {
+                  "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|no_api_key}",
+                  "asr_backend": "funasr",
+                  "funasr_host": "172.16.107.220",
+                  "funasr_port": "10095",
+                  "funasr_is_ssl": false,
+                  "funasr_chunk_size": "5,10,5",
+                  "funasr_chunk_interval": 10,
+                  "funasr_mode": "offline",
+                  "funasr_hotwords": "",
+                  "funasr_itn": true,
+                  "max_sentence_silence": 800,
+                  "language_hints": [
+                    "zh"
+                  ],
+                  "sample_rate": 16000
+                }
+              }
+            },
+            {
+              "type": "extension",
+              "name": "llm",
+              "addon": "openai_llm2_python",
+              "extension_group": "chatgpt",
+              "property": {
+                "base_url": "http://172.16.107.220:8100/api/chat/v1",
+                "api_key": "ollama2",
+                "frequency_penalty": 0.9,
+                "model": "deepseek-chat",
+                "max_tokens": 8192,
+                "prompt": "",
+                "proxy_url": "no_proxy",
+                "greeting": "",
+                "max_memory_length": 20
+              }
+            },
+            {
+              "type": "extension",
+              "name": "tts",
+              "addon": "cosy_tts_python_local",
+              "extension_group": "tts",
+              "property": {
+                "dump": false,
+                "dump_path": "./",
+                "params": {
+                  "api_key": "${env:COSY_TTS_API_KEY|no_api_key}",
+                  "model": "cosyvoice-v1",
+                  "sample_rate": 16000,
+                  "voice": "hutao",
+                  "use_local_service": true,
+                  "local_service_url": "ws://172.16.107.220:50002/streaming/ws"
+                }
+              }
+            },
+            {
+              "type": "extension",
+              "name": "main_control",
+              "addon": "main_python",
+              "extension_group": "control",
+              "property": {
+                "greeting": "今天有什么可以帮您的？"
+              }
+            },
+            {
+              "type": "extension",
+              "name": "streamid_adapter",
+              "addon": "streamid_adapter",
+              "property": {}
+            },
+            {
+              "type": "extension",
+              "name": "vad",
+              "addon": "silero_vad_python",
+              "property": {
+                "sampling_rate": 16000,
+                "passthrough": true,
+                "dump": true,
+                "dump_path": "./vad_dump"
+              }
+            }
+          ],
+          "connections": [
+            {
+              "extension": "main_control",
+              "cmd": [
+                {
+                  "names": [
+                    "on_user_joined",
+                    "on_user_left"
+                  ],
+                  "source": [
+                    {
+                      "extension": "agora_rtc"
+                    }
+                  ]
+                },
+                {
+                  "names": [
+                    "start_of_sentence",
+                    "end_of_sentence"
+                  ],
+                  "source": [
+                    {
+                      "extension": "vad"
+                    }
+                  ]
+                }
+              ],
+              "data": [
+                {
+                  "name": "asr_result",
+                  "source": [
+                    {
+                      "extension": "stt"
+                    }
+                  ]
+                },
+                {
+                  "name": "tts_audio_start",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                },
+                {
+                  "name": "tts_audio_end",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                },
+                {
+                  "name": "tts_flush_end",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "stt",
+              "data": [
+                {
+                  "name": "asr_finalize",
+                  "source": [
+                    {
+                      "extension": "main_control"
+                    }
+                  ]
+                },
+                {
+                  "name": "pause_asr",
+                  "source": [
+                    {
+                      "extension": "main_control"
+                    }
+                  ]
+                },
+                {
+                  "name": "resume_asr",
+                  "source": [
+                    {
+                      "extension": "main_control"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "agora_rtc",
+              "audio_frame": [
+                {
+                  "name": "pcm_frame",
+                  "dest": [
+                    {
+                      "extension": "streamid_adapter"
+                    }
+                  ]
+                },
+                {
+                  "name": "pcm_frame",
+                  "source": [
+                    {
+                      "extension": "tts"
+                    }
+                  ]
+                }
+              ],
+              "data": []
+            },
+            {
+              "extension": "streamid_adapter",
+              "audio_frame": [
+                {
+                  "name": "pcm_frame",
+                  "dest": [
+                    {
+                      "extension": "vad"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "extension": "vad",
+              "audio_frame": [
+                {
+                  "name": "pcm_frame",
+                  "dest": [
+                    {
+                      "extension": "stt"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "log": {
+      "handlers": [
+        {
+          "matchers": [
+            {
+              "level": "info"
+            }
+          ],
+          "formatter": {
+            "type": "plain",
+            "colored": true
+          },
+          "emitter": {
+            "type": "console",
+            "config": {
+              "stream": "stdout"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

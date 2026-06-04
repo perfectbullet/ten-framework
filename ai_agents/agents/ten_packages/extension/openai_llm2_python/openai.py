@@ -426,8 +426,15 @@ class OpenAIChatGPT:
             reasoning_mode = None
 
             last_chat_completion: ChatCompletionChunk | None = None
+            _first_chunk_time = None
 
             async for chat_completion in response:
+                if _first_chunk_time is None:
+                    import time as _t
+                    _first_chunk_time = _t.monotonic()
+                    self.ten_env.log_info(
+                        f"[PROBE] LLM first HTTP chunk received at {_first_chunk_time}"
+                    )
                 self.ten_env.log_debug(f"Chat completion: {chat_completion}")
                 if chat_completion is None or len(chat_completion.choices) == 0:
                     continue

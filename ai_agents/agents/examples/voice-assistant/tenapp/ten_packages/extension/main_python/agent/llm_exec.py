@@ -175,13 +175,17 @@ class LLMExec:
         # Queue the new message to the context
         await self._queue_context(ten_env, new_message)
 
+        _first_result_time = None
         async for cmd_result, _ in response:
             if cmd_result and cmd_result.is_final() is False:
+                if _first_result_time is None:
+                    import time as _t
+                    _first_result_time = _t.monotonic()
+                    ten_env.log_info(
+                        f"[PROBE] main_control first cmd_result at {_first_result_time}"
+                    )
                 if cmd_result.get_status_code() == StatusCode.OK:
                     response_json, _ = cmd_result.get_property_to_json(None)
-                    # ten_env.log_info(
-                    #     f"_send_to_llm: response_json {response_json}"
-                    # )
                     completion = parse_llm_response(response_json)
                     await self._handle_llm_response(completion)
 
