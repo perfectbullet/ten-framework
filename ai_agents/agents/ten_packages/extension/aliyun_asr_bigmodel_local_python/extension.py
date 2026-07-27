@@ -343,7 +343,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             category=LOG_CATEGORY_VENDOR,
         )
 
-        # FunASR uses send_audio_frame with is_speaking: false to finalize
+        # vLLM WebSocket 服务通过 STOP 命令结束一轮识别。
         await self._handle_finalize_funasr()
 
     async def _handle_asr_result(
@@ -375,12 +375,12 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             await self.send_asr_result(asr_result)
 
     async def _handle_finalize_funasr(self):
-        """Handle FunASR finalization by sending is_speaking: false"""
+        """发送 STOP，结束 vLLM ASR 识别。"""
         if self.recognition and self.recognition.is_running():
             self.ten_env.log_info(
-                "FunASR finalize: sending is_speaking: false (keeping connection)"
+                "FunASR finalize: sending vLLM STOP (keeping connection)"
             )
-            # Only send end-of-speech marker, don't close the connection
+            # 适配器会发送缓冲 PCM 和 STOP，不关闭 WebSocket。
             self.recognition.send_end_of_speech()
         else:
             self.ten_env.log_warn("FunASR finalize: recognition not running")

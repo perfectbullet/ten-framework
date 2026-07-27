@@ -246,6 +246,23 @@ class TestFunASRRecognitionResult:
 
         print("✅ 最终结果测试通过")
 
+    def test_vllm_final_result(self):
+        """测试 vLLM WebSocket 最终结果格式。"""
+        message = {
+            "sentences": [
+                {"text": "你好", "start": 0, "end": 680},
+                {"text": "世界", "start": 700, "end": 1200},
+            ],
+            "is_final": True,
+            "duration_ms": 1200,
+        }
+
+        sentence = FunASRRecognitionResult(message).get_sentence()
+        assert sentence["text"] == "你好世界"
+        assert sentence["begin_time"] == 0
+        assert sentence["end_time"] == 1200
+        assert sentence["final"] is True
+
     def test_static_methods(self):
         """测试静态方法"""
         print("\n=== 测试静态方法 ===")
@@ -445,36 +462,19 @@ class TestFunASRRecognition:
         print("✅ 音频发送和结果获取测试通过")
 
     def test_message_building(self):
-        """测试消息构建逻辑"""
-        print("\n=== 测试消息构建 ===")
+        """测试 vLLM WebSocket 控制消息构建逻辑。"""
+        print("\n=== 测试 vLLM 控制消息 ===")
 
         config = TestConfiguration.load_config()
         params = config["params"]
 
-        chunk_size_list = [int(x) for x in params["funasr_chunk_size"].split(",")]
+        language = params["language_hints"][0]
+        language_map = {"zh": "中文", "zh-CN": "中文"}
+        messages = ["START", f"LANGUAGE:{language_map.get(language, language)}", "STOP"]
 
-        # 模拟构建初始化消息
-        init_message = {
-            "mode": params["funasr_mode"],
-            "chunk_size": chunk_size_list,
-            "chunk_interval": params["funasr_chunk_interval"],
-            "wav_name": "test",
-            "is_speaking": True,
-            "itn": params["funasr_itn"],
-        }
+        assert messages == ["START", "LANGUAGE:中文", "STOP"]
 
-        # 添加 hotwords（如果存在）
-        if params["funasr_hotwords"]:
-            init_message["hotwords"] = params["funasr_hotwords"]
-
-        # 验证消息结构
-        assert "mode" in init_message
-        assert "chunk_size" in init_message
-        assert "wav_name" in init_message
-        assert "is_speaking" in init_message
-        assert init_message["is_speaking"] == True
-
-        print("✅ 消息构建测试通过")
+        print("✅ vLLM 控制消息测试通过")
 
     def test_audio_buffer_operations(self):
         """测试音频缓冲区操作"""
@@ -776,6 +776,7 @@ def run_tests(args=None):
         result_test = TestFunASRRecognitionResult()
         result_test.test_intermediate_result()
         result_test.test_final_result_with_timestamps()
+        result_test.test_vllm_final_result()
         result_test.test_static_methods()
         result_test.test_string_representation()
         result_test.test_property_json_scenarios()
@@ -876,6 +877,12 @@ def test_final_result_with_timestamps():
     """测试带时间戳的最终结果"""
     result_test = TestFunASRRecognitionResult()
     result_test.test_final_result_with_timestamps()
+
+
+def test_vllm_final_result():
+    """测试 vLLM 最终结果。"""
+    result_test = TestFunASRRecognitionResult()
+    result_test.test_vllm_final_result()
 
 
 def test_static_methods():

@@ -3,11 +3,10 @@
 # Licensed under the Apache License, Version 2.0.
 # See the LICENSE file for more information.
 #
-"""
-FunASR Adapter - Provides Dashscope-compatible interface for local FunASR WebSocket service.
+"""本地 ASR WebSocket 服务的 Dashscope 兼容适配器。
 
-This adapter wraps the FunASR WebSocket client to provide the same interface as
-Dashscope's Recognition SDK, enabling seamless switching between cloud and local ASR.
+服务采用 ``vllm_guide_zh_v2.md`` 中定义的 vLLM 协议：START、可选配置命令、
+PCM 音频和 STOP。
 """
 
 import asyncio
@@ -46,17 +45,45 @@ class FunASRRecognitionResult:
 
     def _build_output(self, message: Dict[str, Any]) -> Dict[str, Any]:
         """Convert FunASR message to Dashscope-compatible output format."""
-        text = message.get("text", "")
-        mode = message.get("mode", "")
-        is_final = message.get("is_final", False) or mode == "2pass-offline"
+        is_final = bool(message.get("is_final", False))
+
+        # vLLM 离线 WebSocket 响应：
+        # {"sentences": [{"text": "...", "start": 0, "end": 1}], "is_final": true}
+        if "sentences" in message:
+            sentences = [
+                sentence
+                for sentence in message.get("sentences", [])
+                if isinstance(sentence, dict)
+            ]
+            text = "".join(
+                str(sentence.get("text", "")) for sentence in sentences
+            ).strip()
+            starts = [
+                int(sentence["start"])
+                for sentence in sentences
+                if sentence.get("start") is not None
+            ]
+            ends = [
+                int(sentence["end"])
+                for sentence in sentences
+                if sentence.get("end") is not None
+            ]
+            begin_time = min(starts) if starts else 0
+            end_time = max(ends) if ends else 0
+        else:
+            text = message.get("text", "")
+            mode = message.get("mode", "")
+            is_final = is_final or mode == "2pass-offline"
+            begin_time = 0
+            end_time = 0
 
         # Build sentence structure
         sentence = {
             "text": text,
-            "begin_time": 0,
-            "end_time": 0,
+            "begin_time": begin_time,
+            "end_time": end_time,
             "words": [],
-            "final": is_final
+            "final": is_final,
         }
 
         # Extract timing information from stamp_sents if available (final results)
@@ -79,14 +106,11 @@ class FunASRRecognitionResult:
                         word_info = {
                             "text": word_text,
                             "begin_time": ts_list[i][0],
-                            "end_time": ts_list[i][1]
+                            "end_time": ts_list[i][1],
                         }
                         sentence["words"].append(word_info)
 
-        return {
-            "sentence": sentence,
-            "final": is_final
-        }
+        return {"sentence": sentence, "final": is_final}
 
     def get_sentence(self) -> Dict[str, Any]:
         """Get the sentence structure (compatible with Dashscope API)."""
@@ -153,7 +177,7 @@ class FunASRRecognition:
         sample_rate: int = 16000,
         language_hints: List[str] = None,
         send_buffer_size: int = 23040,  # Buffer size in bytes (default: 0.72s @ 16kHz 16-bit mono)
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize FunASR WebSocket recognition client.
@@ -184,6 +208,7 @@ class FunASRRecognition:
         self.callback = callback
         self.sample_rate = sample_rate
         self.format = format
+        self.language_hints = language_hints or []
         self.kwargs = kwargs
 
         # Connection state
@@ -191,6 +216,7 @@ class FunASRRecognition:
         self._thread_recv = None
         self.msg_queue = Queue()
         self._offline_msg_done = False  # 跟踪是否收到最终结果（is_final == True）
+        self._session_active = False
 
         # Asyncio event loop for thread-safe callbacks
         self.loop: Optional[asyncio.AbstractEventLoop] = None
@@ -223,7 +249,9 @@ class FunASRRecognition:
         """
         try:
             self._msg_counter += 1
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Remove last 3 digits of microseconds
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[
+                :-3
+            ]  # Remove last 3 digits of microseconds
             filename = f"msg_{self._msg_counter:04d}_{timestamp}.json"
             filepath = self._json_output_dir / filename
 
@@ -249,7 +277,7 @@ class FunASRRecognition:
         try:
             # Build WebSocket URI
             protocol = "wss" if self.is_ssl else "ws"
-            uri = f"{protocol}://{self.host}:{self.port}"
+            uri = f"{protocol}://{self.host}:{self.port}/ws"
 
             # Create SSL context for WSS
             if self.is_ssl:
@@ -267,35 +295,17 @@ class FunASRRecognition:
             self._send_buffer.clear()  # Clear any stale buffered data from previous session
 
             # Start message receiving thread
-            self._thread_recv = threading.Thread(target=self._thread_receive_messages, daemon=True)
+            self._thread_recv = threading.Thread(
+                target=self._thread_receive_messages, daemon=True
+            )
             self._thread_recv.start()
 
             # Create audio dump directory if enabled
             if self._audio_dump_enabled:
                 self._audio_dump_dir.mkdir(exist_ok=True)
-                print(f"[Audio Dump] Audio dump enabled, saving to: {self._audio_dump_dir.absolute()}")
-
-            # Send initialization message
-            chunk_size_list = [int(x) for x in self.chunk_size.split(",")]
-            init_message = {
-                "mode": self.mode,
-                "chunk_size": chunk_size_list,
-                "chunk_interval": self.chunk_interval,
-                "wav_name": self.wav_name,
-                "is_speaking": True,
-                "itn": self.kwargs.get("itn", True),
-            }
-
-            # Add hotwords if provided
-            if "hotwords" in self.kwargs:
-                init_message["hotwords"] = self.kwargs["hotwords"]
-
-            # Add other FunASR-specific parameters
-            for key in ["encoder_chunk_look_back", "decoder_chunk_look_back"]:
-                if key in self.kwargs:
-                    init_message[key] = self.kwargs[key]
-
-            self.websocket.send(json.dumps(init_message))
+                print(
+                    f"[Audio Dump] Audio dump enabled, saving to: {self._audio_dump_dir.absolute()}"
+                )
 
             # Trigger on_open callback
             if self.callback:
@@ -303,11 +313,9 @@ class FunASRRecognition:
 
         except Exception as e:
             self.websocket = None
-            error_result = FunASRRecognitionResult({
-                "text": "",
-                "error": str(e),
-                "is_final": False
-            })
+            error_result = FunASRRecognitionResult(
+                {"text": "", "error": str(e), "is_final": False}
+            )
             error_result.status_code = 500
             error_result.message = f"Failed to connect to FunASR server: {e}"
 
@@ -328,7 +336,10 @@ class FunASRRecognition:
                     msg_dict = json.loads(msg)
 
                     # 检测最终结果，设置标志（参考 funasr_wss_client.py 第 255-256 行）
-                    is_final = msg_dict.get("is_final", False) or msg_dict.get("mode") == "2pass-offline"
+                    is_final = (
+                        msg_dict.get("is_final", False)
+                        or msg_dict.get("mode") == "2pass-offline"
+                    )
                     if is_final:
                         self._offline_msg_done = True
 
@@ -348,11 +359,9 @@ class FunASRRecognition:
                     # WebSocket 关闭或其他异常
                     if self.websocket is not None:
                         # 只有在 websocket 还存在时才报告错误
-                        error_result = FunASRRecognitionResult({
-                            "text": "",
-                            "error": str(e),
-                            "is_final": False
-                        })
+                        error_result = FunASRRecognitionResult(
+                            {"text": "", "error": str(e), "is_final": False}
+                        )
                         error_result.status_code = 500
                         error_result.message = f"Error receiving message: {e}"
 
@@ -388,6 +397,7 @@ class FunASRRecognition:
         if self.websocket is None:
             self._send_buffer.clear()
             return
+
         try:
             combined_data = b"".join(self._send_buffer)
             self.websocket.send(combined_data, ABNF.OPCODE_BINARY)
@@ -395,6 +405,24 @@ class FunASRRecognition:
         except Exception:
             # Connection closed or error
             self._send_buffer.clear()
+
+    def _start_session(self) -> None:
+        """在发送 PCM 音频前启动一轮 vLLM 识别会话。"""
+        if self.websocket is None or self._session_active:
+            return
+
+        self.websocket.send("START")
+
+        if self.language_hints:
+            language = self.language_hints[0]
+            language_map = {"zh": "中文", "zh-CN": "中文"}
+            self.websocket.send(f"LANGUAGE:{language_map.get(language, language)}")
+
+        hotwords = str(self.kwargs.get("hotwords", "")).strip()
+        if hotwords:
+            self.websocket.send(f"HOTWORDS:{hotwords}")
+
+        self._session_active = True
 
     def send_audio_frame(self, audio_data: bytes) -> None:
         """
@@ -409,6 +437,8 @@ class FunASRRecognition:
             return
 
         try:
+            self._start_session()
+
             # Collect audio data for debugging
             if self._audio_dump_enabled:
                 self._audio_data_buffer.append(audio_data)
@@ -439,7 +469,7 @@ class FunASRRecognition:
             sample_rate: Sample rate (e.g., 16000)
         """
         try:
-            with wave.open(str(wav_path), 'wb') as wav_file:
+            with wave.open(str(wav_path), "wb") as wav_file:
                 wav_file.setnchannels(1)  # Mono
                 wav_file.setsampwidth(2)  # 16-bit = 2 bytes
                 wav_file.setframerate(sample_rate)
@@ -474,11 +504,13 @@ class FunASRRecognition:
             wav_path = self._audio_dump_dir / f"{base_filename}.wav"
             self._save_as_wav(combined_pcm, wav_path, self.sample_rate)
 
-            print(f"[Audio Dump] Audio dump saved:")
+            print("[Audio Dump] Audio dump saved:")
             print(f"[Audio Dump]   - PCM: {pcm_path}")
             print(f"[Audio Dump]   - WAV: {wav_path}")
             print(f"[Audio Dump]   - Total bytes: {total_bytes}")
-            print(f"[Audio Dump]   - Duration: ~{duration_seconds:.1f} seconds @ {self.sample_rate}Hz 16bit mono")
+            print(
+                f"[Audio Dump]   - Duration: ~{duration_seconds:.1f} seconds @ {self.sample_rate}Hz 16bit mono"
+            )
 
             # Clear buffer for next session
             self._audio_data_buffer.clear()
@@ -500,9 +532,8 @@ class FunASRRecognition:
             # Flush any remaining buffered audio data before sending end-of-speech
             self._flush_send_buffer()
 
-            # Send end-of-speech message
-            end_message = json.dumps({"is_speaking": False})
-            self.websocket.send(end_message)
+            # 发送 vLLM 会话结束标记。
+            self.send_end_of_speech()
 
             # Wait base time (参考 funasr_wss_client.py 第 226 行)
             time.sleep(timeout)
@@ -544,11 +575,16 @@ class FunASRRecognition:
             return
 
         try:
-            # Flush any remaining buffered audio data before sending end-of-speech
+            # 发送 STOP 前先发送缓冲区中剩余的音频。
             self._flush_send_buffer()
 
-            end_message = json.dumps({"is_speaking": False})
-            self.websocket.send(end_message)
+            if not self._session_active:
+                return
+
+            # vLLM 要求发送文本 STOP，不能发送旧 FunASR 的
+            # {"is_speaking": false} JSON 消息。
+            self.websocket.send("STOP")
+            self._session_active = False
 
             # Save audio dump if enabled and data was collected
             if self._audio_dump_enabled and self._audio_data_buffer:
@@ -558,7 +594,11 @@ class FunASRRecognition:
 
     def is_running(self) -> bool:
         """Check if recognition is currently running."""
-        return self.websocket is not None and self._thread_recv is not None and self._thread_recv.is_alive()
+        return (
+            self.websocket is not None
+            and self._thread_recv is not None
+            and self._thread_recv.is_alive()
+        )
 
     def get_last_message(self) -> Optional[Dict[str, Any]]:
         """Get the last message from queue (for synchronous usage patterns)."""
