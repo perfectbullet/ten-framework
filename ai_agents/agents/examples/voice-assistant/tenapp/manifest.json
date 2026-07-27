@@ -59,9 +59,6 @@
     },
     {
       "path": "../../../ten_packages/extension/cosy_tts_python_local"
-    },
-    {
-      "path": "../../../ten_packages/extension/silero_vad_python"
     }
   ],
   "scripts": {

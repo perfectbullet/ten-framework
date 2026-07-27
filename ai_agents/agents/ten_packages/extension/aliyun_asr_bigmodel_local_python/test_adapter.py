@@ -257,11 +257,23 @@ class TestFunASRRecognitionResult:
             "duration_ms": 1200,
         }
 
-        sentence = FunASRRecognitionResult(message).get_sentence()
-        assert sentence["text"] == "你好世界"
-        assert sentence["begin_time"] == 0
-        assert sentence["end_time"] == 1200
-        assert sentence["final"] is True
+        # 结果对象返回本条服务端消息中的 sentences 快照。
+        assert FunASRRecognitionResult(message).get_sentences() == [
+            {
+                "text": "你好",
+                "begin_time": 0,
+                "end_time": 680,
+                "words": [],
+                "final": True,
+            },
+            {
+                "text": "世界",
+                "begin_time": 700,
+                "end_time": 1200,
+                "words": [],
+                "final": True,
+            },
+        ]
 
     def test_static_methods(self):
         """测试静态方法"""

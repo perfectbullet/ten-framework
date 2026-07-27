@@ -306,24 +306,6 @@ class MainControlExtension(AsyncExtension):
             await self._interrupt()
             return
 
-        # Handle end_of_sentence command from VAD - send asr_finalize to ASR
-        if cmd_name == "end_of_sentence":
-            ten_env.log_info(
-                "[MainControlExtension] Received end_of_sentence, sending asr_finalize to ASR"
-            )
-            # Create asr_finalize data
-            asr_finalize_data = Data.create("asr_finalize")
-            asr_finalize_data.set_property_string(
-                "finalize_id", f"vad_{int(time.time() * 1000)}"
-            )
-            await ten_env.send_data(asr_finalize_data)
-            return
-
-        # Handle start_of_sentence command from VAD
-        if cmd_name == "start_of_sentence":
-            ten_env.log_info("[MainControlExtension] Received start_of_sentence")
-            return
-
         # Delegate other commands to agent
         await self.agent.on_cmd(cmd)
 

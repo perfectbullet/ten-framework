@@ -23,111 +23,53 @@ from datetime import datetime
 
 
 class FunASRRecognitionResult:
-    """Adapter class compatible with Dashscope's RecognitionResult interface."""
+    """vLLM WebSocket 识别结果。"""
 
     def __init__(self, message: Dict[str, Any]):
         """
-        Initialize from FunASR WebSocket message.
+        使用 vLLM WebSocket 消息初始化。
 
         Args:
-            message: Raw message from FunASR WebSocket
-                Example interim: {'is_final': False, 'mode': '2pass-online', 'text': '家来', 'wav_name': 'default'}
-                Example final: {'is_final': True, 'mode': '2pass-offline', 'stamp_sents': [...], 'text': '...', 'timestamp': '...', 'wav_name': 'default'}
+            message: 服务端原始 JSON 消息。
         """
         self.raw_message = message
-        self.status_code = 200  # Simulate HTTP OK status
+        self.status_code = 200
         self.request_id = message.get("wav_name", "default")
         self.code = None
         self.message = ""
 
-        # Build output structure compatible with Dashscope
-        self.output = self._build_output(message)
+    def get_sentences(self) -> List[Dict[str, Any]]:
+        """获取服务端本次推送的已锁定句子快照。
 
-    def _build_output(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """Convert FunASR message to Dashscope-compatible output format."""
-        is_final = bool(message.get("is_final", False))
+        服务端会持续回传当前会话的累计 ``sentences``。结果对象没有跨消息状态，
+        由扩展根据句子的时间范围过滤已发送的句子。
+        """
+        raw_sentences = self.raw_message.get("sentences")
+        if not isinstance(raw_sentences, list):
+            return []
 
-        # vLLM 离线 WebSocket 响应：
-        # {"sentences": [{"text": "...", "start": 0, "end": 1}], "is_final": true}
-        if "sentences" in message:
-            sentences = [
-                sentence
-                for sentence in message.get("sentences", [])
-                if isinstance(sentence, dict)
-            ]
-            text = "".join(
-                str(sentence.get("text", "")) for sentence in sentences
-            ).strip()
-            starts = [
-                int(sentence["start"])
-                for sentence in sentences
-                if sentence.get("start") is not None
-            ]
-            ends = [
-                int(sentence["end"])
-                for sentence in sentences
-                if sentence.get("end") is not None
-            ]
-            begin_time = min(starts) if starts else 0
-            end_time = max(ends) if ends else 0
-        else:
-            text = message.get("text", "")
-            mode = message.get("mode", "")
-            is_final = is_final or mode == "2pass-offline"
-            begin_time = 0
-            end_time = 0
+        sentences: List[Dict[str, Any]] = []
+        for raw_sentence in raw_sentences:
+            if not isinstance(raw_sentence, dict):
+                continue
 
-        # Build sentence structure
-        sentence = {
-            "text": text,
-            "begin_time": begin_time,
-            "end_time": end_time,
-            "words": [],
-            "final": is_final,
-        }
+            text = str(raw_sentence.get("text", "")).strip()
+            if not text:
+                continue
 
-        # Extract timing information from stamp_sents if available (final results)
-        if "stamp_sents" in message and message["stamp_sents"]:
-            stamp_sent = message["stamp_sents"][0]  # Use first sentence
-            sentence["begin_time"] = stamp_sent.get("start", 0)
-            sentence["end_time"] = stamp_sent.get("end", 0)
+            start_ms = int(raw_sentence.get("start", 0) or 0)
+            end_ms = int(raw_sentence.get("end", 0) or 0)
+            sentences.append(
+                {
+                    "text": text,
+                    "begin_time": start_ms,
+                    "end_time": end_ms,
+                    "words": [],
+                    "final": True,
+                }
+            )
 
-            # Build words list with timestamps from ts_list
-            text_seg = stamp_sent.get("text_seg", "")
-            ts_list = stamp_sent.get("ts_list", [])
-
-            if text_seg and ts_list:
-                # Split text_seg by spaces to get individual words
-                words_text = [w for w in text_seg.split() if w]
-
-                # Match words with timestamps
-                for i, word_text in enumerate(words_text):
-                    if i < len(ts_list):
-                        word_info = {
-                            "text": word_text,
-                            "begin_time": ts_list[i][0],
-                            "end_time": ts_list[i][1],
-                        }
-                        sentence["words"].append(word_info)
-
-        return {"sentence": sentence, "final": is_final}
-
-    def get_sentence(self) -> Dict[str, Any]:
-        """Get the sentence structure (compatible with Dashscope API)."""
-        sentence = self.output.get("sentence", {}).copy()
-        # Add final field to sentence for compatibility with is_sentence_end()
-        sentence["final"] = self.output.get("final", False)
-        return sentence
-
-    @staticmethod
-    def is_sentence_end(sentence: Dict[str, Any]) -> bool:
-        """Check if this is the final result for a sentence."""
-        # In FunASR, mode=='2pass-offline' or is_final==True indicates sentence end
-        return sentence.get("final", False)
-
-    def __str__(self):
-        return json.dumps(self.output, ensure_ascii=False)
-
+        return sentences
 
 class FunASRRecognitionCallback:
     """Base callback class compatible with Dashscope's RecognitionCallback interface."""

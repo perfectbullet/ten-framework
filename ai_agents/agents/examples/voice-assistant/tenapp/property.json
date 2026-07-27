@@ -32,8 +32,8 @@
                 "params": {
                   "api_key": "${env:ALIYUN_ASR_BIGMODEL_API_KEY|no_api_key}",
                   "asr_backend": "funasr",
-                  "funasr_host": "192.168.8.234",
-                  "funasr_port": "10095",
+                  "funasr_host": "192.168.100.230",
+                  "funasr_port": "8899",
                   "funasr_is_ssl": false,
                   "funasr_chunk_size": "5,10,5",
                   "funasr_chunk_interval": 10,
@@ -54,7 +54,7 @@
               "addon": "openai_llm2_python",
               "extension_group": "chatgpt",
               "property": {
-                "base_url": "http://192.168.8.233:8100/api/chat/v1",
+                "base_url": "http://192.168.100.202:8100/api/chat/v1",
                 "api_key": "ollama2",
                 "frequency_penalty": 0.9,
                 "model": "deepseek-chat",
@@ -79,7 +79,7 @@
                   "sample_rate": 16000,
                   "voice": "hutao",
                   "use_local_service": true,
-                  "local_service_url": "ws://192.168.8.233:50002/streaming/ws"
+                  "local_service_url": "ws://192.168.100.202:50002/streaming/ws"
                 }
               }
             },
@@ -97,17 +97,6 @@
               "name": "streamid_adapter",
               "addon": "streamid_adapter",
               "property": {}
-            },
-            {
-              "type": "extension",
-              "name": "vad",
-              "addon": "silero_vad_python",
-              "property": {
-                "sampling_rate": 16000,
-                "passthrough": true,
-                "dump": false,
-                "dump_path": "./vad_dump"
-              }
             }
           ],
           "connections": [
@@ -122,17 +111,6 @@
                   "source": [
                     {
                       "extension": "agora_rtc"
-                    }
-                  ]
-                },
-                {
-                  "names": [
-                    "start_of_sentence",
-                    "end_of_sentence"
-                  ],
-                  "source": [
-                    {
-                      "extension": "vad"
                     }
                   ]
                 }
@@ -173,35 +151,6 @@
               ]
             },
             {
-              "extension": "stt",
-              "data": [
-                {
-                  "name": "asr_finalize",
-                  "source": [
-                    {
-                      "extension": "main_control"
-                    }
-                  ]
-                },
-                {
-                  "name": "pause_asr",
-                  "source": [
-                    {
-                      "extension": "main_control"
-                    }
-                  ]
-                },
-                {
-                  "name": "resume_asr",
-                  "source": [
-                    {
-                      "extension": "main_control"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
               "extension": "agora_rtc",
               "audio_frame": [
                 {
@@ -225,19 +174,6 @@
             },
             {
               "extension": "streamid_adapter",
-              "audio_frame": [
-                {
-                  "name": "pcm_frame",
-                  "dest": [
-                    {
-                      "extension": "vad"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "extension": "vad",
               "audio_frame": [
                 {
                   "name": "pcm_frame",

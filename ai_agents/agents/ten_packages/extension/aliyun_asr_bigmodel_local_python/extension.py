@@ -67,7 +67,6 @@ class FunASRCallback(FunASRRecognitionCallback):
 
     def on_event(self, result: FunASRRecognitionResult) -> None:
         """Recognition result event callback"""
-        self.ten_env.log_info(f"FunASR result event: {result}")
         asyncio.run_coroutine_threadsafe(self.extension.on_asr_event(result), self.loop)
 
     def on_close(self) -> None:
@@ -99,6 +98,9 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
         # Pause/resume state for ASR during TTS playback
         self.is_paused: bool = False
+
+        # 服务端每次推送的是累计 sentences；记录已交给主控的句子时间范围。
+        self._emitted_sentence_ranges: set[tuple[int, int]] = set()
 
     @override
     async def on_deinit(self, ten_env: AsyncTenEnv) -> None:
@@ -228,6 +230,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             self.audio_timeline.get_total_user_audio_duration()
         )
         self.audio_timeline.reset()
+        self._emitted_sentence_ranges.clear()
 
     async def on_asr_complete(self) -> None:
         """Handle callback when recognition is completed"""
@@ -263,21 +266,32 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
             if self.reconnect_manager and self.connected:
                 self.reconnect_manager.mark_connection_successful()
 
-            self.ten_env.log_info(
-                f"FunASR result: {result}",
-                category=LOG_CATEGORY_VENDOR,
-            )
+            sentence_snapshot = result.get_sentences()
+            sentences = []
+            for sentence in sentence_snapshot:
+                sentence_range = (
+                    int(sentence.get("begin_time", 0) or 0),
+                    int(sentence.get("end_time", 0) or 0),
+                )
+                if sentence_range in self._emitted_sentence_ranges:
+                    continue
+                self._emitted_sentence_ranges.add(sentence_range)
+                sentences.append(sentence)
 
-            sentence = result.get_sentence()
-            if isinstance(sentence, dict) and "text" in sentence and sentence["text"]:
+            for sentence in sentences:
+                if not isinstance(sentence, dict) or not sentence.get("text"):
+                    continue
+
                 text = sentence["text"]
-                is_final = FunASRRecognitionResult.is_sentence_end(sentence)
+                # 服务端内部 VAD 锁定的 sentences 可直接驱动下一轮对话；
+                # is_final 仅表示整个 WebSocket 会话是否关闭，不代表单句是否完成。
+                is_final = True
 
-                # 从 stamp_sents 提取时间戳（仅最终结果有此字段）
+                # 从识别结果提取时间戳。
                 start_ms = int(sentence.get("begin_time", 0) or 0)
                 end_ms = int(sentence.get("end_time", 0) or 0)
 
-                # 如果有词级时间戳，从最后一个词获取结束时间
+                # 如果有词级时间戳，从最后一个词获取结束时间。
                 if end_ms == 0 and "words" in sentence and sentence["words"]:
                     last_word = sentence["words"][-1]
                     if "end_time" in last_word and last_word["end_time"]:
@@ -288,7 +302,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
 
                 duration_ms = end_ms - start_ms if end_ms > start_ms else 0
 
-                # 计算实际起始时间（映射到全局时间轴）
+                # 计算实际起始时间（映射到全局时间轴）。
                 if start_ms > 0:
                     actual_start_ms = int(
                         self.audio_timeline.get_audio_duration_before_time(start_ms)
@@ -302,7 +316,7 @@ class AliyunASRBigmodelExtension(AsyncASRBaseExtension):
                     f"start_ms: {actual_start_ms}, duration_ms: {duration_ms}"
                 )
 
-                # 处理 ASR 结果
+                # 处理 ASR 结果。
                 if self.config is not None:
                     await self._handle_asr_result(
                         text=text,
